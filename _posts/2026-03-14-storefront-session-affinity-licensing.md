@@ -99,3 +99,6 @@ One final touch: I documented the solution thoroughly for the operations team, i
 ---
 
 *Have you used StoreFront keywords in a similar way? I'd be interested to hear other creative uses of this feature — reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+
+---
+*The experience and technical content in this post are entirely my own, based on real-world work. AI was used to help structure and articulate the writing.*

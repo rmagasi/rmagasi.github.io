@@ -1,0 +1,29 @@
+---
+title: "Your Post Title Here"
+date: YYYY-MM-DD HH:MM:SS +0100
+categories: [Category1, Category2]
+tags: [tag1, tag2, tag3]
+author: robert_magasi
+image:
+  path: /assets/img/posts/your-image.png
+  alt: Image description
+---
+
+Your introduction here — what problem does this post solve and who is it for?
+
+## The Situation
+
+## The Problem
+
+## The Solution
+
+## The Result
+
+## Key Takeaways
+
+---
+
+*Have you experienced something similar? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+
+---
+*The experience and technical content in this post are entirely my own, based on real-world work. AI was used to help structure and articulate the writing.*
