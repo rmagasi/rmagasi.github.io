@@ -1,11 +1,10 @@
 ---
-# the default layout is 'page'
+title: About
 icon: fas fa-info-circle
 order: 4
 ---
 
-
-Hi, I'm **Robert Magasi** — a Senior VDI & End-User Computing Consultant based in Wetzikon, Switzerland, with 15 years of hands-on experience designing, deploying, and troubleshooting enterprise virtual desktop environments.
+Hi, I'm **Robert Magasi** — a Senior VDI & End-User Computing Consultant based in Wetzikon, Switzerland, with 14+ years of hands-on experience designing, deploying, and troubleshooting enterprise virtual desktop environments.
 
 ## What I do
 
@@ -28,7 +27,7 @@ No fluff. Just real-world experience.
 
 ## Background
 
-I've been in the EUC space since 2010, working across Switzerland, Germany, and Austria with a wide range of enterprise clients. I'm currently employed as Senior VDI & EUC Consultant at **Swisscom**.
+I've been in the EUC space since 2010, working across Switzerland, Germany, and Austria with a wide range of enterprise clients. I'm currently employed as Senior VDI & EUC Consultant at **Aveniq**.
 
 I'm multilingual — **English, German, and Hungarian** — which helps when working across the DACH region.
 
@@ -39,3 +38,7 @@ Outside of work I am a proud husband and father of two girls, manage a Hattrick 
 The best way to reach me is via LinkedIn:
 
 [linkedin.com/in/robertmagasi](https://www.linkedin.com/in/robertmagasi/)
+
+---
+
+> **Disclaimer:** All views and opinions expressed on this blog are entirely my own and do not represent the views, positions, or opinions of my employer or any organisation I am affiliated with.

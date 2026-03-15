@@ -11,6 +11,8 @@ image:
 
 Your introduction here — what problem does this post solve and who is it for?
 
+<!--more-->
+
 ## The Situation
 
 ## The Problem
@@ -25,5 +27,4 @@ Your introduction here — what problem does this post solve and who is it for?
 
 *Have you experienced something similar? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
----
-*The experience and technical content in this post are entirely my own, based on real-world work. AI was used to help structure and articulate the writing.*
+> 🤖 **AI Disclosure:** The experience and technical content in this post are entirely my own, based on real-world work. Claude AI was used to help structure and articulate the writing.

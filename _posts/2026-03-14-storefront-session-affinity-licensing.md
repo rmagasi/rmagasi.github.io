@@ -11,6 +11,8 @@ image:
 
 Some of the best solutions in IT aren't complex — they're elegant. This is a story about a critical production escalation that multiple vendors and colleagues said couldn't be solved without expensive custom development or a major architecture overhaul. It could. Using nothing but native Citrix features.
 
+<!--more-->
+
 ## The Situation
 
 A customer was running a Citrix Server OS (RDSH) environment with FSLogix Profile Containers. Their setup involved **non-personalised accounts** — shared credentials with different account names (e.g. Service-Account-A, Service-Account-B, Service-Account-C) — that needed access to specific backend resources.
@@ -100,5 +102,4 @@ One final touch: I documented the solution thoroughly for the operations team, i
 
 *Have you used StoreFront keywords in a similar way? I'd be interested to hear other creative uses of this feature — reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
----
-*The experience and technical content in this post are entirely my own, based on real-world work. AI was used to help structure and articulate the writing.*
+> 🤖 **AI Disclosure:** The experience and technical content in this post are entirely my own, based on real-world work. Claude AI was used to help structure and articulate the writing.
