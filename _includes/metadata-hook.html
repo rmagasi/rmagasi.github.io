@@ -1,0 +1,75 @@
+<style>
+  /* =====================================================
+     Colour scheme derived from the OG image
+     Primary teal  : #0891b2
+     Dark navy      : #1e2d4f
+     Dark mode teal : #22d3ee (brighter for dark bg)
+  ====================================================== */
+
+  /* — Light mode — */
+  html:not([data-mode]),
+  html[data-mode=light] {
+    --heading-color:        #1e2d4f;
+    --link-color:           #0891b2;
+    --link-underline-color: rgba(8, 145, 178, 0.3);
+    --toc-highlight:        #0891b2;
+    --blockquote-border-color: #0891b2;
+    --tag-hover:            rgba(8, 145, 178, 0.15);
+    --btn-share-hover-color:#0891b2;
+    --checkbox-checked-color:#0891b2;
+    --sidebar-hover-bg:     rgba(8, 145, 178, 0.08);
+    --timeline-node-bg:     #0891b2;
+    --prompt-info-icon-color:#0891b2;
+  }
+
+  /* — Dark mode — */
+  html[data-mode=dark] {
+    --link-color:           #22d3ee;
+    --link-underline-color: rgba(34, 211, 238, 0.3);
+    --toc-highlight:        #22d3ee;
+    --blockquote-border-color: #22d3ee;
+    --tag-hover:            rgba(34, 211, 238, 0.15);
+    --btn-share-hover-color:#22d3ee;
+    --checkbox-checked-color:#22d3ee;
+    --sidebar-hover-bg:     rgba(34, 211, 238, 0.08);
+    --timeline-node-bg:     #22d3ee;
+    --prompt-info-icon-color:#22d3ee;
+  }
+
+  /* Override Chirpy's hardcoded orange link-hover colour — light mode */
+  html:not([data-mode]) #page-category a:hover,
+  html:not([data-mode]) #page-tag a:hover,
+  html:not([data-mode]) #access-lastmod a:hover,
+  html:not([data-mode]) .post-tail-wrapper .license-wrapper > a:hover,
+  html:not([data-mode]) #search-results a:hover,
+  html:not([data-mode]) footer a:hover,
+  html:not([data-mode]) #topbar #breadcrumb a:hover,
+  html:not([data-mode]) .post-meta a:not([class]):hover,
+  html:not([data-mode]) .content a:not(.img-link):hover,
+  html[data-mode=light] #page-category a:hover,
+  html[data-mode=light] #page-tag a:hover,
+  html[data-mode=light] #access-lastmod a:hover,
+  html[data-mode=light] .post-tail-wrapper .license-wrapper > a:hover,
+  html[data-mode=light] #search-results a:hover,
+  html[data-mode=light] footer a:hover,
+  html[data-mode=light] #topbar #breadcrumb a:hover,
+  html[data-mode=light] .post-meta a:not([class]):hover,
+  html[data-mode=light] .content a:not(.img-link):hover {
+    color: #0891b2 !important;
+    border-bottom-color: #0891b2 !important;
+  }
+
+  /* Override Chirpy's hardcoded orange link-hover colour — dark mode */
+  html[data-mode=dark] #page-category a:hover,
+  html[data-mode=dark] #page-tag a:hover,
+  html[data-mode=dark] #access-lastmod a:hover,
+  html[data-mode=dark] .post-tail-wrapper .license-wrapper > a:hover,
+  html[data-mode=dark] #search-results a:hover,
+  html[data-mode=dark] footer a:hover,
+  html[data-mode=dark] #topbar #breadcrumb a:hover,
+  html[data-mode=dark] .post-meta a:not([class]):hover,
+  html[data-mode=dark] .content a:not(.img-link):hover {
+    color: #22d3ee !important;
+    border-bottom-color: #22d3ee !important;
+  }
+</style>

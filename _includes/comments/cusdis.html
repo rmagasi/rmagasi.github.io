@@ -14,12 +14,15 @@
 
 <script>
   (function () {
-    // Move widget into the content column (Chirpy renders comments outside it)
-    var postTail = document.querySelector('.post-tail-wrapper');
-    var wrapper  = document.getElementById('cusdis-comments-wrapper');
-    if (postTail && wrapper) {
-      postTail.insertAdjacentElement('afterend', wrapper);
-      wrapper.style.display = '';
+    // Move widget into the content column (Chirpy renders comments outside it).
+    // We move #post-comment (Chirpy's wrapper) so the whole block relocates cleanly.
+    var anchor  = document.querySelector('.post-tail-wrapper')
+                || document.querySelector('article')
+                || document.querySelector('#post-extend-wrapper');
+    var block   = document.getElementById('post-comment')
+                || document.getElementById('cusdis-comments-wrapper');
+    if (anchor && block) {
+      anchor.insertAdjacentElement('afterend', block);
     }
 
     // Sync Cusdis theme with Chirpy dark/light mode
