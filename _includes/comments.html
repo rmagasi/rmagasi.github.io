@@ -1,0 +1,14 @@
+{%- if page.comments -%}
+  <div id="post-comment">
+    {%- case site.comments.provider -%}
+      {%- when 'disqus' -%}
+        {%- include comments/disqus.html -%}
+      {%- when 'utterances' -%}
+        {%- include comments/utterances.html -%}
+      {%- when 'giscus' -%}
+        {%- include comments/giscus.html -%}
+      {%- when 'cusdis' -%}
+        {%- include comments/cusdis.html -%}
+    {%- endcase -%}
+  </div>
+{%- endif -%}
