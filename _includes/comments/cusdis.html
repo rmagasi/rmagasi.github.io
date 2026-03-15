@@ -1,0 +1,70 @@
+<!-- Cusdis comment container – starts hidden, moved into content column by script below -->
+<div id="cusdis-comments-wrapper" style="display:none; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color, #e0e0e0);">
+  <h3 style="margin-bottom: 1.2rem; font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+    <i class="fas fa-comments" style="font-size: 1rem; opacity: 0.6;"></i> Comments
+  </h3>
+  <div id="cusdis_thread"
+    data-host="https://cusdis.com"
+    data-app-id="85c43613-1962-494f-8161-948b31c0fb63"
+    data-page-id="{{ page.url }}"
+    data-page-url="{{ page.url | absolute_url }}"
+    data-page-title="{{ page.title }}"
+  ></div>
+</div>
+
+<script>
+  (function () {
+    // Move widget into the content column (Chirpy renders comments outside it)
+    var postTail = document.querySelector('.post-tail-wrapper');
+    var wrapper  = document.getElementById('cusdis-comments-wrapper');
+    if (postTail && wrapper) {
+      postTail.insertAdjacentElement('afterend', wrapper);
+      wrapper.style.display = '';
+    }
+
+    // Sync Cusdis theme with Chirpy dark/light mode
+    function syncTheme() {
+      var mode = document.documentElement.getAttribute('data-mode');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var isDark = mode === 'dark' || (mode !== 'light' && prefersDark);
+      if (window.CUSDIS && window.CUSDIS.setTheme) {
+        window.CUSDIS.setTheme(isDark ? 'dark' : 'light');
+      }
+    }
+    setTimeout(syncTheme, 500);
+    new MutationObserver(syncTheme).observe(document.documentElement, {
+      attributes: true, attributeFilter: ['data-mode']
+    });
+
+    // Wait for Cusdis to inject the iframe, then:
+    // - disable its scrollbar
+    // - set a safe minimum height (enough for the form)
+    // - listen to postMessage height updates and apply them with a buffer
+    var thread = document.getElementById('cusdis_thread');
+    if (thread) {
+      new MutationObserver(function (mutations, obs) {
+        var iframe = thread.querySelector('iframe');
+        if (!iframe) return;
+        obs.disconnect();
+
+        iframe.setAttribute('scrolling', 'no');
+        iframe.style.border  = 'none';
+        iframe.style.width   = '100%';
+        iframe.style.minHeight = '400px'; // safe floor for the comment form
+
+        // Listen to Cusdis height reports and apply with 100px buffer
+        window.addEventListener('message', function (e) {
+          if (e.origin !== 'https://cusdis.com') return;
+          try {
+            var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+            if (data && data.from === 'cusdis' && data.height) {
+              iframe.style.height = Math.max(400, data.height + 100) + 'px';
+            }
+          } catch (err) {}
+        });
+      }).observe(thread, { childList: true });
+    }
+  })();
+</script>
+
+<script defer src="https://cusdis.com/js/cusdis.es.js"></script>
