@@ -100,7 +100,11 @@ One final touch: I documented the solution thoroughly for the operations team, i
 
 ---
 
+
+
 *Have you used StoreFront keywords in a similar way? I'd be interested to hear other creative uses of this feature — reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+
+
 
 &nbsp;
 

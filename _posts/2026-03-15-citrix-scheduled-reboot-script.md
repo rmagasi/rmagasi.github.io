@@ -145,7 +145,11 @@ The full script is available to download directly:
 
 ---
 
+
+
 *Questions about the script or want to share how you've adapted it? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+
+
 
 &nbsp;
 

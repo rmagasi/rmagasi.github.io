@@ -103,7 +103,11 @@ This workaround is fully supportable, requires no third-party tools, and can be 
 
 ---
 
+
+
 *Have you found a different fix for the Director shadowing regression? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+
+
 
 &nbsp;
 
