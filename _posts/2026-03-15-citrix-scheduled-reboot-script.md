@@ -147,4 +147,6 @@ The full script is available to download directly:
 
 *Questions about the script or want to share how you've adapted it? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
+&nbsp;
+
 > 🤖 **AI Disclosure:** The experience and technical content in this post are entirely my own, based on real-world work. Claude AI was used to help structure and articulate the writing.

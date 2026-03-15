@@ -105,4 +105,6 @@ This workaround is fully supportable, requires no third-party tools, and can be 
 
 *Have you found a different fix for the Director shadowing regression? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
+&nbsp;
+
 > 🤖 **AI Disclosure:** The experience and technical content in this post are entirely my own, based on real-world work. Claude AI was used to help structure and articulate the writing.
