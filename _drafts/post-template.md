@@ -25,7 +25,11 @@ Your introduction here — what problem does this post solve and who is it for?
 
 ---
 
+&nbsp;
+
 *Have you experienced something similar? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+
+&nbsp;
 
 &nbsp;
 

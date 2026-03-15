@@ -4,40 +4,47 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-Hi, I'm **Robert Magasi** — a Senior VDI & End-User Computing Consultant based in Wetzikon, Switzerland, with 14+ years of hands-on experience designing, deploying, and troubleshooting enterprise virtual desktop environments.
+<div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+  <img src="/assets/img/avatar.jpg" alt="Robert Magasi" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+  <div>
+    <strong style="font-size: 1.1rem;">Robert Magasi</strong><br>
+    Senior VDI & EUC Consultant · Technical Lead · Wetzikon, Switzerland<br>
+    <a href="https://www.linkedin.com/in/robertmagasi/">linkedin.com/in/robertmagasi</a>
+  </div>
+</div>
+
+Hi, I'm **Robert Magasi** — a Senior VDI & EUC Consultant and Technical Lead based in Wetzikon, Switzerland, with 15 years of hands-on experience designing and implementing enterprise virtual desktop environments. Currently at **Swisscom**, working across greenfield deployments, cloud migrations, and complex infrastructure optimisations.
 
 ## What I do
 
-I work with organisations across the **DACH region** helping them build reliable, scalable, and secure EUC infrastructure.
+I help organisations across the **DACH region** build reliable, scalable, and secure EUC infrastructure — from architecture and design through to delivery and long-term optimisation.
 
 My core stack includes:
-- **Citrix** Virtual Apps and Desktops, NetScaler/ADC, StoreFront, PVS, MCS, FAS
-- **Azure Virtual Desktop** and Windows 365
-- **VMware Horizon** and Omnissa
-- **IGEL OS** and FSLogix
-- Active Directory, PKI/SSL, PowerShell automation
+- **Citrix** CVAD/DaaS, NetScaler/ADC, StoreFront, PVS, MCS, FAS
+- **Azure Virtual Desktop**, Windows 365, and Nerdio Manager
+- **VMware / Omnissa Horizon** and Parallels RAS
+- **IGEL OS/UMS** and FSLogix
+- Active Directory, Azure / Entra ID, Microsoft Intune, SCCM, PowerShell automation
 
-## Why this blog
+## Certifications
 
-The problems I enjoy most are the ones with no clean answer in the documentation.
+**Citrix** — 15 certifications including CCP-V, CCEA, CCA-N, CCA-V, CC-VAD-CC, and CC-VAD-MA
 
-This blog is where I write about what I've learned — the fixes, the architectural decisions, the honest platform comparisons. Written for engineers and architects who'd rather have a direct answer than wade through vendor marketing.
+**Microsoft** — Azure Virtual Desktop Specialty
 
-No fluff. Just real-world experience.
+**IGEL** — Certified Architect (highest level), Certified Professional & Engineer for COSMOS
 
 ## Background
 
-I've been in the EUC space since 2010, working across Switzerland, Germany, and Austria with a wide range of enterprise clients. I'm currently employed as Senior VDI & EUC Consultant at **Aveniq**.
+I've been in the EUC space since 2010, working across Switzerland, Germany, Austria, and Hungary with a wide range of enterprise clients — from mid-size companies to large multinationals. Before Swisscom I spent six years at UMB AG managing 30+ customers and 4,000+ users, and before that at Bell Food Group, T-Systems, and IBM.
 
-I'm multilingual — **English, German, and Hungarian** — which helps when working across the DACH region.
+I'm multilingual — **German** (native), **English** (professional), **Hungarian** (native), and elementary **Russian** — which helps when working across the DACH region and beyond.
 
 Outside of work I am a proud husband and father of two girls, manage a Hattrick football team, and maintain a homelab VDI environment at home (because apparently I don't get enough of this at work).
 
 ## Get in touch
 
-The best way to reach me is via LinkedIn:
-
-[linkedin.com/in/robertmagasi](https://www.linkedin.com/in/robertmagasi/)
+Feel free to reach out via the [Contact](/contact/) page, or connect directly on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).
 
 ---
 
