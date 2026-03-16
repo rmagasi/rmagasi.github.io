@@ -1,4 +1,17 @@
 <!-- Cusdis comment container -->
+<style>
+  /* Clip the iframe so its internal scrollbar is pushed off-screen */
+  #cusdis_thread {
+    overflow: hidden;
+    position: relative;
+  }
+  #cusdis_thread iframe {
+    width: calc(100% + 20px) !important;
+    border: none !important;
+    min-height: 500px;
+  }
+</style>
+
 <div id="cusdis-comments-wrapper" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color, #e0e0e0);">
   <h3 style="margin-bottom: 1.2rem; font-size: 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
     <i class="fas fa-comments" style="font-size: 1rem; opacity: 0.6;"></i> Comments
@@ -28,40 +41,21 @@
       attributes: true, attributeFilter: ['data-mode']
     });
 
-    // Wait for Cusdis to inject the iframe, then:
-    // - disable its scrollbar
-    // - set a safe minimum height (enough for the form)
-    // - listen to postMessage height updates and apply them with a buffer
+    // Listen to Cusdis postMessage height reports and grow the iframe accordingly
     var thread = document.getElementById('cusdis_thread');
     if (thread) {
-      new MutationObserver(function (mutations, obs) {
-        var iframe = thread.querySelector('iframe');
-        if (!iframe) return;
-        obs.disconnect();
-
-        iframe.setAttribute('scrolling', 'no');
-        iframe.style.border     = 'none';
-        iframe.style.overflow   = 'hidden';
-        iframe.style.minHeight  = '400px';
-
-        // Wrap iframe in a clipping div, then push iframe wider to hide its scrollbar
-        var clip = document.createElement('div');
-        clip.style.cssText = 'overflow:hidden; width:100%; position:relative;';
-        iframe.parentNode.insertBefore(clip, iframe);
-        clip.appendChild(iframe);
-        iframe.style.width = 'calc(100% + 20px)';
-
-        // Listen to Cusdis height reports and apply with 100px buffer
-        window.addEventListener('message', function (e) {
-          if (e.origin !== 'https://cusdis.com') return;
-          try {
-            var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-            if (data && data.from === 'cusdis' && data.height) {
-              iframe.style.height = Math.max(400, data.height + 100) + 'px';
+      window.addEventListener('message', function (e) {
+        if (e.origin !== 'https://cusdis.com') return;
+        try {
+          var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+          if (data && data.from === 'cusdis' && data.height) {
+            var iframe = thread.querySelector('iframe');
+            if (iframe) {
+              iframe.style.height = Math.max(500, data.height + 150) + 'px';
             }
-          } catch (err) {}
-        });
-      }).observe(thread, { childList: true });
+          }
+        } catch (err) {}
+      });
     }
   })();
 </script>
