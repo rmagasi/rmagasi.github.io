@@ -41,9 +41,15 @@
 
         iframe.setAttribute('scrolling', 'no');
         iframe.style.border     = 'none';
-        iframe.style.width      = '100%';
         iframe.style.overflow   = 'hidden';
         iframe.style.minHeight  = '400px';
+
+        // Wrap iframe in a clipping div, then push iframe wider to hide its scrollbar
+        var clip = document.createElement('div');
+        clip.style.cssText = 'overflow:hidden; width:100%; position:relative;';
+        iframe.parentNode.insertBefore(clip, iframe);
+        clip.appendChild(iframe);
+        iframe.style.width = 'calc(100% + 20px)';
 
         // Listen to Cusdis height reports and apply with 100px buffer
         window.addEventListener('message', function (e) {
