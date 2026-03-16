@@ -40,9 +40,10 @@
         obs.disconnect();
 
         iframe.setAttribute('scrolling', 'no');
-        iframe.style.border  = 'none';
-        iframe.style.width   = '100%';
-        iframe.style.minHeight = '400px';
+        iframe.style.border     = 'none';
+        iframe.style.width      = '100%';
+        iframe.style.overflow   = 'hidden';
+        iframe.style.minHeight  = '400px';
 
         // Listen to Cusdis height reports and apply with 100px buffer
         window.addEventListener('message', function (e) {
