@@ -1,8 +1,10 @@
 ---
+layout: page
 title: Disclaimer
 icon: fas fa-exclamation-circle
 order: 6
 ---
+layout: page
 
 ## Personal Opinion
 
