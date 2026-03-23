@@ -27,6 +27,25 @@
 
 <script>
   (function () {
+    // Fix for Cusdis off-by-one pagination bug:
+    // The widget requests page=1 but the API treats 0 as the first page,
+    // so page=1 returns empty results. We intercept the srcdoc setter and
+    // inject a fetch patch into the iframe before iframe.umd.js runs.
+    var origDesc = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'srcdoc');
+    if (origDesc && origDesc.set) {
+      Object.defineProperty(HTMLIFrameElement.prototype, 'srcdoc', {
+        configurable: true,
+        get: origDesc.get,
+        set: function (val) {
+          if (typeof val === 'string' && val.indexOf('cusdis.com') > -1) {
+            var patch = '<script>var _oF=window.fetch;window.fetch=function(u,o){if(typeof u==="string"&&u.indexOf("cusdis.com/api/open/comments")>-1){try{var _u=new URL(u);if(_u.searchParams.get("page")==="1"){_u.searchParams.set("page","0");u=_u.toString();}}catch(e){}}return _oF.call(this,u,o);};<\/script>';
+            val = val.replace('<head>', '<head>' + patch);
+          }
+          origDesc.set.call(this, val);
+        }
+      });
+    }
+
     // Sync Cusdis theme with Chirpy dark/light mode
     function syncTheme() {
       var mode = document.documentElement.getAttribute('data-mode');
