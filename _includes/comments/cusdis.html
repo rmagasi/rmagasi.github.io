@@ -38,7 +38,7 @@
         get: origDesc.get,
         set: function (val) {
           if (typeof val === 'string' && val.indexOf('cusdis.com') > -1) {
-            var patch = '<script>var _oF=window.fetch;window.fetch=function(u,o){if(typeof u==="string"&&u.indexOf("cusdis.com/api/open/comments")>-1){try{var _u=new URL(u);if(_u.searchParams.get("page")==="1"){_u.searchParams.set("page","0");u=_u.toString();}}catch(e){}}return _oF.call(this,u,o);};<\/script>';
+            var patch = '<script>function _rt(s){var d=new Date(s),n=new Date(),sec=Math.floor((n-d)/1000);if(sec<60)return"just now";if(sec<3600)return Math.floor(sec/60)+" minutes ago";if(sec<86400)return Math.floor(sec/3600)+" hours ago";if(sec<2592000)return Math.floor(sec/86400)+" days ago";if(sec<31536000)return Math.floor(sec/2592000)+" months ago";return Math.floor(sec/31536000)+" years ago";}function _fixDates(arr){(arr||[]).forEach(function(c){if(c.parsedCreatedAt==="Invalid Date"&&c.createdAt)c.parsedCreatedAt=_rt(c.createdAt);_fixDates(c.replies&&c.replies.data);});}var _oF=window.fetch;window.fetch=function(u,o){if(typeof u==="string"&&u.indexOf("cusdis.com/api/open/comments")>-1){try{var _u=new URL(u);if(_u.searchParams.get("page")==="1"){_u.searchParams.set("page","0");u=_u.toString();}}catch(e){}return _oF.call(this,u,o).then(function(r){return r.json().then(function(d){_fixDates(d&&d.data&&d.data.data);return new Response(JSON.stringify(d),{status:r.status,headers:{"Content-Type":"application/json"}});});});}return _oF.call(this,u,o);};<\/script>';
             val = val.replace('<head>', '<head>' + patch);
           }
           origDesc.set.call(this, val);
