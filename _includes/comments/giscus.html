@@ -1,0 +1,57 @@
+<!-- Giscus comment widget — in-place rendering, no footer lookup required -->
+<div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color, #e0e0e0);">
+  <script src="https://giscus.app/client.js"
+    data-repo="{{ site.comments.giscus.repo }}"
+    data-repo-id="{{ site.comments.giscus.repo_id }}"
+    data-category="{{ site.comments.giscus.category }}"
+    data-category-id="{{ site.comments.giscus.category_id }}"
+    data-mapping="{{ site.comments.giscus.mapping | default: 'pathname' }}"
+    data-strict="{{ site.comments.giscus.strict | default: '0' }}"
+    data-reactions-enabled="{{ site.comments.giscus.reactions_enabled | default: '1' }}"
+    data-emit-metadata="0"
+    data-input-position="{{ site.comments.giscus.input_position | default: 'bottom' }}"
+    data-theme="light"
+    data-lang="{{ site.comments.giscus.lang | default: 'en' }}"
+    data-loading="lazy"
+    crossorigin="anonymous"
+    async>
+  </script>
+</div>
+
+<script>
+  // Sync giscus theme with Chirpy dark/light mode
+  (function () {
+    function sendTheme(theme) {
+      var frame = document.querySelector('iframe.giscus-frame');
+      if (frame && frame.contentWindow) {
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: theme } } },
+          'https://giscus.app'
+        );
+      }
+    }
+
+    function resolveTheme() {
+      var mode = document.documentElement.getAttribute('data-mode');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return (mode === 'dark' || (mode !== 'light' && prefersDark)) ? 'dark_dimmed' : 'light';
+    }
+
+    // Apply initial theme once giscus iframe has loaded
+    window.addEventListener('message', function (e) {
+      if (e.origin !== 'https://giscus.app') return;
+      try {
+        var data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+        if (data && data.giscus && data.giscus.discussion !== undefined) {
+          // Giscus just finished loading — send the correct initial theme
+          sendTheme(resolveTheme());
+        }
+      } catch (_) {}
+    });
+
+    // React to Chirpy light/dark toggle
+    new MutationObserver(function () {
+      sendTheme(resolveTheme());
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+  })();
+</script>
