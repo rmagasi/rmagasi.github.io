@@ -9,8 +9,6 @@ author: robert_magasi
 
 Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. If your support team is suddenly unable to shadow user sessions, you're not alone — and there is a working workaround using Windows Remote Assistance (msra.exe).
 
-<!--more-->
-
 ## What Broke
 
 The January 2026 Microsoft cumulative updates appear to have broken the native Citrix Director shadowing functionality on Windows Server-based VDAs. Sessions can no longer be shadowed directly from the Director console.
