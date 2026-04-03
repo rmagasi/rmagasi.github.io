@@ -8,6 +8,7 @@ image:
   path: /assets/img/posts/your-image.png
   alt: Image description
 ---
+# Your Post Title Here
 
 Your introduction here — what problem does this post solve and who is it for?
 
