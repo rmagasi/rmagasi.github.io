@@ -8,6 +8,7 @@ image:
   path: /assets/img/posts/session-affinity-diagram.png
   alt: Non-Personal Account Session Affinity Solution Architecture
 ---
+# How a StoreFront Keyword Trick Saved a Customer Six Figures in Licensing Costs
 
 Some of the best solutions in IT aren't complex — they're elegant. This is a story about a critical production escalation that multiple vendors and colleagues said couldn't be solved without expensive custom development or a major architecture overhaul. It could. Using nothing but native Citrix features.
 
