@@ -20,7 +20,7 @@ Hi, I'm **Robert Magasi** — a Senior VDI & EUC Consultant and Technical Lead b
 I help organisations across the **DACH region** build reliable, scalable, and secure EUC infrastructure — from architecture and design through to delivery and long-term optimisation.
 
 My core stack includes:
-- **Citrix** CVAD/DaaS, NetScaler/ADC, StoreFront, PVS, MCS, FAS
+- **Citrix**: CVAD/DaaS, NetScaler/ADC, StoreFront, PVS, MCS, FAS, WEM, UPM, XenServer, Unicon
 - **Azure Virtual Desktop**, Windows 365, and Nerdio Manager
 - **VMware / Omnissa Horizon** and Parallels RAS
 - **IGEL OS/UMS** and FSLogix
