@@ -9,7 +9,7 @@ image:
   alt: Image description
 ---
 # Your Post Title Here
-
+&nbsp;
 Your introduction here — what problem does this post solve and who is it for?
 
 ## The Situation
