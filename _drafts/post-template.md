@@ -12,8 +12,6 @@ image:
 
 Your introduction here — what problem does this post solve and who is it for?
 
-<!--more-->
-
 ## The Situation
 
 ## The Problem
