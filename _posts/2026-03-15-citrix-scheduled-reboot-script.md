@@ -6,7 +6,7 @@ tags: [citrix, powershell, automation, reboot, maintenance, gpo, broker, schedul
 author: robert_magasi
 ---
 # Automating Citrix Server Reboots — A Config-Driven PowerShell Script with User Notifications
-
+&nbsp;
 Manual Citrix server reboots are error-prone, inconsistent, and unnecessarily disruptive to end users. This post walks through a production-ready PowerShell script that automates the entire process — from enabling maintenance mode to notifying users, forcing logoff, and rebooting — all driven by a simple CSV configuration file.
 
 ## The Problem with Manual Reboots
