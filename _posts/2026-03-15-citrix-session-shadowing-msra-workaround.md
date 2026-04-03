@@ -3,10 +3,13 @@ title: "Citrix Session Shadowing Broken After January 2026 Patches — Here's th
 date: 2026-03-15 09:00:00 +0100
 categories: [Citrix, Troubleshooting]
 tags: [citrix, director, shadowing, msra, gpo, firewall, remote-assistance, windows-update]
-author: robert_magasi
+author: robert
+description: "Citrix Director session shadowing broke after the January 2026 Microsoft patches. Here's a fully GPO-deployable workaround using Windows Remote Assistance (msra.exe /offerra) that requires no third-party tools."
+# image:
+#   path: /assets/img/posts/citrix-session-shadowing.png
+#   alt: Citrix Session Shadowing MSRA Workaround
 ---
-# Citrix Session Shadowing Broken After January 2026 Patches — Here's the Fix
-&nbsp;
+
 Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. If your support team is suddenly unable to shadow user sessions, you're not alone — and there is a working workaround using Windows Remote Assistance (msra.exe).
 
 ## What Broke
@@ -27,7 +30,8 @@ The flow looks like this:
 4. Enter the **hostname of the Citrix Worker** where the user session is running
 5. Connect — the user will see a prompt to accept the shadowing request
 
-> 💡 **Tip:** Prepare a shortcut on the Director server's Public Desktop pointing to `C:\Windows\System32\msra.exe /offerra` so support engineers don't need to remember the path.
+> Prepare a shortcut on the Director server's Public Desktop pointing to `C:\Windows\System32\msra.exe /offerra` so support engineers don't need to remember the path.
+{: .prompt-tip }
 
 ## Prerequisites
 
@@ -58,7 +62,8 @@ You need the following host-based firewall rules on the **Citrix Workers**:
 | Inbound | TCP | 135 | Director Servers | Citrix Workers Subnet |
 | Inbound | TCP | 49152–65535 | Director Servers | Citrix Workers Subnet |
 
-> ⚠️ **Important:** Without the dynamic high port range open, the RPC connection will fail silently after the initial handshake on port 135. This is the most common reason the workaround appears not to work.
+> Without the dynamic high port range open, the RPC connection will fail silently after the initial handshake on port 135. This is the most common reason the workaround appears not to work.
+{: .prompt-warning }
 
 These rules should be deployed via GPO to the Workers OU:
 
@@ -72,7 +77,7 @@ Create two inbound rules:
 
 Once the GPO and firewall rules are in place, the support workflow is:
 
-```
+```plaintext
 1. Connect to your Citrix Desktop
 2. RDP to Director Server (e.g. director01.domain.local)
 3. Open Citrix Director → find the user session → note the Worker hostname
@@ -102,14 +107,10 @@ This workaround is fully supportable, requires no third-party tools, and can be 
 
 ---
 
-&nbsp;
+<br>
 
 *Have you found a different fix for the Director shadowing regression? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
-&nbsp;
-
-&nbsp;
+<br>
 
 > 🤖 **AI Disclosure:** The experience and technical content in this post are entirely my own, based on real-world work. Claude AI was used to help structure and articulate the writing.
-
-&nbsp;

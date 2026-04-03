@@ -3,10 +3,13 @@ title: "Automating Citrix Server Reboots — A Config-Driven PowerShell Script w
 date: 2026-03-15 10:00:00 +0100
 categories: [Citrix, PowerShell]
 tags: [citrix, powershell, automation, reboot, maintenance, gpo, broker, scheduled-task]
-author: robert_magasi
+author: robert
+description: "A production-ready PowerShell script that automates Citrix server reboots with advance user notifications, maintenance mode management, and CSV-driven configuration — zero manual intervention required."
+# image:
+#   path: /assets/img/posts/citrix-reboot-script.png
+#   alt: Citrix Scheduled Reboot Script
 ---
-# Automating Citrix Server Reboots — A Config-Driven PowerShell Script with User Notifications
-&nbsp;
+
 Manual Citrix server reboots are error-prone, inconsistent, and unnecessarily disruptive to end users. This post walks through a production-ready PowerShell script that automates the entire process — from enabling maintenance mode to notifying users, forcing logoff, and rebooting — all driven by a simple CSV configuration file.
 
 ## The Problem with Manual Reboots
@@ -41,7 +44,7 @@ Adding a new server to the reboot schedule is a one-line CSV edit. No script cha
 
 Schedule **one** task to run daily at 23:00:
 
-```
+```plaintext
 Run as:  Citrix Scripting Service Account
 Trigger: Daily at 23:00
 Action:  PowerShell.exe -ExecutionPolicy Bypass -File "path\Citrix-Reboot-v2.ps1"
@@ -53,7 +56,7 @@ The script exits immediately if no servers are scheduled for that day and hour �
 
 Once the script identifies servers scheduled for today, the workflow is:
 
-```
+```plaintext
 T-4h   → Enable maintenance mode + first user notification
 T-3h   → Notification
 T-2h   → Notification
@@ -100,7 +103,7 @@ After issuing the reboot command, the script immediately disables maintenance mo
 
 Every action is logged to both a timestamped transcript file and the Windows Event Log:
 
-```
+```plaintext
 [2026-03-15 22:00:01 (UTC)] [Information] Enabling maintenance mode on: CTX-WORKER-01
 [2026-03-15 22:00:02 (UTC)] [Information] [CTX-WORKER-01] Sent notification to 12 session(s)
 [2026-03-15 02:00:05 (UTC)] [Information] [CTX-WORKER-01] Forcing logoff of 2 remaining session(s)
@@ -144,14 +147,10 @@ The full script is available to download directly:
 
 ---
 
-&nbsp;
+<br>
 
 *Questions about the script or want to share how you've adapted it? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
-&nbsp;
-
-&nbsp;
+<br>
 
 > 🤖 **AI Disclosure:** The experience and technical content in this post are entirely my own, based on real-world work. Claude AI was used to help structure and articulate the writing.
-
-&nbsp;

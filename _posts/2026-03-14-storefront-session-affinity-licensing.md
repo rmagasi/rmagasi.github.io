@@ -2,14 +2,14 @@
 title: "How a StoreFront Keyword Trick Saved a Customer Six Figures in Licensing Costs"
 date: 2026-03-14 09:00:00 +0100
 categories: [Citrix, Troubleshooting]
-tags: [citrix, storefront, tags, fslogix, gpo, licensing, session-affinity]
-author: robert_magasi
+tags: [citrix, storefront, fslogix, gpo, licensing, session-affinity]
+author: robert
+description: "How I resolved a critical production escalation using Citrix StoreFront keywords and VDA tags to enforce session affinity for non-personalised accounts — avoiding a six-figure licensing cost."
 image:
   path: /assets/img/posts/session-affinity-diagram.png
   alt: Non-Personal Account Session Affinity Solution Architecture
 ---
-# How a StoreFront Keyword Trick Saved a Customer Six Figures in Licensing Costs
-&nbsp;
+
 Some of the best solutions in IT aren't complex — they're elegant. This is a story about a critical production escalation that multiple vendors and colleagues said couldn't be solved without expensive custom development or a major architecture overhaul. It could. Using nothing but native Citrix features.
 
 ## The Situation
@@ -36,7 +36,7 @@ The pressure was high. The customer was escalating at executive level, facing bo
 
 After analysing the root cause, I realised the resource conflicts were caused purely by simultaneous sessions landing on the same worker. The fix was to enforce **strict session affinity** — ensuring each account was permanently bound to its own dedicated worker server.
 
-![Session Affinity Solution Architecture](/assets/img/posts/session-affinity-diagram.png)
+![Session Affinity Solution Architecture](/assets/img/posts/session-affinity-diagram.png){: w="800" h="450" }
 _Full architecture diagram showing the four-layer session affinity solution_
 
 Here's how I built it using only native Citrix features:
@@ -99,14 +99,10 @@ One final touch: I documented the solution thoroughly for the operations team, i
 
 ---
 
-&nbsp;
+<br>
 
 *Have you used StoreFront keywords in a similar way? I'd be interested to hear other creative uses of this feature — reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
-&nbsp;
-
-&nbsp;
+<br>
 
 > 🤖 **AI Disclosure:** The experience and technical content in this post are entirely my own, based on real-world work. Claude AI was used to help structure and articulate the writing.
-
-&nbsp;
