@@ -9,8 +9,6 @@ author: robert_magasi
 
 Manual Citrix server reboots are error-prone, inconsistent, and unnecessarily disruptive to end users. This post walks through a production-ready PowerShell script that automates the entire process — from enabling maintenance mode to notifying users, forcing logoff, and rebooting — all driven by a simple CSV configuration file.
 
-<!--more-->
-
 ## The Problem with Manual Reboots
 
 In most Citrix environments, servers need regular reboots to stay healthy — profile cleanup, Windows Update application, memory reclamation. The typical approach is either a manual process (someone logs on, enables maintenance mode, waits, reboots) or a basic Citrix reboot schedule configured in Studio.
