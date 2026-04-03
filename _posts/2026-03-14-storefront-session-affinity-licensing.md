@@ -3,7 +3,7 @@ title: "How a StoreFront Keyword Trick Saved a Customer Six Figures in Licensing
 date: 2026-03-14 09:00:00 +0100
 categories: [Citrix, Troubleshooting]
 tags: [citrix, storefront, tags, fslogix, gpo, licensing, session-affinity]
-author: robert_magasi
+author: robert
 image:
   path: /assets/img/posts/session-affinity-diagram.png
   alt: Non-Personal Account Session Affinity Solution Architecture
