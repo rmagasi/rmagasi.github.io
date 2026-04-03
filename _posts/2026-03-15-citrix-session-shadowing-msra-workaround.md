@@ -5,6 +5,7 @@ categories: [Citrix, Troubleshooting]
 tags: [citrix, director, shadowing, msra, gpo, firewall, remote-assistance, windows-update]
 author: robert_magasi
 ---
+# Citrix Session Shadowing Broken After January 2026 Patches — Here's the Fix
 
 Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. If your support team is suddenly unable to shadow user sessions, you're not alone — and there is a working workaround using Windows Remote Assistance (msra.exe).
 
