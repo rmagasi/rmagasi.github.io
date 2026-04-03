@@ -12,8 +12,6 @@ image:
 
 Some of the best solutions in IT aren't complex — they're elegant. This is a story about a critical production escalation that multiple vendors and colleagues said couldn't be solved without expensive custom development or a major architecture overhaul. It could. Using nothing but native Citrix features.
 
-<!--more-->
-
 ## The Situation
 
 A customer was running a Citrix Server OS (RDSH) environment with FSLogix Profile Containers. Their setup involved **non-personalised accounts** — shared credentials with different account names (e.g. Service-Account-A, Service-Account-B, Service-Account-C) — that needed access to specific backend resources.
