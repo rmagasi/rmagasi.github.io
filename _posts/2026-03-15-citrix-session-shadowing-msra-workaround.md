@@ -1,13 +1,13 @@
 ---
 title: "Citrix Session Shadowing Broken After January 2026 Patches — Here's the Fix"
-date: 2026-03-15 09:00:00 +0100
-categories: [Citrix, Troubleshooting]
-tags: [citrix, director, shadowing, msra, gpo, firewall, remote-assistance, windows-update]
+date: 2026-03-15 09:00:00 +0200
 author: robert
+categories: ["Citrix", "Troubleshooting"]
+tags: ["citrix", "director", "shadowing", "msra", "gpo", "firewall", "remote-assistance", "windows-update"]
 description: "Citrix Director session shadowing broke after the January 2026 Microsoft patches. Here's a fully GPO-deployable workaround using Windows Remote Assistance (msra.exe /offerra) that requires no third-party tools."
 image:
   path: /assets/img/posts/og-session-shadowing.png
-  alt: Citrix Session Shadowing Broken After January 2026 Patches — Here's the Fix
+  alt: "Citrix Session Shadowing Broken After January 2026 Patches — Here's the Fix"
 ---
 
 Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. If your support team is suddenly unable to shadow user sessions, you're not alone — and there is a working workaround using Windows Remote Assistance (msra.exe).
@@ -77,16 +77,15 @@ Create two inbound rules:
 
 Once the GPO and firewall rules are in place, the support workflow is:
 
-```plaintext
+
 1. Connect to your Citrix Desktop
 2. RDP to Director Server (e.g. director01.domain.local)
 3. Open Citrix Director → find the user session → note the Worker hostname
-4. Launch: C:\Windows\System32\msra.exe /offerra
-   (or use the shortcut on the Public Desktop)
+4. Launch: C:\Windows\System32\msra.exe /offerra (or use the shortcut on the Public Desktop)
 5. Enter the Worker hostname (e.g. CTX-WORKER-01)
 6. Click OK — the user receives a Remote Assistance request
 7. User accepts → shadowing begins
-```
+ 
 
 ## Why This Works
 
