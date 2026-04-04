@@ -2,8 +2,9 @@
 
 <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css" disabled>
 <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
-<style>.language-powershell code.hljs { background: transparent; }</style>
+<style>.language-powershell .rouge-code pre.hljs { background: transparent; }</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js" defer></script>
 <script>
 (function () {
   function isDark() {
@@ -18,21 +19,33 @@
   document.addEventListener('DOMContentLoaded', function () {
     if (typeof hljs !== 'undefined') {
       document.querySelectorAll('.language-powershell code').forEach(function (block) {
-        var linenoSpans = Array.from(block.querySelectorAll('.lineno'));
-        if (linenoSpans.length > 0) {
-          var linenoHTML = linenoSpans.map(function(el) { return el.outerHTML; });
-          var clone = block.cloneNode(true);
-          clone.querySelectorAll('.lineno').forEach(function(el) { el.remove(); });
-          var result = hljs.highlight(clone.textContent, {language: 'powershell'});
-          var lines = result.value.split('\n');
-          block.innerHTML = lines.map(function(line, i) {
-            return (linenoHTML[i] || '') + line;
-          }).join('\n');
-          block.className = 'hljs language-powershell';
+        var rougeTable = block.querySelector('.rouge-table');
+        if (rougeTable) {
+          var codePre = rougeTable.querySelector('.rouge-code pre');
+          if (codePre) {
+            try {
+              var result = hljs.highlight(codePre.textContent, {language: 'powershell'});
+              codePre.innerHTML = result.value;
+              codePre.classList.add('hljs', 'language-powershell');
+            } catch(e) {}
+          }
         } else {
-          block.textContent = block.textContent;
-          block.className = 'language-powershell';
-          hljs.highlightElement(block);
+          var linenoSpans = Array.from(block.querySelectorAll('.lineno'));
+          if (linenoSpans.length > 0) {
+            var linenoHTML = linenoSpans.map(function(el) { return el.outerHTML; });
+            var clone = block.cloneNode(true);
+            clone.querySelectorAll('.lineno').forEach(function(el) { el.remove(); });
+            try {
+              var result = hljs.highlight(clone.textContent, {language: 'powershell'});
+              var lines = result.value.split('\n');
+              block.innerHTML = lines.map(function(line, i) { return (linenoHTML[i] || '') + line; }).join('\n');
+              block.className = 'hljs language-powershell';
+            } catch(e) {}
+          } else {
+            block.textContent = block.textContent;
+            block.className = 'language-powershell';
+            try { hljs.highlightElement(block); } catch(e) {}
+          }
         }
       });
     }
