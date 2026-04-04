@@ -18,8 +18,22 @@
   document.addEventListener('DOMContentLoaded', function () {
     if (typeof hljs !== 'undefined') {
       document.querySelectorAll('.language-powershell code').forEach(function (block) {
-        block.textContent = block.textContent;
-        hljs.highlightElement(block);
+        var linenoSpans = Array.from(block.querySelectorAll('.lineno'));
+        if (linenoSpans.length > 0) {
+          var linenoHTML = linenoSpans.map(function(el) { return el.outerHTML; });
+          var clone = block.cloneNode(true);
+          clone.querySelectorAll('.lineno').forEach(function(el) { el.remove(); });
+          var result = hljs.highlight(clone.textContent, {language: 'powershell'});
+          var lines = result.value.split('\n');
+          block.innerHTML = lines.map(function(line, i) {
+            return (linenoHTML[i] || '') + line;
+          }).join('\n');
+          block.className = 'hljs language-powershell';
+        } else {
+          block.textContent = block.textContent;
+          block.className = 'language-powershell';
+          hljs.highlightElement(block);
+        }
       });
     }
     new MutationObserver(function () {
