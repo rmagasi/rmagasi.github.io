@@ -5,6 +5,18 @@
 <style>
 .language-powershell .rouge-code pre.hljs { background: transparent; }
 
+.csv-header { color: #0078d4; font-weight: 700; }
+.csv-comma  { color: #999; }
+.csv-val    { color: #333; }
+[data-mode="dark"] .csv-header { color: #79c0ff; }
+[data-mode="dark"] .csv-val    { color: #e6edf3; }
+[data-mode="dark"] .csv-comma  { color: #555; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="light"]) .csv-header { color: #79c0ff; }
+  :root:not([data-mode="light"]) .csv-val    { color: #e6edf3; }
+  :root:not([data-mode="light"]) .csv-comma  { color: #555; }
+}
+
 /* VS Code-style code block headers */
 div[class^="language-"] { border-top: 2px solid #0078d4 !important; }
 div[class^="language-"] .code-header::before { display: none; }
@@ -76,6 +88,22 @@ div[class^="language-"] .code-header > span::after { color: #333 !important; }
         }
       });
     }
+    document.querySelectorAll('div[file$=".csv"]').forEach(function(div) {
+      var pre = div.querySelector('.rouge-code pre') || div.querySelector('pre');
+      if (!pre || pre.getAttribute('data-csv-hl')) return;
+      pre.setAttribute('data-csv-hl', '1');
+      var lines = pre.textContent.replace(/\n$/, '').split('\n');
+      pre.innerHTML = lines.map(function(line, i) {
+        if (!line.trim()) return '';
+        var cells = line.split(',');
+        return cells.map(function(cell) {
+          var v = cell.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          if (i === 0) return '<span class="csv-header">' + v + '</span>';
+          return '<span class="csv-val">' + v + '</span>';
+        }).join('<span class="csv-comma">,</span>');
+      }).join('\n');
+    });
+
     new MutationObserver(function () {
       applyTheme(isDark());
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
