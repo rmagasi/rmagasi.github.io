@@ -1,13 +1,13 @@
 ---
 title: "Automating Citrix Server Reboots — A Config-Driven PowerShell Script with User Notifications"
-date: 2026-03-15 10:00:00 +0100
-categories: [Citrix, PowerShell]
-tags: [citrix, powershell, automation, reboot, maintenance, gpo, broker, scheduled-task]
+date: 2026-03-15 09:00:00 +0200
 author: robert
+categories: ["Citrix", "PowerShell"]
+tags: ["citrix", "powershell", "automation", "reboot", "maintenance", "gpo", "broker", "scheduled-task"]
 description: "A production-ready PowerShell script that automates Citrix server reboots with advance user notifications, maintenance mode management, and CSV-driven configuration — zero manual intervention required."
-# image:
-#   path: /assets/img/posts/citrix-reboot-script.png
-#   alt: Citrix Scheduled Reboot Script
+image:
+  path: /assets/img/posts/og-citrix-reboot-script.png
+  alt: "Automating Citrix Server Reboots — A Config-Driven PowerShell Script"
 ---
 
 Manual Citrix server reboots are error-prone, inconsistent, and unnecessarily disruptive to end users. This post walks through a production-ready PowerShell script that automates the entire process — from enabling maintenance mode to notifying users, forcing logoff, and rebooting — all driven by a simple CSV configuration file.
@@ -31,7 +31,7 @@ The script uses a CSV file to define which servers reboot on which day and at wh
 
 ### CSV Configuration
 
-```plaintext
+```csv
 ServerName,DeliveryGroup,RebootDay,StartHour
 CTX-WORKER-01,Production VDA,Friday,23
 CTX-WORKER-02,Production VDA,Friday,23
