@@ -6,28 +6,25 @@
 .language-powershell .rouge-code pre.hljs { background: transparent; }
 
 /* VS Code-style code block headers */
+div[class^="language-"] { border-top: 2px solid #0078d4 !important; }
 div[class^="language-"] .code-header::before { display: none; }
-div[class^="language-"] .code-header {
-  padding-left: 0;
-  background-color: #ececec;
-  border-bottom: 2px solid #0078d4;
-}
+div[class^="language-"] .code-header { padding-left: 0; background-color: #ececec; }
 div[class^="language-"] .code-header > span {
-  align-self: stretch;
-  padding: 0 1rem;
-  background-color: #ffffff;
-  border-right: 1px solid #d0d0d0;
+  align-self: stretch; padding: 0 1rem;
+  background-color: #ffffff; border-right: 1px solid #d0d0d0;
 }
 div[class^="language-"] .code-header > span i { color: #555 !important; }
 div[class^="language-"] .code-header > span::after { color: #333 !important; }
 
-[data-mode="dark"] div[class^="language-"] .code-header { background-color: #252526; border-bottom-color: #007acc; }
+[data-mode="dark"] div[class^="language-"] { border-top-color: #007acc !important; }
+[data-mode="dark"] div[class^="language-"] .code-header { background-color: #252526; }
 [data-mode="dark"] div[class^="language-"] .code-header > span { background-color: #1e1e1e; border-right-color: #3c3c3c; }
 [data-mode="dark"] div[class^="language-"] .code-header > span i { color: #cccccc !important; }
 [data-mode="dark"] div[class^="language-"] .code-header > span::after { color: #cccccc !important; }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-mode="light"]) div[class^="language-"] .code-header { background-color: #252526; border-bottom-color: #007acc; }
+  :root:not([data-mode="light"]) div[class^="language-"] { border-top-color: #007acc !important; }
+  :root:not([data-mode="light"]) div[class^="language-"] .code-header { background-color: #252526; }
   :root:not([data-mode="light"]) div[class^="language-"] .code-header > span { background-color: #1e1e1e; border-right-color: #3c3c3c; }
   :root:not([data-mode="light"]) div[class^="language-"] .code-header > span i { color: #cccccc !important; }
   :root:not([data-mode="light"]) div[class^="language-"] .code-header > span::after { color: #cccccc !important; }

@@ -31,7 +31,7 @@ The script uses a CSV file to define which servers reboot on which day and at wh
 
 ### CSV Configuration
 
-```csv
+```plaintext
 ServerName,DeliveryGroup,RebootDay,StartHour
 CTX-WORKER-01,Production VDA,Friday,23
 CTX-WORKER-02,Production VDA,Friday,23
