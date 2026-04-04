@@ -37,6 +37,7 @@ CTX-WORKER-01,Production VDA,Friday,23
 CTX-WORKER-02,Production VDA,Friday,23
 CTX-WORKER-03,Production VDA,Saturday,23
 ```
+{: file="reboot-schedule.csv" }
 
 Adding a new server to the reboot schedule is a one-line CSV edit. No script changes, no new scheduled tasks.
 
