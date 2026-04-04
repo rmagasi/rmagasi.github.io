@@ -7,29 +7,16 @@
 
 /* VS Code-style code block headers */
 div[class^="language-"] .code-header::before { display: none; }
-div[class^="language-"] .code-header { padding-left: 0; background-color: #ececec; }
+div[class^="language-"] .code-header { padding-left: 0; }
 div[class^="language-"] .code-header > span {
   align-self: stretch; display: inline-flex; align-items: center;
-  padding: 0 1rem; background-color: #ffffff;
-  border-top: 2px solid #0078d4; border-right: 1px solid #c8c8c8;
+  padding: 0 1rem; border-top: 2px solid #0078d4;
 }
-div[class^="language-"] .code-header > span i { color: #555 !important; }
-div[class^="language-"] .code-header > span::after { color: #333 !important; }
 
-[data-mode="dark"] div[class^="language-"] .code-header { background-color: #252526; }
-[data-mode="dark"] div[class^="language-"] .code-header > span {
-  background-color: #1e1e1e; border-top-color: #007acc; border-right-color: #3c3c3c;
-}
-[data-mode="dark"] div[class^="language-"] .code-header > span i { color: #cccccc !important; }
-[data-mode="dark"] div[class^="language-"] .code-header > span::after { color: #cccccc !important; }
+[data-mode="dark"] div[class^="language-"] .code-header > span { border-top-color: #007acc; }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-mode="light"]) div[class^="language-"] .code-header { background-color: #252526; }
-  :root:not([data-mode="light"]) div[class^="language-"] .code-header > span {
-    background-color: #1e1e1e; border-top-color: #007acc; border-right-color: #3c3c3c;
-  }
-  :root:not([data-mode="light"]) div[class^="language-"] .code-header > span i { color: #cccccc !important; }
-  :root:not([data-mode="light"]) div[class^="language-"] .code-header > span::after { color: #cccccc !important; }
+  :root:not([data-mode="light"]) div[class^="language-"] .code-header > span { border-top-color: #007acc; }
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
