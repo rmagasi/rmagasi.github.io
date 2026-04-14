@@ -30,7 +30,13 @@ image:
 ## The Solution
 
 <!-- Step-by-step fix. Use sub-sections if needed.
-     Active voice. Technical jargon is fine — readers are engineers. -->
+     Active voice. Technical jargon is fine — readers are engineers.
+     Include at least one screenshot — a config screen, output, Studio view, Director, etc.
+     Use: ![Alt text](/assets/img/posts/slug-screenshot.png){: w="800" } -->
+
+<!-- Screenshot placeholder:
+![Description of what is shown](/assets/img/posts/slug-screenshot.png){: w="800" }
+_Caption explaining what the screenshot demonstrates_ -->
 
 ## The Result
 
