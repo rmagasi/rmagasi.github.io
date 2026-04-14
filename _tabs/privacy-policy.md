@@ -4,9 +4,8 @@ title: Privacy Policy
 icon: fas fa-shield-alt
 order: 5
 ---
-layout: page
 
-*Last updated: March 2026*
+*Last updated: April 2026*
 
 ## Who I am
 
@@ -14,20 +13,20 @@ This blog is operated by Robert Magasi, a personal blog at **robertmagasi.com**.
 
 ## What data is collected and why
 
-### Google Analytics
-This site uses Google Analytics to understand how visitors interact with the content. Google Analytics collects anonymised data including:
-- Pages visited and time spent
+### Analytics (GoatCounter)
+This site uses [GoatCounter](https://www.goatcounter.com/) for privacy-friendly analytics. GoatCounter collects anonymised, aggregated data including:
+- Pages visited
 - Country/region of origin
 - Device and browser type
 - Referral source (how you found the site)
 
-This data is processed by Google LLC. No personally identifiable information is collected. You can opt out of Google Analytics tracking by using the [Google Analytics Opt-out Browser Add-on](https://tools.google.com/dlpage/gaoptout).
+GoatCounter does **not** use cookies and does not collect any personally identifiable information. No tracking across sites. No data is sold or shared.
 
 ### Comments (Giscus)
 This site uses Giscus for comments, powered by GitHub Discussions. If you leave a comment, your GitHub username and comment content are stored in the GitHub repository for this blog. This is subject to [GitHub's Privacy Policy](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
 
-### No cookies of my own
-This site does not set any first-party cookies beyond what Google Analytics and Giscus require for their functionality.
+### No cookies
+This site does not set any first-party cookies. GoatCounter is cookieless by design. Giscus may set cookies only if you interact with the comment section.
 
 ## Legal basis (GDPR)
 
