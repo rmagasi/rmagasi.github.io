@@ -13,24 +13,19 @@ image:
 
 Citrix file-based licensing goes end of life on **April 15, 2026**. Environments that haven't migrated to the License Activation Service (LAS) can have issues. Not clear what will happen with environments which are not updated to LAS ready versions.
 
+<style>
+#las-timer{display:flex;gap:0.5rem;width:100%;box-sizing:border-box;}
+#las-timer .cd-box{flex:1;min-width:0;background:#f8fafc;border:2px solid #0056b2;border-radius:10px;padding:1rem 0.25rem;text-align:center;overflow:hidden;}
+#las-timer .cd-num{font-size:min(4rem,10vw);font-weight:900;color:#0056b2;line-height:1;}
+#las-timer .cd-lbl{font-size:min(0.75rem,2.8vw);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#656d76;margin-top:5px;}
+</style>
+
 <div style="margin:2.5rem 0;">
-  <div id="las-timer" style="display:flex;gap:clamp(0.25rem,1.5vw,1rem);width:100%;">
-    <div style="flex:1;background:#f8fafc;border:2px solid #0056b2;border-radius:10px;padding:clamp(0.75rem,2vw,1.5rem) clamp(0.25rem,1vw,1rem);text-align:center;min-width:0;">
-      <div id="cd-d" style="font-size:clamp(1.6rem,7vw,4rem);font-weight:900;color:#0056b2;line-height:1;">--</div>
-      <div style="font-size:clamp(0.6rem,1.8vw,0.8rem);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#656d76;margin-top:6px;">Days</div>
-    </div>
-    <div style="flex:1;background:#f8fafc;border:2px solid #0056b2;border-radius:10px;padding:clamp(0.75rem,2vw,1.5rem) clamp(0.25rem,1vw,1rem);text-align:center;min-width:0;">
-      <div id="cd-h" style="font-size:clamp(1.6rem,7vw,4rem);font-weight:900;color:#0056b2;line-height:1;">--</div>
-      <div style="font-size:clamp(0.6rem,1.8vw,0.8rem);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#656d76;margin-top:6px;">Hours</div>
-    </div>
-    <div style="flex:1;background:#f8fafc;border:2px solid #0056b2;border-radius:10px;padding:clamp(0.75rem,2vw,1.5rem) clamp(0.25rem,1vw,1rem);text-align:center;min-width:0;">
-      <div id="cd-m" style="font-size:clamp(1.6rem,7vw,4rem);font-weight:900;color:#0056b2;line-height:1;">--</div>
-      <div style="font-size:clamp(0.6rem,1.8vw,0.8rem);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#656d76;margin-top:6px;">Minutes</div>
-    </div>
-    <div style="flex:1;background:#f8fafc;border:2px solid #0056b2;border-radius:10px;padding:clamp(0.75rem,2vw,1.5rem) clamp(0.25rem,1vw,1rem);text-align:center;min-width:0;">
-      <div id="cd-s" style="font-size:clamp(1.6rem,7vw,4rem);font-weight:900;color:#0056b2;line-height:1;">--</div>
-      <div style="font-size:clamp(0.6rem,1.8vw,0.8rem);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#656d76;margin-top:6px;">Seconds</div>
-    </div>
+  <div id="las-timer">
+    <div class="cd-box"><div id="cd-d" class="cd-num">--</div><div class="cd-lbl">Days</div></div>
+    <div class="cd-box"><div id="cd-h" class="cd-num">--</div><div class="cd-lbl">Hours</div></div>
+    <div class="cd-box"><div id="cd-m" class="cd-num">--</div><div class="cd-lbl">Minutes</div></div>
+    <div class="cd-box"><div id="cd-s" class="cd-num">--</div><div class="cd-lbl">Seconds</div></div>
   </div>
   <div id="las-expired" style="display:none;font-size:2rem;font-weight:900;color:#d1242f;letter-spacing:.04em;padding:1.5rem;text-align:center;">DEADLINE PASSED</div>
   <div style="margin-top:0.75rem;font-size:0.8rem;color:#656d76;text-align:center;">
