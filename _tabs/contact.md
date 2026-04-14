@@ -5,7 +5,7 @@ icon: fas fa-envelope
 order: 5
 ---
 
-Whether you have a question about something I've written, want to discuss an EUC challenge, or are looking for consulting help — feel free to reach out. I typically respond within a few business days.
+Whether you have a question about something I've written, want to discuss an EUC challenge, or are looking for consulting help - feel free to reach out. I typically respond within a few business days.
 
 <form action="https://formspree.io/f/xlgpwpow" method="POST" style="max-width: 600px; margin-top: 1.5rem;">
   <div style="margin-bottom: 1rem;">

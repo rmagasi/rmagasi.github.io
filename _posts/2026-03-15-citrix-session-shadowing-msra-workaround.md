@@ -1,5 +1,5 @@
 ---
-title: "Citrix Session Shadowing Broken After January 2026 Patches — Here's the Fix"
+title: "Citrix Session Shadowing Broken After January 2026 Patches - Here's the Fix"
 date: 2026-03-15 09:00:00 +0200
 author: robert
 categories: ["Citrix", "Troubleshooting"]
@@ -7,22 +7,22 @@ tags: ["citrix", "director", "shadowing", "msra", "gpo", "firewall", "remote-ass
 description: "Citrix Director session shadowing broke after the January 2026 Microsoft patches. Here's a fully GPO-deployable workaround using Windows Remote Assistance (msra.exe /offerra) that requires no third-party tools."
 image:
   path: /assets/img/posts/og-session-shadowing.png
-  alt: "Citrix Session Shadowing Broken After January 2026 Patches — Here's the Fix"
+  alt: "Citrix Session Shadowing Broken After January 2026 Patches - Here's the Fix"
 ---
 
-Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. I picked this up from the community before our ops team confirmed it internally — once it hits production, support engineers lose their primary tool for helping users mid-session. That's an immediate escalation.
+Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. I picked this up from the community before our ops team confirmed it internally - once it hits production, support engineers lose their primary tool for helping users mid-session. That's an immediate escalation.
 
 ## What Broke and What I Tried First
 
 The January 2026 Microsoft cumulative updates broke native Citrix Director shadowing on Windows Server-based VDAs. Sessions can no longer be shadowed directly from the Director console.
 
-The straightforward fix would have been upgrading to CVAD 2507 LTSR, which ships HDX shadowing as a modern replacement for the broken mechanism. But with multiple projects already running in parallel, an upgrade wasn't an option — not on this timeline.
+The straightforward fix would have been upgrading to CVAD 2507 LTSR, which ships HDX shadowing as a modern replacement for the broken mechanism. But with multiple projects already running in parallel, an upgrade wasn't an option - not on this timeline.
 
-Once I understood what the patch actually did, the path forward became clear. The patch blocks Director from modifying a file that msra processes — it's the Director injection that's prohibited, not msra itself. The standard `msra.exe /offerra` flow was never touched. So we bypassed Director entirely and used msra directly.
+Once I understood what the patch actually did, the path forward became clear. The patch blocks Director from modifying a file that msra processes - it's the Director injection that's prohibited, not msra itself. The standard `msra.exe /offerra` flow was never touched. So we bypassed Director entirely and used msra directly.
 
 ## The Workaround: MSRA-Based Shadowing via Director Server
 
-The solution uses Windows Remote Assistance (`msra.exe`) with the `/offerra` switch — the "offer remote assistance" mode — which allows a support engineer to initiate a session to a specific worker without the end user needing to request help first.
+The solution uses Windows Remote Assistance (`msra.exe`) with the `/offerra` switch - the "offer remote assistance" mode - which allows a support engineer to initiate a session to a specific worker without the end user needing to request help first.
 
 The flow looks like this:
 
@@ -30,7 +30,7 @@ The flow looks like this:
 2. From there, RDP to the **Citrix Director server**
 3. On the Director server, launch: `C:\Windows\System32\msra.exe /offerra`
 4. Enter the **hostname of the Citrix Worker** where the user session is running
-5. Connect — the user will see a prompt to accept the shadowing request
+5. Connect - the user will see a prompt to accept the shadowing request
 
 > Prepare a shortcut on the Director server's Public Desktop pointing to `C:\Windows\System32\msra.exe /offerra` so support engineers don't need to remember the path.
 {: .prompt-tip }
@@ -41,7 +41,7 @@ The flow looks like this:
 
 Before shadowing, the support engineer needs to know which Citrix Worker the user is connected to. This is visible in **Citrix Director → Sessions → select the session → Machine details**.
 
-### 2. GPO — Enable Remote Assistance on Workers
+### 2. GPO - Enable Remote Assistance on Workers
 
 A GPO must be in place linked to the **Citrix Workers OU** to enable Windows Remote Assistance. Configure the following settings under:
 
@@ -53,7 +53,7 @@ A GPO must be in place linked to the **Citrix Workers OU** to enable Windows Rem
 | Permit remote control of this computer | Enabled |
 | Helpers | Add the Director server computer account or support group |
 
-### 3. Firewall Rules — Critical Step
+### 3. Firewall Rules - Critical Step
 
 This is where most implementations get stuck. TCP/135 (RPC Endpoint Mapper) is usually already open, but Windows Remote Assistance also requires **dynamic high ports** to be open.
 
@@ -85,15 +85,15 @@ Once the GPO and firewall rules are in place, the support workflow is:
 3. Open Citrix Director → find the user session → note the Worker hostname
 4. Launch: C:\Windows\System32\msra.exe /offerra (or use the shortcut on the Public Desktop)
 5. Enter the Worker hostname (e.g. CTX-WORKER-01)
-6. Click OK — the user receives a Remote Assistance request
+6. Click OK - the user receives a Remote Assistance request
 7. User accepts → shadowing begins
  
 
 ## Why This Works
 
-The `/offerra` switch puts MSRA into "unsolicited offer" mode — the helper initiates the connection rather than waiting for the user to send an invitation. This bypasses the broken Director shadowing path entirely and uses the underlying Windows Remote Assistance infrastructure directly.
+The `/offerra` switch puts MSRA into "unsolicited offer" mode - the helper initiates the connection rather than waiting for the user to send an invitation. This bypasses the broken Director shadowing path entirely and uses the underlying Windows Remote Assistance infrastructure directly.
 
-The jump via the Director server is important — it ensures the connection originates from a trusted, centrally managed server with the correct firewall rules in place, rather than from individual support engineer desktops which may have inconsistent network access to the Workers subnet.
+The jump via the Director server is important - it ensures the connection originates from a trusted, centrally managed server with the correct firewall rules in place, rather than from individual support engineer desktops which may have inconsistent network access to the Workers subnet.
 
 ## Summary
 

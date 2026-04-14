@@ -10,7 +10,7 @@ image:
   alt: "Post title or short description"
 ---
 
-<!-- INTRO — skip the generic problem statement. Start with real context:
+<!-- INTRO - skip the generic problem statement. Start with real context:
      - What triggered this? (a call, a ticket, something you read, a user report)
      - What was the pressure or stakes?
      - One sentence on how you got to the solution.
@@ -30,8 +30,8 @@ image:
 ## The Solution
 
 <!-- Step-by-step fix. Use sub-sections if needed.
-     Active voice. Technical jargon is fine — readers are engineers.
-     Include at least one screenshot — a config screen, output, Studio view, Director, etc.
+     Active voice. Technical jargon is fine - readers are engineers.
+     Include at least one screenshot - a config screen, output, Studio view, Director, etc.
      Use: ![Alt text](/assets/img/posts/slug-screenshot.png){: w="800" } -->
 
 <!-- Screenshot placeholder:
@@ -40,12 +40,12 @@ _Caption explaining what the screenshot demonstrates_ -->
 
 ## The Result
 
-<!-- What changed after the fix. Be specific — what works now that didn't before. -->
+<!-- What changed after the fix. Be specific - what works now that didn't before. -->
 
 ## Key Takeaways
 
 <!-- 2–3 things worth remembering. The kind of detail you'd tell a colleague.
-     Avoid generic advice — stick to what's specific to this situation. -->
+     Avoid generic advice - stick to what's specific to this situation. -->
 
 ---
 

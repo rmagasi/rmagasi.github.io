@@ -29,7 +29,7 @@ Citrix file-based licensing goes end of life on **April 15, 2026**. Environments
   </div>
   <div id="las-expired" style="display:none;font-size:2rem;font-weight:900;color:#d1242f;letter-spacing:.04em;padding:1.5rem;text-align:center;">DEADLINE PASSED</div>
   <div style="margin-top:0.75rem;font-size:0.8rem;color:#656d76;text-align:center;">
-    Counting to April 15, 2026 00:00 UTC — exact cutoff time not published by Citrix.
+    Counting to April 15, 2026 00:00 UTC - exact cutoff time not published by Citrix.
   </div>
 </div>
 

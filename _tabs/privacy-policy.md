@@ -30,7 +30,7 @@ This site does not set any first-party cookies. GoatCounter is cookieless by des
 
 ## Legal basis (GDPR)
 
-The legal basis for processing analytics data is **legitimate interest** (Article 6(1)(f) GDPR) — understanding how content is used helps improve it. No data is sold or shared with third parties beyond the services listed above.
+The legal basis for processing analytics data is **legitimate interest** (Article 6(1)(f) GDPR) - understanding how content is used helps improve it. No data is sold or shared with third parties beyond the services listed above.
 
 ## Your rights
 

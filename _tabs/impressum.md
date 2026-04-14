@@ -17,7 +17,7 @@ Wetzikon, Switzerland
 ## Contact
 
 For any enquiries regarding this website, please contact me via:
-[LinkedIn — linkedin.com/in/robertmagasi](https://www.linkedin.com/in/robertmagasi/)
+[LinkedIn - linkedin.com/in/robertmagasi](https://www.linkedin.com/in/robertmagasi/)
 
 ## Hosting
 
