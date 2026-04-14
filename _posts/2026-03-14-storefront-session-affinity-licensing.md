@@ -10,7 +10,7 @@ image:
   alt: How a StoreFront Keyword Trick Saved a Customer Six Figures in Licensing Costs
 ---
 
-Some of the best solutions in IT aren't complex — they're elegant. This is a story about a critical production escalation that multiple vendors and colleagues said couldn't be solved without expensive custom development or a major architecture overhaul. It could. Using nothing but native Citrix features.
+I was already on the way home when my manager called. The customer was escalating — executive level, production disrupted, and the options on the table were custom development or a six-figure licensing spend. I put everything else aside the next day and started from scratch. What I found was a solution built entirely from native Citrix features that nobody had thought to combine.
 
 ## The Situation
 
@@ -61,7 +61,7 @@ This means users connecting through Store A can only ever see and launch resourc
 
 ### Layer 3 — Citrix Tags on Individual Workers
 
-Here's the part that kept the solution simple: rather than creating multiple Delivery Groups (which would have added unnecessary complexity), I **tagged each VDA individually** in Citrix Studio and used a **single Delivery Group**.
+Here's the part that kept the solution simple. Multiple Delivery Groups was the first shape the solution wanted to take. I ruled it out quickly — not because it wouldn't work technically, but because it would create something the ops team couldn't reason about. One Delivery Group with tagged VDAs is something you can explain in two sentences. So rather than creating multiple Delivery Groups, I **tagged each VDA individually** in Citrix Studio and used a **single Delivery Group**.
 
 - Worker-01 → Tag: `WorkerGroup-A`
 - Worker-02 → Tag: `WorkerGroup-A`

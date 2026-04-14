@@ -10,20 +10,9 @@ image:
   alt: "Automating Citrix Server Reboots — A Config-Driven PowerShell Script"
 ---
 
-Manual Citrix server reboots are error-prone, inconsistent, and unnecessarily disruptive to end users. This post walks through a production-ready PowerShell script that automates the entire process — from enabling maintenance mode to notifying users, forcing logoff, and rebooting — all driven by a simple CSV configuration file.
+A customer needed Citrix servers rebooted on a specific schedule, with advance notifications going out at meaningful intervals — not the blunt built-in reboot schedule in Delivery Groups, which gives you no control over when and how users are warned. The requirement was clear: automated, predictable, zero manual intervention, with proper user communication. So I built it.
 
-## The Problem with Manual Reboots
-
-In most Citrix environments, servers need regular reboots to stay healthy — profile cleanup, Windows Update application, memory reclamation. The typical approach is either a manual process (someone logs on, enables maintenance mode, waits, reboots) or a basic Citrix reboot schedule configured in Studio.
-
-The problem with manual reboots is obvious — they depend on someone remembering, and they're inconsistent. The problem with Citrix's built-in reboot schedule is that it's inflexible and gives no advance warning to users who may be mid-session.
-
-What was needed was a script that:
-- Runs on a schedule with zero manual intervention
-- Gives users advance notice at meaningful intervals
-- Handles maintenance mode automatically
-- Logs everything for auditing
-- Can be configured per-server without touching the script
+This post walks through the production-ready PowerShell script that came out of that — from enabling maintenance mode to notifying users, forcing logoff, and rebooting, all driven by a simple CSV configuration file.
 
 ## The Solution: Config-Driven Reboot Automation
 

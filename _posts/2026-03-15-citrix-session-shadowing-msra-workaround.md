@@ -10,13 +10,15 @@ image:
   alt: "Citrix Session Shadowing Broken After January 2026 Patches — Here's the Fix"
 ---
 
-Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. If your support team is suddenly unable to shadow user sessions, you're not alone — and there is a working workaround using Windows Remote Assistance (msra.exe).
+Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. I picked this up from the community before our ops team confirmed it internally — once it hits production, support engineers lose their primary tool for helping users mid-session. That's an immediate escalation.
 
-## What Broke
+## What Broke and What I Tried First
 
-The January 2026 Microsoft cumulative updates appear to have broken the native Citrix Director shadowing functionality on Windows Server-based VDAs. Sessions can no longer be shadowed directly from the Director console.
+The January 2026 Microsoft cumulative updates broke native Citrix Director shadowing on Windows Server-based VDAs. Sessions can no longer be shadowed directly from the Director console.
 
-This is an escalation-level issue for support teams — shadowing is often the first tool engineers reach for when helping users with application issues, and losing it silently causes real operational pain.
+The straightforward fix would have been upgrading to CVAD 2507 LTSR, which ships HDX shadowing as a modern replacement for the broken mechanism. But with multiple projects already running in parallel, an upgrade wasn't an option — not on this timeline.
+
+Once I understood what the patch actually did, the path forward became clear. The patch blocks Director from modifying a file that msra processes — it's the Director injection that's prohibited, not msra itself. The standard `msra.exe /offerra` flow was never touched. So we bypassed Director entirely and used msra directly.
 
 ## The Workaround: MSRA-Based Shadowing via Director Server
 
