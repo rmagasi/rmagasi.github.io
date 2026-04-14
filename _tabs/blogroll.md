@@ -11,7 +11,7 @@ A collection of EUC and Citrix blogs I follow and recommend.
 |--------|------|
 | Aaron Parker | [stealthpuppy.com](https://stealthpuppy.com/) |
 | Balint Oberrauch | [balintoberrauch.com](https://balintoberrauch.com/) |
-| Beckmann Tech | [beckmann.ch](https://beckmann.ch/) |
+| Stefan Beckmann | [beckmann.ch](https://beckmann.ch/) |
 | Carl Stalhood | [carlstalhood.com](https://www.carlstalhood.com/) |
 | Christiaan Brinkhoff | [christiaanbrinkhoff.com](https://christiaanbrinkhoff.com/) |
 | Dennis Span | [dennisspan.com](https://dennisspan.com/) |
