@@ -1,33 +1,52 @@
 ---
 title: "Your Post Title Here"
-date: YYYY-MM-DD HH:MM:SS +0100
-categories: [Category1, Category2]
-tags: [tag1, tag2, tag3]
+date: YYYY-MM-DD 09:00:00 +0200
+categories: ["Category1"]
+tags: ["tag1", "tag2", "tag3"]
 author: robert
-description: "Short description for SEO and homepage post card."
-# image:
-#   path: /assets/img/posts/your-image.png
-#   alt: Image description
+description: "One-sentence summary for SEO and social sharing."
+image:
+  path: /assets/img/posts/og-slug.png
+  alt: "Post title or short description"
 ---
 
-Your introduction here — what problem does this post solve and who is it for?
+<!-- INTRO — skip the generic problem statement. Start with real context:
+     - What triggered this? (a call, a ticket, something you read, a user report)
+     - What was the pressure or stakes?
+     - One sentence on how you got to the solution.
+     Keep it 2–4 sentences. No heading. -->
 
 ## The Situation
 
-## The Problem
+<!-- Root cause and context. Who was affected, what was broken, what was at stake.
+     Include one specific real-world detail: a number, a role, a timeframe. -->
+
+## What I Tried First
+
+<!-- The path that didn't work, or the obvious answer you ruled out and why.
+     Even one sentence here changes the feel of the post entirely.
+     "The obvious fix was X. I ruled it out because..." -->
 
 ## The Solution
 
+<!-- Step-by-step fix. Use sub-sections if needed.
+     Active voice. Technical jargon is fine — readers are engineers. -->
+
 ## The Result
 
+<!-- What changed after the fix. Be specific — what works now that didn't before. -->
+
 ## Key Takeaways
+
+<!-- 2–3 things worth remembering. The kind of detail you'd tell a colleague.
+     Avoid generic advice — stick to what's specific to this situation. -->
 
 ---
 
 <br>
 
-*Have you experienced something similar? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+*[Context-appropriate call to action — e.g. "Hit the same issue?" or "Running a similar setup?"]. Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
 <br>
 
-> 🤖 **AI Disclosure:** The experience and technical content in this post are entirely my own, based on real-world work. Claude AI was used to help structure and articulate the writing.
+> *This post was written with assistance from Claude (Anthropic) as a drafting and editing tool. All technical content, solutions, and recommendations reflect my own hands-on experience and professional judgment.*
