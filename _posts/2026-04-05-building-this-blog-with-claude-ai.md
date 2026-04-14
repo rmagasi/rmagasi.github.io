@@ -101,6 +101,8 @@ Claude built a single-file HTML editor (`index.html`) that runs entirely in the 
 - **Category and tag autocomplete** — on startup the editor fetches all existing posts from the GitHub API, parses their front matter, and populates `<datalist>` elements so suggestions appear as you type
 - **Image uploads** via drag-and-drop or paste — converts to base64, pushes to the `assets/img/` folder via the API, and inserts the Markdown reference automatically
 
+![14-02-57-rm-post-editor-and-8-more-pages-personal-mic](/assets/img/posts/2026-04-14-14-02-57-rm-post-editor-and-8-more-pages-personal-mic.png)
+
 The entire thing is one HTML file, no build step, no Node.js, no npm. It runs locally or from any static host.
 
 ## What Worked Well
