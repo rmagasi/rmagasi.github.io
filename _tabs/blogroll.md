@@ -11,7 +11,6 @@ A collection of EUC and Citrix blogs I follow and recommend.
 |--------|------|
 | Aaron Parker | [stealthpuppy.com](https://stealthpuppy.com/) |
 | Balint Oberrauch | [balintoberrauch.com](https://balintoberrauch.com/) |
-| Stefan Beckmann | [beckmann.ch](https://beckmann.ch/) |
 | Carl Stalhood | [carlstalhood.com](https://www.carlstalhood.com/) |
 | Christiaan Brinkhoff | [christiaanbrinkhoff.com](https://christiaanbrinkhoff.com/) |
 | Dennis Span | [dennisspan.com](https://dennisspan.com/) |
@@ -29,5 +28,6 @@ A collection of EUC and Citrix blogs I follow and recommend.
 | Patrick Deyda | [deyda.net](https://deyda.net/) |
 | René Bigler | [dreadysblog.com](https://dreadysblog.com/) |
 | Sacha Thomet | [blog.sachathomet.ch](https://blog.sachathomet.ch/) |
+| Stefan Beckmann | [beckmann.ch](https://beckmann.ch/) |
 | World of EUC | [worldofeuc.github.io](https://worldofeuc.github.io/Website/) |
 | XenApp Blog | [xenappblog.com](https://xenappblog.com/) |
