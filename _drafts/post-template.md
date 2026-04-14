@@ -51,7 +51,7 @@ _Caption explaining what the screenshot demonstrates_ -->
 
 <br>
 
-*[Context-appropriate call to action — e.g. "Hit the same issue?" or "Running a similar setup?"]. Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+*Hit the same issue or found a different approach? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
 
 <br>
 
