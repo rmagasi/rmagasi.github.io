@@ -47,7 +47,7 @@ social:
 # Site Verification Settings
 webmaster_verifications:
   google: fhIevT8oty3_FLembH4WGq4e4nBlgkKEGsENGTjvL90
-  bing: # fill in your Bing verification code
+  bing: ACCFAB17EDAFBCC20D4853024023AB8E
   alexa: # fill in your Alexa verification code
   yandex: # fill in your Yandex verification code
   baidu: # fill in your Baidu verification code
@@ -59,7 +59,7 @@ webmaster_verifications:
 # Web Analytics Settings
 analytics:
   google:
-    id: G-4KELR8E8FY # fill in your Google Analytics ID
+    id: # removed — using GoatCounter instead
   goatcounter:
     id: robertmagasi
   umami:
@@ -159,7 +159,7 @@ kramdown:
   syntax_highlighter: rouge
   syntax_highlighter_opts: # Rouge Options › https://github.com/jneen/rouge#full-options
     css_class: highlight
-    # default_lang: console
+    default_lang: plaintext
     span:
       line_numbers: false
     block:
