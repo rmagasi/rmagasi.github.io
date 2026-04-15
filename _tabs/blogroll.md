@@ -47,4 +47,6 @@ A collection of EUC and Citrix blogs I follow and recommend.
 
 **Stefan Beckmann** — [beckmann.ch](https://beckmann.ch/)
 
+**Thomas Poppelgaard** — [poppelgaard.com](http://poppelgaard.com/)
+
 **Trond Eirik Haavarstein** — [xenappblog.com](https://xenappblog.com/)
