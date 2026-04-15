@@ -33,13 +33,13 @@ A collection of EUC and Citrix blogs I follow and recommend.
 
 **Leee Jeffries** — [leeejeffries.com](https://www.leeejeffries.com/)
 
+**Manuel Winkel** — [deyda.net](https://deyda.net/)
+
 **Marco Hofmann** — [meinekleinefarm.net](https://www.meinekleinefarm.net/)
 
 **Matthias Schlimm** — [eucweb.com](https://eucweb.com/)
 
-**Patrick Deyda** — [deyda.net](https://deyda.net/)
-
-**René Bigler** — [dreadysblog.com](https://dreadysblog.com/)
+**René Bigler** — [dready.ch](https://dready.ch/)
 
 **Ryan Ververs-Bijkerk & Eltjo van Gulik** — [go-euc.com](https://www.go-euc.com/)
 
