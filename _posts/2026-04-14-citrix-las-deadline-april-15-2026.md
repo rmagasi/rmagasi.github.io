@@ -29,14 +29,14 @@ Citrix file-based licensing goes end of life on **April 15, 2026**. Environments
   </div>
   <div id="las-expired" style="display:none;font-size:2rem;font-weight:900;color:#d1242f;letter-spacing:.04em;padding:1.5rem;text-align:center;">DEADLINE PASSED</div>
   <div style="margin-top:0.75rem;font-size:0.8rem;color:#656d76;text-align:center;">
-    Counting to April 15, 2026 00:00 UTC - exact cutoff time not published by Citrix.
+    Counting to April 15, 2026 12:00 EDT (16:00 UTC) - exact cutoff time not published by Citrix.
   </div>
 </div>
 
 <script>
 /* LAS countdown */
 (function() {
-  var target = new Date('2026-04-15T00:00:00Z').getTime();
+  var target = new Date('2026-04-15T16:00:00Z').getTime();
   function pad(n) { return String(n).padStart(2, '0'); }
   function tick() {
     var diff = target - Date.now();
