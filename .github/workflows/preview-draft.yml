@@ -1,0 +1,124 @@
+name: "Preview draft branch"
+
+# Runs the full Chirpy build on any non-main branch push. Purpose: catch
+# rendering drift between the editor's preview and the real Jekyll output
+# before merging to main. Uploads the built `_site/` as a workflow artifact
+# so you can download + open locally.
+#
+# Why not a live URL? GitHub Pages serves one site per repo — we can't have
+# per-branch URLs without a secondary host (Netlify, Cloudflare Pages).
+# Build + htmlproof + artifact catches ~90% of render drift without that.
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - master
+      - gh-pages
+    paths-ignore:
+      - .gitignore
+      - README.md
+      - LICENSE
+      - "Cowork/**"
+      - "**.md.plan"
+
+  # Manual trigger for any branch.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One build per branch, cancel in-flight on a new push.
+  group: "preview-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
+          bundler-cache: true
+
+      - name: Build site
+        run: bundle exec jekyll b -d "_site"
+        env:
+          # Match the production build so Chirpy emits the same HTML shape
+          # (Disqus / Google Analytics / sitemap / excluded posts behave right).
+          JEKYLL_ENV: "production"
+
+      - name: Lint HTML
+        continue-on-error: true   # don't block the preview on soft failures
+        run: |
+          bundle exec htmlproofer _site \
+            --disable-external \
+            --ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/" \
+            --ignore-missing-alt \
+            --ignore-files "/.+\.(png|jpg|jpeg|gif|webp|svg|ico)/"
+
+      - name: Package artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Zip the site to make download-and-open friction-free.
+          cd _site
+          zip -qr "../_site-${GITHUB_SHA::7}.zip" .
+
+      - name: Upload preview artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-${{ github.ref_name }}-${{ github.sha }}
+          path: "_site-*.zip"
+          retention-days: 14
+
+      - name: List rendered posts
+        id: posts
+        shell: bash
+        run: |
+          set -euo pipefail
+          post_count="$(find _site -type f -name '*.html' -path '*/posts/*' | wc -l | tr -d ' ')"
+          echo "post_count=${post_count}" >> "$GITHUB_OUTPUT"
+
+          # Grab changed markdown paths in this push (vs. main) to list what's new.
+          git fetch origin main --depth=1 || true
+          changed="$(git diff --name-only origin/main...HEAD -- '_posts/*.md' '_drafts/*.md' 2>/dev/null || true)"
+          if [[ -n "${changed}" ]]; then
+            {
+              echo "changed<<EOF"
+              echo "${changed}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### 🧪 Preview build"
+            echo ""
+            echo "**Branch:** \`${{ github.ref_name }}\`"
+            echo "**Commit:** \`${GITHUB_SHA::7}\`"
+            echo "**Rendered posts:** ${{ steps.posts.outputs.post_count }}"
+            echo ""
+            if [[ -n "${{ steps.posts.outputs.changed }}" ]]; then
+              echo "**Markdown changed vs. main:**"
+              echo '```'
+              echo "${{ steps.posts.outputs.changed }}"
+              echo '```'
+            fi
+            echo ""
+            echo "📦 Download the rendered site from the **Artifacts** section above, unzip, and open \`index.html\` in a browser."
+            echo ""
+            echo "_This build uses \`JEKYLL_ENV=production\` so the HTML matches the live site exactly._"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,135 @@
+name: "Scheduled publish"
+
+# Promotes any file in `_drafts/` whose front-matter `date:` is today or earlier
+# into `_posts/`, then commits and pushes. The Pages deploy workflow takes over
+# from there. Safe to run multiple times per day.
+
+on:
+  schedule:
+    # 06:00 UTC = 07:00 CET / 08:00 CEST — first run of the day in Wetzikon.
+    - cron: "0 6 * * *"
+
+  # Allow manual trigger from the Actions tab (useful for testing).
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "schedule-publish"
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Promote due drafts
+        id: promote
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          today="$(date -u +%Y-%m-%d)"
+          moved=()
+
+          shopt -s nullglob
+          for src in _drafts/*.md; do
+            # Skip Chirpy's ".gitkeep" and anything that isn't a post.
+            [[ -f "$src" ]] || continue
+
+            # Parse only the front-matter block (between the first two `---` lines)
+            # and pull the date field — tolerate optional quotes.
+            date_line="$(awk '
+              /^---[[:space:]]*$/ { fm = !fm; next }
+              fm && /^date:/       { print; exit }
+            ' "$src" || true)"
+
+            if [[ -z "$date_line" ]]; then
+              echo "::notice file=$src::no date field — skipping"
+              continue
+            fi
+
+            # Extract YYYY-MM-DD — ignore time/tz portion.
+            post_date="$(echo "$date_line" \
+              | sed -E 's/^date:[[:space:]]*"?//; s/"?$//' \
+              | grep -oE '^[0-9]{4}-[0-9]{2}-[0-9]{2}' || true)"
+
+            if [[ -z "$post_date" ]]; then
+              echo "::notice file=$src::unparseable date ($date_line) — skipping"
+              continue
+            fi
+
+            if [[ "$post_date" > "$today" ]]; then
+              echo "⏳ $src — scheduled for $post_date, keeping in _drafts/"
+              continue
+            fi
+
+            # Filename conventions: Chirpy uses `YYYY-MM-DD-slug.md` in _posts.
+            # Use the date from front-matter, not today, so published-date stays stable.
+            basename="$(basename "$src" .md)"
+            stripped="${basename#[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-}"
+            target="_posts/${post_date}-${stripped}.md"
+
+            mkdir -p _posts
+            git mv "$src" "$target"
+            moved+=("$target")
+            echo "✓ promoted $src → $target"
+          done
+
+          if [[ ${#moved[@]} -eq 0 ]]; then
+            echo "No drafts due today."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "changed=true"
+              echo "count=${#moved[@]}"
+              echo "list<<EOF"
+              printf '%s\n' "${moved[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.promote.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          count="${{ steps.promote.outputs.count }}"
+          git add -A
+          git commit -m "chore(posts): publish ${count} scheduled draft(s)
+
+          Promoted by .github/workflows/schedule-publish.yml.
+
+          Files:
+          ${{ steps.promote.outputs.list }}"
+
+          git push origin main
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Scheduled publish"
+            echo ""
+            if [[ "${{ steps.promote.outputs.changed }}" == "true" ]]; then
+              echo "Promoted **${{ steps.promote.outputs.count }}** draft(s):"
+              echo ""
+              echo '```'
+              echo "${{ steps.promote.outputs.list }}"
+              echo '```'
+            else
+              echo "No drafts due today ($(date -u +%Y-%m-%d))."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
