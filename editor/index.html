@@ -1,0 +1,3267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RM · Post Editor</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' ry='20' fill='%23ffffff' stroke='%230056b2' stroke-width='6'/%3E%3Crect x='3' y='3' width='94' height='11' rx='3' fill='%230056b2'/%3E%3Ctext x='50' y='72' font-family='Arial,sans-serif' font-weight='bold' font-size='46' text-anchor='middle'%3E%3Ctspan fill='%23141414'%3ER%3C/tspan%3E%3Ctspan fill='%230056b2'%3EM%3C/tspan%3E%3C/text%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/diff@5/dist/diff.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+<link id="hljs-preview-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+<link id="hljs-preview-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+  /* ─── THEME TOKENS ─── */
+  :root, [data-theme="light"] {
+    --bg: #ffffff;
+    --bg-mid: #f8fafc;
+    --bg-sidebar: #f8fafc;
+    --bg-input: #ffffff;
+    --bg-code: #eff1f5;
+    --bg-tagpill: #dbeafe;
+    --accent: #0056b2;
+    --accent-light: #0969da;
+    --border: rgba(0,86,178,0.12);
+    --border-strong: rgba(0,86,178,0.22);
+    --success: #1a7f37;
+    --danger: #d1242f;
+    --warning: #9a6700;
+    --text: #1c1e26;
+    --text-muted: #656d76;
+    --text-tagpill: #1e40af;
+    --border-tagpill: #bfdbfe;
+    --diff-add-bg: #d1fadf;
+    --diff-del-bg: #ffe3e3;
+    --diff-add-fg: #065f46;
+    --diff-del-fg: #7f1d1d;
+    --font-mono: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+    --font-sans: 'Lato',system-ui,sans-serif;
+    --shadow-modal: 0 8px 24px rgba(0,0,0,.12);
+  }
+  [data-theme="dark"] {
+    --bg: #0d1117;
+    --bg-mid: #161b22;
+    --bg-sidebar: #161b22;
+    --bg-input: #0d1117;
+    --bg-code: #161b22;
+    --bg-tagpill: #1e3a8a;
+    --accent: #58a6ff;
+    --accent-light: #79b8ff;
+    --border: rgba(88,166,255,0.16);
+    --border-strong: rgba(88,166,255,0.32);
+    --success: #3fb950;
+    --danger: #f85149;
+    --warning: #d29922;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --text-tagpill: #bfdbfe;
+    --border-tagpill: #3b82f6;
+    --diff-add-bg: rgba(63,185,80,.18);
+    --diff-del-bg: rgba(248,81,73,.18);
+    --diff-add-fg: #7ee787;
+    --diff-del-fg: #ffa198;
+    --shadow-modal: 0 8px 24px rgba(0,0,0,.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; transition: background .15s, color .15s; }
+
+  /* ─── TOPBAR ─── */
+  #topbar { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 52px; background: var(--bg-mid); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .logo-wrap { display: flex; align-items: center; gap: 8px; }
+  .logo-svg { flex-shrink: 0; border-radius: 6px; }
+  .logo-text { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
+  .divider { width: 1px; height: 20px; background: var(--border-strong); flex-shrink: 0; }
+  #filename-display { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .top-btn { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border-strong); background: var(--bg-input); color: var(--text); transition: all .15s; white-space: nowrap; flex-shrink: 0; }
+  .top-btn:hover { background: var(--bg-mid); border-color: var(--text-muted); }
+  .top-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .top-btn.primary:hover { background: var(--accent-light); border-color: var(--accent-light); }
+  .top-btn.primary.amber { background: var(--warning); border-color: var(--warning); }
+  .top-btn.icon-only { padding: 5px 9px; font-size: 15px; line-height: 1; }
+  .top-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  #dest-toggle { display: flex; background: var(--bg-input); border-radius: 6px; padding: 2px; border: 1px solid var(--border); flex-shrink: 0; }
+  .dest-btn { padding: 4px 10px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; transition: all .15s; color: var(--text-muted); background: transparent; font-family: var(--font-mono); }
+  .dest-btn.active-drafts { background: var(--bg-mid); color: var(--warning); font-weight: 600; }
+  .dest-btn.active-posts  { background: var(--bg-mid); color: var(--success); font-weight: 600; }
+
+  /* ─── MAIN LAYOUT ─── */
+  #main { display: flex; flex: 1; overflow: hidden; }
+
+  /* ─── SIDEBAR ─── */
+  #sidebar { width: 256px; flex-shrink: 0; background: var(--bg-mid); display: flex; flex-direction: column; overflow-y: auto; }
+  #sidebar-resize { width: 5px; flex-shrink: 0; cursor: col-resize; background: var(--border); transition: background .15s; position: relative; z-index: 10; }
+  #sidebar-resize:hover, #sidebar-resize.dragging { background: var(--accent); }
+  .sidebar-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .sidebar-section:last-child { border-bottom: none; }
+  .sidebar-label { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .sidebar-label.toggle-head { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+  .sidebar-label .counter { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+  .sidebar-label .counter.ok { color: var(--success); }
+  .field-group { margin-bottom: 10px; }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-group.row { display: flex; gap: 4px; }
+  .field-group.row > input { flex: 1; min-width: 0; }
+  .field-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: block; }
+  .field-label .hint { font-size: 10px; opacity: .55; }
+  input[type="text"], input[type="date"], input[type="time"], input[type="password"], select, textarea.small {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border-strong); border-radius: 5px; color: var(--text);
+    font-size: 12px; font-family: var(--font-sans); padding: 6px 8px; outline: none; transition: border-color .15s;
+  }
+  input[type="text"]:focus, input[type="date"]:focus, input[type="time"]:focus, input[type="password"]:focus, select:focus, textarea.small:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(5,80,174,.1);
+  }
+  [data-theme="dark"] input[type="text"]:focus,
+  [data-theme="dark"] input[type="date"]:focus,
+  [data-theme="dark"] input[type="time"]:focus,
+  [data-theme="dark"] input[type="password"]:focus,
+  [data-theme="dark"] select:focus,
+  [data-theme="dark"] textarea.small:focus { box-shadow: 0 0 0 3px rgba(88,166,255,.18); }
+  select option { background: var(--bg-input); color: var(--text); }
+  textarea.small { resize: vertical; min-height: 58px; font-size: 11px; line-height: 1.5; }
+  .mini-btn { flex-shrink: 0; padding: 5px 8px; font-size: 11px; background: var(--bg-mid); border: 1px solid var(--border-strong); border-radius: 5px; cursor: pointer; color: var(--text-muted); }
+  .mini-btn:hover { background: var(--bg-input); color: var(--text); }
+
+  .tag-input-wrap { display: flex; flex-wrap: wrap; gap: 4px; background: var(--bg-input); border: 1px solid var(--border-strong); border-radius: 5px; padding: 5px 6px; min-height: 34px; cursor: text; }
+  .tag-input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(5,80,174,.1); }
+  .tag-pill { display: flex; align-items: center; gap: 3px; background: var(--bg-tagpill); border: 1px solid var(--border-tagpill); color: var(--text-tagpill); font-size: 11px; padding: 1px 6px; border-radius: 3px; }
+  .tag-pill button { background: none; border: none; color: inherit; cursor: pointer; font-size: 12px; padding: 0 0 0 2px; opacity: .7; }
+  .tag-pill button:hover { opacity: 1; }
+  .tag-bare-input { flex: 1; min-width: 60px; background: none; border: none; color: var(--text); font-size: 12px; outline: none; padding: 1px 0; }
+  #fm-preview { font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
+
+  /* Human Check */
+  .hc-list { margin-top: 8px; }
+  .hc-intro { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
+  .hc-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 7px; font-size: 12px; line-height: 1.4; cursor: pointer; }
+  .hc-item:last-child { margin-bottom: 4px; }
+  .hc-item input { margin-top: 2px; flex-shrink: 0; }
+
+  /* ─── LOCAL DRAFTS (IndexedDB) ─── */
+  .ld-body { margin-top: 8px; }
+  .ld-actions { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .ld-hint { font-size: 10px; color: var(--text-muted); font-style: italic; }
+  .ld-hint.saved { color: var(--success); font-style: normal; }
+  .ld-list { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow-y: auto; }
+  .ld-empty { font-size: 11px; color: var(--text-muted); padding: 8px 4px; line-height: 1.5; }
+  .ld-item { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); cursor: pointer; transition: border-color .15s, background .15s; }
+  .ld-item:hover { border-color: var(--border-strong); }
+  .ld-item.active { border-color: var(--accent); background: rgba(5,80,174,.05); }
+  .ld-item-info { flex: 1; min-width: 0; }
+  .ld-item-title { font-size: 12px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ld-item-meta { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+  .ld-item-actions { display: flex; gap: 2px; flex-shrink: 0; }
+  .ld-item-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; font-size: 12px; border-radius: 3px; line-height: 1; }
+  .ld-item-btn:hover { background: var(--bg-mid); color: var(--text); }
+  .ld-item-btn.delete:hover { background: rgba(185,28,28,.1); color: var(--danger); }
+
+  /* ─── EDITOR PANE ─── */
+  #editor-pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  .EasyMDEContainer { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%; min-height: 0; }
+  .EasyMDEContainer .CodeMirror { flex: 1; background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 14px; line-height: 1.75; border: none !important; border-radius: 0 !important; height: 100%; padding: 20px 32px; }
+  .EasyMDEContainer .CodeMirror-cursor { border-left-color: var(--accent); }
+  .EasyMDEContainer .CodeMirror-selected { background: rgba(5,80,174,.12) !important; }
+  [data-theme="dark"] .EasyMDEContainer .CodeMirror-selected { background: rgba(88,166,255,.18) !important; }
+  .EasyMDEContainer .editor-toolbar { background: var(--bg-mid); border: none; border-bottom: 1px solid var(--border); padding: 4px 8px; opacity: 1; }
+  .EasyMDEContainer .editor-toolbar button { color: var(--text-muted) !important; border: none; border-radius: 4px; width: 30px; height: 28px; }
+  .EasyMDEContainer .editor-toolbar button:hover, .EasyMDEContainer .editor-toolbar button.active { background: rgba(5,80,174,.08) !important; color: var(--accent) !important; }
+  [data-theme="dark"] .EasyMDEContainer .editor-toolbar button:hover,
+  [data-theme="dark"] .EasyMDEContainer .editor-toolbar button.active { background: rgba(88,166,255,.12) !important; }
+  .EasyMDEContainer .editor-toolbar i.separator { border-color: var(--border-strong); }
+  .EasyMDEContainer .editor-statusbar { background: var(--bg-mid); border-top: 1px solid var(--border); color: var(--text-muted); font-size: 11px; padding: 4px 14px; }
+
+  /* ─── CHIRPY PREVIEW BASE ─── */
+  .EasyMDEContainer .editor-preview,
+  .EasyMDEContainer .editor-preview-side {
+    font-family: 'Lato', 'Source Sans Pro', 'Segoe UI', system-ui, sans-serif;
+    font-size: 16px; line-height: 1.75; padding: 32px 48px;
+    background: #fff; color: #34343e;
+  }
+  .EasyMDEContainer .editor-preview[data-dark="1"],
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] { background: #1b1b1e; color: #c6c6c6; }
+
+  /* POST HEADER */
+  .preview-post-header { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e5e5; }
+  .editor-preview[data-dark="1"] .preview-post-header,
+  .editor-preview-side[data-dark="1"] .preview-post-header { border-color: #333; }
+  .preview-post-title { font-size: 1.75rem; font-weight: 700; margin: 0 0 .6rem; line-height: 1.3; }
+  .preview-post-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .875rem; color: #6b6b6b; }
+  .editor-preview[data-dark="1"] .preview-post-meta,
+  .editor-preview-side[data-dark="1"] .preview-post-meta { color: #9ca3af; }
+  .preview-meta-tag { background: #eef2ff; color: #4338ca; border-radius: 3px; padding: 0 6px; font-size: .78rem; }
+  .editor-preview[data-dark="1"] .preview-meta-tag,
+  .editor-preview-side[data-dark="1"] .preview-meta-tag { background: #312e81; color: #c7d2fe; }
+
+  /* HEADINGS */
+  .EasyMDEContainer .editor-preview h1, .EasyMDEContainer .editor-preview-side h1 { font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 .75rem; border-bottom: 1px solid #e5e5e5; padding-bottom: .35rem; }
+  .EasyMDEContainer .editor-preview h2, .EasyMDEContainer .editor-preview-side h2 { font-size: 1.4rem; font-weight: 700; margin: 1.4rem 0 .6rem; border-bottom: 1px solid #e5e5e5; padding-bottom: .3rem; }
+  .EasyMDEContainer .editor-preview h3, .EasyMDEContainer .editor-preview-side h3 { font-size: 1.15rem; font-weight: 700; margin: 1.2rem 0 .5rem; }
+  .EasyMDEContainer .editor-preview h4, .EasyMDEContainer .editor-preview-side h4 { font-size: 1rem; font-weight: 700; margin: 1rem 0 .4rem; }
+  .EasyMDEContainer .editor-preview[data-dark="1"] h1,
+  .EasyMDEContainer .editor-preview[data-dark="1"] h2,
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] h1,
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] h2 { border-color: #333; }
+
+  /* PARAGRAPHS, LINKS, LISTS, HR */
+  .EasyMDEContainer .editor-preview p, .EasyMDEContainer .editor-preview-side p { margin: 0 0 1rem; }
+  .EasyMDEContainer .editor-preview a, .EasyMDEContainer .editor-preview-side a { color: #007bff; text-decoration: none; }
+  .EasyMDEContainer .editor-preview a:hover, .EasyMDEContainer .editor-preview-side a:hover { text-decoration: underline; }
+  .EasyMDEContainer .editor-preview[data-dark="1"] a,
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] a { color: #58a6ff; }
+  .EasyMDEContainer .editor-preview ul, .EasyMDEContainer .editor-preview ol,
+  .EasyMDEContainer .editor-preview-side ul, .EasyMDEContainer .editor-preview-side ol { padding-left: 1.5rem; margin: 0 0 1rem; }
+  .EasyMDEContainer .editor-preview hr, .EasyMDEContainer .editor-preview-side hr { border: none; border-top: 1px solid #e5e5e5; margin: 1.5rem 0; }
+  .EasyMDEContainer .editor-preview[data-dark="1"] hr,
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] hr { border-color: #333; }
+  .EasyMDEContainer .editor-preview img, .EasyMDEContainer .editor-preview-side img { max-width: 100%; border-radius: 6px; display: block; margin: .5rem auto; }
+
+  /* INLINE CODE */
+  .EasyMDEContainer .editor-preview code:not(pre code),
+  .EasyMDEContainer .editor-preview-side code:not(pre code) {
+    background: #eff1f5; color: #e64553; padding: .1em .4em; border-radius: 4px;
+    font-family: var(--font-mono); font-size: .85em; border: 1px solid #dde1e7;
+  }
+  .EasyMDEContainer .editor-preview[data-dark="1"] code:not(pre code),
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] code:not(pre code) {
+    background: #313244; color: #f38ba8; border-color: #45475a;
+  }
+
+  /* CODE BLOCKS */
+  .EasyMDEContainer .editor-preview pre, .EasyMDEContainer .editor-preview-side pre {
+    border-radius: 6px; margin: 1rem 0; overflow-x: auto;
+  }
+  .EasyMDEContainer .editor-preview pre code, .EasyMDEContainer .editor-preview-side pre code {
+    font-family: var(--font-mono); font-size: .875rem; line-height: 1.7;
+    padding: 1rem 1.25rem; display: block; border: none; border-radius: 6px;
+    background: transparent;
+  }
+
+  /* BLOCKQUOTE (plain) */
+  .EasyMDEContainer .editor-preview blockquote:not([class]),
+  .EasyMDEContainer .editor-preview-side blockquote:not([class]) {
+    border-left: 4px solid #d0d7de; padding: .5rem 1rem; color: #57606a;
+    background: #f6f8fa; margin: 1rem 0; border-radius: 0 4px 4px 0;
+  }
+  .EasyMDEContainer .editor-preview[data-dark="1"] blockquote:not([class]),
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] blockquote:not([class]) {
+    background: #21262d; border-color: #30363d; color: #8b949e;
+  }
+
+  /* CHIRPY PROMPT BOXES */
+  .EasyMDEContainer .editor-preview blockquote.prompt-tip,
+  .EasyMDEContainer .editor-preview blockquote.prompt-info,
+  .EasyMDEContainer .editor-preview blockquote.prompt-warning,
+  .EasyMDEContainer .editor-preview blockquote.prompt-danger,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-tip,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-info,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-warning,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-danger {
+    border-radius: 0 .3rem .3rem 0; padding: .7rem 1rem .7rem 2.8rem;
+    margin: 1rem 0; border-left: 4px solid; position: relative; color: inherit;
+  }
+  .EasyMDEContainer .editor-preview blockquote.prompt-tip::before,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-tip::before { content: "💡"; position: absolute; left: .7rem; top: .7rem; }
+  .EasyMDEContainer .editor-preview blockquote.prompt-info::before,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-info::before { content: "ℹ️"; position: absolute; left: .7rem; top: .7rem; }
+  .EasyMDEContainer .editor-preview blockquote.prompt-warning::before,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-warning::before { content: "⚠️"; position: absolute; left: .7rem; top: .7rem; }
+  .EasyMDEContainer .editor-preview blockquote.prompt-danger::before,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-danger::before { content: "🔴"; position: absolute; left: .7rem; top: .7rem; }
+  .EasyMDEContainer .editor-preview blockquote.prompt-tip,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-tip { background: rgba(63,185,80,.12); border-color: #3fb950; }
+  .EasyMDEContainer .editor-preview blockquote.prompt-info,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-info { background: rgba(88,166,255,.12); border-color: #58a6ff; }
+  .EasyMDEContainer .editor-preview blockquote.prompt-warning,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-warning { background: rgba(210,153,34,.15); border-color: #d29922; }
+  .EasyMDEContainer .editor-preview blockquote.prompt-danger,
+  .EasyMDEContainer .editor-preview-side blockquote.prompt-danger { background: rgba(248,81,73,.12); border-color: #f85149; }
+
+  /* TABLES */
+  .EasyMDEContainer .editor-preview table, .EasyMDEContainer .editor-preview-side table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  .EasyMDEContainer .editor-preview th, .EasyMDEContainer .editor-preview-side th { background: #f6f8fa; font-weight: 600; padding: .5rem .75rem; text-align: left; border: 1px solid #d0d7de; }
+  .EasyMDEContainer .editor-preview td, .EasyMDEContainer .editor-preview-side td { padding: .5rem .75rem; border: 1px solid #d0d7de; }
+  .EasyMDEContainer .editor-preview[data-dark="1"] th,
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] th { background: #21262d; border-color: #30363d; }
+  .EasyMDEContainer .editor-preview[data-dark="1"] td,
+  .EasyMDEContainer .editor-preview-side[data-dark="1"] td { border-color: #30363d; }
+
+  .EasyMDEContainer .CodeMirror-wrap { position: relative; }
+  .EasyMDEContainer .CodeMirror-sided { width: 50% !important; }
+
+  /* Side-by-side */
+  .EasyMDEContainer.sided--no-fullscreen { height: 100%; }
+  .EasyMDEContainer.sided--no-fullscreen .CodeMirror-sided { overflow-y: auto !important; height: 100% !important; flex: none !important; width: 50% !important; }
+  .EasyMDEContainer.sided--no-fullscreen .editor-preview-active-side { flex: none !important; width: 50% !important; height: 100% !important; overflow-y: auto !important; position: static !important; box-sizing: border-box; }
+  .EasyMDEContainer .editor-preview-side { border-left: 1px solid var(--border); }
+  .cm-header { color: var(--accent) !important; font-weight: 600; }
+  .cm-strong  { color: var(--text) !important; font-weight: 700; }
+  .cm-em      { color: var(--text-muted) !important; font-style: italic; }
+  .cm-link    { color: var(--accent-light) !important; }
+  .cm-url     { color: var(--text-muted) !important; }
+  .cm-quote   { color: var(--text-muted) !important; }
+
+  /* ─── STATUS BAR ─── */
+  #statusbar { height: 26px; background: var(--bg-mid); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 16px; padding: 0 14px; font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+  .stat { display: flex; align-items: center; gap: 5px; }
+  .dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
+  .dot.ok   { background: var(--success); }
+  .dot.warn { background: var(--warning); }
+  #dirty-indicator { color: var(--warning); font-weight: 600; display: none; }
+  #dirty-indicator.show { display: inline; }
+
+  /* ─── MODALS ─── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--bg); border: 1px solid var(--border-strong); border-radius: 10px; padding: 24px 28px; width: 440px; max-width: 94vw; box-shadow: var(--shadow-modal); color: var(--text); }
+  .modal-box.wide { width: 680px; }
+  .modal-box.wider { width: 820px; max-height: 88vh; display: flex; flex-direction: column; }
+  .modal-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .modal-box p  { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5; }
+  .modal-box p.hint { font-size: 11px; margin-bottom: 8px; }
+  .modal-box .fl { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; margin-top: 10px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; flex-shrink: 0; }
+
+  .pat-row { position: relative; }
+  .pat-row .eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 2px 4px; }
+  .pat-row .eye:hover { color: var(--text); }
+
+  /* Auth (GitHub App device-flow) */
+  .auth-box { background: var(--bg-mid); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 4px; }
+  .auth-user-row { display: flex; align-items: center; gap: 10px; }
+  .auth-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg); flex-shrink: 0; }
+  .auth-user-info { flex: 1; min-width: 0; font-size: 13px; line-height: 1.4; }
+  .auth-expires { font-size: 11px; color: var(--text-muted); }
+  .legacy-pat { margin-top: 12px; border-top: 1px dashed var(--border); padding-top: 10px; }
+  .legacy-pat summary { font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 4px 0; user-select: none; }
+  .legacy-pat summary:hover { color: var(--text); }
+  .legacy-pat[open] summary { margin-bottom: 4px; }
+
+  /* Device-code modal */
+  .device-code { font-family: var(--font-mono); font-size: 26px; letter-spacing: 6px; font-weight: 600; text-align: center; padding: 14px 10px; background: var(--bg-mid); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; color: var(--accent); }
+  .device-status { padding: 10px 12px; background: var(--bg-mid); border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+  .device-status .spinner { display: inline-block; border-color: rgba(0,0,0,.2); border-top-color: var(--accent); }
+  [data-theme="dark"] .device-status .spinner { border-color: rgba(255,255,255,.2); border-top-color: var(--accent); }
+  .device-status.error { color: var(--warning); border-color: var(--warning); }
+  .device-status.success { color: var(--success, #22c55e); border-color: var(--success, #22c55e); }
+
+  .commit-preview { background: var(--bg-mid); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; font-size: 12px; font-family: var(--font-mono); margin-bottom: 14px; line-height: 1.7; color: var(--text-muted); white-space: pre-wrap; }
+  .commit-preview span { color: var(--text); }
+  .dest-tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+  .dest-tag.drafts { background: #fef9c3; color: #854d0e; }
+  .dest-tag.posts  { background: #dcfce7; color: #166534; }
+  [data-theme="dark"] .dest-tag.drafts { background: #3f2e00; color: #fbbf24; }
+  [data-theme="dark"] .dest-tag.posts  { background: #14381f; color: #86efac; }
+  .spinner { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .CodeMirror.drag-over { outline: 2px dashed var(--accent); outline-offset: -4px; }
+
+  .lang-btn { padding: 7px 6px; font-size: 12px; font-family: var(--font-mono); border-radius: 5px; border: 1px solid var(--border-strong); background: var(--bg-mid); color: var(--text-muted); cursor: pointer; transition: all .15s; text-align: center; }
+  .lang-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  textarea#commit-msg { width: 100%; min-height: 80px; resize: vertical; font-family: var(--font-mono); font-size: 12px; padding: 8px 10px; background: var(--bg-input); color: var(--text); border: 1px solid var(--border-strong); border-radius: 5px; outline: none; }
+  textarea#commit-msg:focus { border-color: var(--accent); }
+
+  /* ─── DIFF VIEW ─── */
+  .diff-wrap { flex: 1; overflow: auto; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-mid); font-family: var(--font-mono); font-size: 12px; line-height: 1.55; min-height: 180px; max-height: 50vh; }
+  .diff-line { display: grid; grid-template-columns: 40px 1fr; white-space: pre; }
+  .diff-line .ln { padding: 0 8px; color: var(--text-muted); background: var(--bg); border-right: 1px solid var(--border); text-align: right; user-select: none; }
+  .diff-line .tx { padding: 0 10px; overflow-wrap: anywhere; }
+  .diff-line.add { background: var(--diff-add-bg); }
+  .diff-line.add .tx { color: var(--diff-add-fg); }
+  .diff-line.del { background: var(--diff-del-bg); }
+  .diff-line.del .tx { color: var(--diff-del-fg); }
+  .diff-line.ctx { color: var(--text-muted); }
+  .diff-summary { font-size: 11px; color: var(--text-muted); margin: 8px 0 4px; }
+  .diff-summary .plus { color: var(--success); }
+  .diff-summary .minus { color: var(--danger); }
+
+  /* ─── LOAD MODAL ─── */
+  .load-modal-box { background: var(--bg); border: 1px solid var(--border-strong); border-radius: 10px; padding: 0; width: 620px; max-width: 96vw; max-height: 82vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-modal); color: var(--text); }
+  .load-modal-head { padding: 18px 22px 0; flex-shrink: 0; }
+  .load-modal-head h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  .load-tabs { display: flex; gap: 2px; background: var(--bg-mid); border-radius: 6px; padding: 2px; border: 1px solid var(--border); width: fit-content; margin-bottom: 12px; }
+  .load-tab { padding: 5px 14px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; color: var(--text-muted); background: transparent; font-family: var(--font-mono); transition: all .15s; }
+  .load-tab.active { background: var(--bg-input); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .load-search { width: 100%; background: var(--bg-input); color: var(--text); border: 1px solid var(--border-strong); border-radius: 5px; font-size: 12px; padding: 6px 10px; outline: none; margin-bottom: 10px; }
+  .load-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(5,80,174,.1); }
+  .load-hint { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+  .file-list { flex: 1; overflow-y: auto; border-top: 1px solid var(--border); }
+  .file-item { display: flex; align-items: center; gap: 10px; padding: 10px 22px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .1s; }
+  .file-item:last-child { border-bottom: none; }
+  .file-item:hover { background: var(--bg-mid); }
+  .file-item:hover .file-actions { opacity: 1; }
+  .file-icon { font-size: 14px; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-title { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-name { font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-actions { display: flex; gap: 6px; opacity: 0; transition: opacity .1s; }
+  .file-act-btn { padding: 3px 10px; font-size: 11px; border-radius: 4px; border: 1px solid var(--border-strong); background: var(--bg-input); color: var(--accent); cursor: pointer; transition: all .15s; white-space: nowrap; font-weight: 500; }
+  .file-act-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .file-act-btn.promote { color: var(--success); }
+  .file-act-btn.promote:hover { background: var(--success); color: #fff; border-color: var(--success); }
+  .file-act-btn.history { color: var(--text-muted); }
+  .file-act-btn.history:hover { background: var(--text-muted); color: var(--bg); border-color: var(--text-muted); }
+  .load-empty { padding: 28px 22px; text-align: center; font-size: 13px; color: var(--text-muted); }
+  .load-footer { padding: 12px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; }
+
+  /* ─── REVISIONS MODAL ─── */
+  .rev-list { border: 1px solid var(--border); border-radius: 6px; max-height: 50vh; overflow-y: auto; }
+  .rev-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 12px; }
+  .rev-item:last-child { border-bottom: none; }
+  .rev-item:hover { background: var(--bg-mid); }
+  .rev-item.active { background: var(--bg-mid); border-left: 3px solid var(--accent); padding-left: 11px; }
+  .rev-hash { font-family: var(--font-mono); color: var(--text-muted); flex-shrink: 0; width: 58px; }
+  .rev-msg { flex: 1; min-width: 0; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rev-date { color: var(--text-muted); flex-shrink: 0; font-size: 11px; }
+
+  /* ─── TOAST ─── */
+  #toast { position: fixed; bottom: 36px; right: 22px; background: var(--bg); border: 1px solid var(--border-strong); border-radius: 8px; padding: 10px 16px; font-size: 13px; display: none; align-items: center; gap: 8px; z-index: 300; box-shadow: var(--shadow-modal); max-width: 320px; color: var(--text); }
+  #toast.show    { display: flex; }
+  #toast.success { border-color: var(--success); }
+  #toast.error   { border-color: var(--danger); }
+</style>
+</head>
+<body data-theme="light">
+
+<!-- ─── TOPBAR ─── -->
+<div id="topbar">
+  <span class="logo-wrap">
+    <svg class="logo-svg" width="28" height="28" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="20" ry="20" fill="#ffffff" stroke="#0056b2" stroke-width="6"/>
+      <rect x="3" y="3" width="94" height="11" rx="3" fill="#0056b2"/>
+      <text x="50" y="72" font-family="Arial,sans-serif" font-weight="bold" font-size="46" text-anchor="middle"><tspan fill="#141414">R</tspan><tspan fill="#0056b2">M</tspan></text>
+    </svg>
+    <span class="logo-text">Post Editor</span>
+  </span>
+  <div class="divider"></div>
+  <span id="filename-display">untitled.md</span>
+  <div id="dest-toggle">
+    <button class="dest-btn active-drafts" id="btn-drafts" data-dest="_drafts">_drafts</button>
+    <button class="dest-btn"                id="btn-posts"  data-dest="_posts">_posts</button>
+  </div>
+  <button class="top-btn icon-only" id="theme-btn" title="Toggle editor theme">🌙</button>
+  <button class="top-btn icon-only" id="preview-dark-btn" title="Switch preview to dark mode">🌙</button>
+  <button class="top-btn" id="btn-settings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </button>
+  <button class="top-btn" id="btn-save-local">
+    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    Save
+  </button>
+  <button class="top-btn" id="btn-open-local">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    Open
+  </button>
+  <button class="top-btn" id="btn-load">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Load
+  </button>
+  <button class="top-btn" id="btn-new">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New
+  </button>
+  <button class="top-btn primary" id="btn-publish">
+    <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Publish
+  </button>
+</div>
+
+<!-- ─── MAIN LAYOUT ─── -->
+<div id="main">
+  <div id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Front Matter</div>
+      <div class="field-group">
+        <label class="field-label">Title *</label>
+        <input type="text" id="fm-title" placeholder="Post title…">
+      </div>
+      <div class="field-group row">
+        <div style="flex:1.4;">
+          <label class="field-label">Date</label>
+          <input type="date" id="fm-date">
+        </div>
+        <div style="flex:1;">
+          <label class="field-label">Time</label>
+          <input type="time" id="fm-time" value="09:00">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Last modified <span class="hint">(for edits)</span></label>
+        <div class="field-group row" style="margin-bottom:0;">
+          <input type="date" id="fm-modified">
+          <button class="mini-btn" id="btn-modified-today" title="Set to today">Today</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Description</label>
+        <textarea class="small" id="fm-description" placeholder="Short description for SEO…"></textarea>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Classification</div>
+      <div class="field-group">
+        <label class="field-label">Categories</label>
+        <div class="tag-input-wrap" id="cat-wrap">
+          <input class="tag-bare-input" id="cat-field" placeholder="Add, press Enter…" list="cat-suggestions" autocomplete="off">
+        </div>
+        <datalist id="cat-suggestions"></datalist>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Tags</label>
+        <div class="tag-input-wrap" id="tag-wrap">
+          <input class="tag-bare-input" id="tag-field" placeholder="Add, press Enter…" list="tag-suggestions" autocomplete="off">
+        </div>
+        <datalist id="tag-suggestions"></datalist>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Options</div>
+      <div class="field-group">
+        <label class="field-label">Pin post</label>
+        <select id="fm-pin"><option value="false">No</option><option value="true">Yes</option></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Table of Contents</label>
+        <select id="fm-toc"><option value="true">Yes (default)</option><option value="false">No</option></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Comments</label>
+        <select id="fm-comments"><option value="true">Yes (default)</option><option value="false">No</option></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Math (MathJax)</label>
+        <select id="fm-math"><option value="false">No (default)</option><option value="true">Yes</option></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Mermaid diagrams</label>
+        <select id="fm-mermaid"><option value="false">No (default)</option><option value="true">Yes</option></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Image path</label>
+        <div class="field-group row" style="margin-bottom:0;">
+          <input type="text" id="fm-image" placeholder="/assets/img/post.jpg">
+          <button class="mini-btn" id="btn-og-upload" title="Upload OG image to repo">&#8679;</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Image alt text</label>
+        <input type="text" id="fm-image-alt" placeholder="Cover image description">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label toggle-head" id="hc-toggle">
+        <span>Human Check <span class="counter" id="hc-counter">0 / 5</span></span>
+        <span id="human-check-arrow">▶</span>
+      </div>
+      <div class="hc-list" id="human-check-body" style="display:none;">
+        <div class="hc-intro">Before publishing, verify:</div>
+        <label class="hc-item"><input type="checkbox" data-hc="1">Intro says what <em>triggered</em> this — not just what the problem is</label>
+        <label class="hc-item"><input type="checkbox" data-hc="2">At least one wrong path or ruled-out option mentioned</label>
+        <label class="hc-item"><input type="checkbox" data-hc="3">One specific real-world detail (time, scale, role, consequence)</label>
+        <label class="hc-item"><input type="checkbox" data-hc="4">Outro says something honest, not a clean wrap-up</label>
+        <label class="hc-item"><input type="checkbox" data-hc="5">At least one real screenshot included</label>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label toggle-head" id="ld-toggle">
+        <span>Local Drafts <span class="counter" id="ld-counter">0</span></span>
+        <span id="ld-arrow">▶</span>
+      </div>
+      <div class="ld-body" id="ld-body" style="display:none;">
+        <div class="ld-actions">
+          <button class="mini-btn" id="btn-ld-new" title="Start a new offline draft">+ New</button>
+          <span class="ld-hint" id="ld-status"></span>
+        </div>
+        <div class="ld-list" id="ld-list"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Front Matter Preview</div>
+      <pre id="fm-preview"></pre>
+    </div>
+  </div>
+
+  <div id="sidebar-resize"></div>
+
+  <div id="editor-pane">
+    <textarea id="editor"></textarea>
+  </div>
+</div>
+
+<div id="statusbar">
+  <div class="stat"><div class="dot" id="pat-dot"></div><span id="pat-status">No PAT</span></div>
+  <div class="stat"><span id="dirty-indicator">● unsaved</span></div>
+  <div class="stat" style="margin-left:auto;"><span id="dest-status">→ _drafts/untitled.md</span></div>
+</div>
+
+<!-- hidden file inputs -->
+<input type="file" id="img-file-input" accept="image/*" style="display:none">
+<input type="file" id="img-og-input"   accept="image/*" style="display:none">
+<input type="file" id="md-file-input"  accept=".md,text/markdown" style="display:none">
+
+<!-- ─── SETTINGS MODAL ─── -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal-box">
+    <h3>GitHub Settings</h3>
+
+    <label class="fl">Sign in</label>
+    <div class="auth-box" id="auth-box">
+      <!-- signed-out state -->
+      <div id="auth-signed-out" style="display:none;">
+        <p style="margin:0 0 10px 0; font-size:12px; color:var(--text-muted); line-height:1.5;">
+          Sign in with GitHub via the <strong>RM Post Editor</strong> app (device-code flow).
+          Short-lived tokens, auto-refresh, revocable from GitHub settings.
+        </p>
+        <button class="top-btn primary" id="btn-auth-signin" type="button">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.27-1.69-1.27-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.72-1.52-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.73.81 1.18 1.83 1.18 3.09 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.07.78 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
+          Sign in with GitHub
+        </button>
+      </div>
+      <!-- signed-in state -->
+      <div id="auth-signed-in" style="display:none;">
+        <div class="auth-user-row">
+          <img id="auth-avatar" class="auth-avatar" alt="" aria-hidden="true">
+          <div class="auth-user-info">
+            <div><strong id="auth-login">@unknown</strong></div>
+            <div class="auth-expires" id="auth-expires">session expires in …</div>
+          </div>
+          <button class="top-btn" id="btn-auth-signout" type="button">Sign out</button>
+        </div>
+      </div>
+    </div>
+
+    <label class="fl">Repository (owner/repo)</label>
+    <input type="text" id="repo-input" placeholder="rmagasi/rmagasi.github.io">
+    <label class="fl">Branch</label>
+    <input type="text" id="branch-input" placeholder="main">
+
+    <details class="legacy-pat">
+      <summary>Legacy PAT (fallback)</summary>
+      <p style="margin:6px 0 10px 0; font-size:12px; color:var(--text-muted); line-height:1.5;">
+        Deprecated — kept as break-glass if the GitHub App is unavailable.
+        Fine-grained PAT, <strong>Contents: R/W</strong> only, short expiry. Stored in localStorage.
+      </p>
+      <div class="pat-row">
+        <input type="password" id="pat-input" placeholder="github_pat_…" style="font-family:var(--font-mono); padding-right:34px;">
+        <button class="eye" id="pat-eye" type="button" title="Show / hide token">👁</button>
+      </div>
+    </details>
+
+    <div class="modal-actions">
+      <button class="top-btn" id="btn-settings-cancel">Cancel</button>
+      <button class="top-btn primary" id="btn-settings-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── AUTH (DEVICE CODE) MODAL ─── -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box" style="width:460px;">
+    <h3>Sign in with GitHub</h3>
+    <p style="margin-bottom:8px;">Enter this code at <a href="https://github.com/login/device" target="_blank" rel="noopener">github.com/login/device</a>:</p>
+
+    <div class="device-code" id="device-code">────────</div>
+    <button class="top-btn" id="btn-device-copy" type="button" style="margin-bottom:12px;">Copy code</button>
+
+    <div class="device-status" id="device-status">
+      <div class="spinner" style="display:inline-block; vertical-align:middle;"></div>
+      <span id="device-status-text" style="vertical-align:middle; margin-left:8px;">Waiting for authorization…</span>
+    </div>
+
+    <p class="hint" id="device-expires" style="margin-top:10px;">Code expires in …</p>
+
+    <div class="modal-actions">
+      <button class="top-btn" id="btn-device-cancel" type="button">Cancel</button>
+      <a class="top-btn primary" id="btn-device-open" href="https://github.com/login/device" target="_blank" rel="noopener">Open GitHub ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PUBLISH MODAL ─── -->
+<div class="modal-overlay" id="publish-modal">
+  <div class="modal-box wider">
+    <h3>Publish Post</h3>
+    <div class="commit-preview" id="commit-preview"></div>
+
+    <div class="diff-summary" id="diff-summary" style="display:none;"></div>
+    <div class="diff-wrap" id="diff-wrap" style="display:none;"></div>
+
+    <div id="publish-gate" style="display:none;">
+      <p class="hint" style="color:var(--warning);">⚠ Human Check: <span id="gate-status">some items unchecked</span>. You can still publish, but consider reviewing the checklist first.</p>
+    </div>
+
+    <label class="fl">Commit message <span class="hint">(first line = subject; extra lines = body)</span></label>
+    <textarea id="commit-msg" spellcheck="false"></textarea>
+
+    <div class="modal-actions">
+      <button class="top-btn" id="btn-publish-cancel">Cancel</button>
+      <button class="top-btn primary" id="btn-publish-do">
+        <span id="publish-label">Commit to GitHub</span>
+        <div class="spinner" id="publish-spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LOAD MODAL ─── -->
+<div class="modal-overlay" id="load-modal">
+  <div class="load-modal-box">
+    <div class="load-modal-head">
+      <h3>Load Existing Post</h3>
+      <div class="load-tabs">
+        <button class="load-tab active" id="ltab-posts"  data-tab="_posts">_posts</button>
+        <button class="load-tab"        id="ltab-drafts" data-tab="_drafts">_drafts</button>
+      </div>
+      <input class="load-search" id="load-search" placeholder="Filter by title or filename…">
+      <div class="load-hint">Drafts show a <strong>Promote →</strong> button; any file can show its history.</div>
+    </div>
+    <div class="file-list" id="file-list"></div>
+    <div class="load-footer">
+      <button class="top-btn" id="btn-load-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CODE LANGUAGE PICKER ─── -->
+<div class="modal-overlay" id="code-modal">
+  <div class="modal-box" style="width:380px;">
+    <h3>Insert Code Block</h3>
+    <p>Choose a language for syntax highlighting.</p>
+    <div id="lang-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px;"></div>
+    <label class="fl">Or type a language</label>
+    <input type="text" id="code-lang-input" placeholder="e.g. yaml, xml, bash…" style="margin-bottom:0;">
+    <div class="modal-actions">
+      <button class="top-btn" id="btn-code-cancel">Cancel</button>
+      <button class="top-btn primary" id="btn-code-insert">Insert</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── REVISIONS MODAL ─── -->
+<div class="modal-overlay" id="revisions-modal">
+  <div class="modal-box wider">
+    <h3>Revision History</h3>
+    <p class="hint" id="rev-file-path">Loading…</p>
+    <div class="rev-list" id="rev-list"></div>
+    <div class="diff-summary" id="rev-diff-summary" style="display:none;"></div>
+    <div class="diff-wrap" id="rev-diff-wrap" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="top-btn" id="btn-rev-revert" style="display:none;">Load this revision into editor</button>
+      <button class="top-btn" id="btn-rev-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CONFIRM MODAL (generic) ─── -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <h3 id="confirm-title">Confirm</h3>
+    <p id="confirm-body"></p>
+    <div class="modal-actions">
+      <button class="top-btn" id="btn-confirm-cancel">Cancel</button>
+      <button class="top-btn primary" id="btn-confirm-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<!-- MODULES-INLINE script goes here — filled in next step -->
+<script type="module" id="app">
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: constants
+   ═════════════════════════════════════════════════════════════ */
+const STORAGE = {
+  PAT:            'rm_pat',                 // legacy — fallback only
+  REPO:           'rm_repo',
+  BRANCH:         'rm_branch',
+  THEME:          'rm_theme',
+  PREVIEW_DARK:   'rm_preview_dark',
+  SIDEBAR_W:      'rm_sidebar_w',
+  TREE_CACHE:     'rm_tree_cache',
+  DRAFT_PREFIX:   'rm-editor-draft:',       // per-path: rm-editor-draft:<path-or-untitled>
+  // GitHub App device-flow OAuth
+  ACCESS_TOKEN:   'rm_access_token',        // user-to-server, ~8h
+  REFRESH_TOKEN:  'rm_refresh_token',       // ~6 months
+  TOKEN_EXPIRES:  'rm_token_expires',       // epoch ms — when access_token expires
+  REFRESH_EXPIRES:'rm_refresh_expires',     // epoch ms — when refresh_token expires
+  AUTH_USER:      'rm_auth_user',           // JSON {login, avatar_url}
+};
+const AUTH = {
+  CLIENT_ID:  'Iv23liI9Pm1h68n6vsbu',                                    // RM Post Editor — public
+  // Route via Cloudflare Worker relay (rm-gh-auth) — GitHub's device-flow
+  // endpoints don't send CORS headers, so a browser-only editor can't call
+  // them directly. Worker forwards verbatim, adds CORS. See cloudflare-worker/worker.js.
+  DEVICE_URL: 'https://rm-gh-auth.robert-magasi.workers.dev/device/code',
+  TOKEN_URL:  'https://rm-gh-auth.robert-magasi.workers.dev/access_token',
+  SKEW_MS:    60 * 1000,                                                 // refresh 60s before expiry
+};
+const DEFAULTS = {
+  REPO:   'rmagasi/rmagasi.github.io',
+  BRANCH: 'main',
+  TIME:   '09:00',
+  AUTHOR: 'robert',
+};
+const LIMITS = {
+  MAX_UPLOAD_WARN: 2 * 1024 * 1024,   // 2 MB — warn
+  MAX_UPLOAD_HARD: 10 * 1024 * 1024,  // 10 MB — block
+  MAX_CATEGORIES:  2,                 // Chirpy max
+};
+const CODE_LANGS = [
+  { id: 'powershell', label: 'PowerShell' },
+  { id: 'batch',      label: 'Batch' },
+  { id: 'csharp',     label: 'C#' },
+  { id: 'javascript', label: 'JavaScript' },
+  { id: 'typescript', label: 'TypeScript' },
+  { id: 'python',     label: 'Python' },
+  { id: 'sql',        label: 'SQL' },
+  { id: 'xml',        label: 'XML' },
+  { id: 'json',       label: 'JSON' },
+  { id: 'yaml',       label: 'YAML' },
+  { id: 'bash',       label: 'Bash' },
+  { id: 'html',       label: 'HTML' },
+  { id: 'css',        label: 'CSS' },
+  { id: 'plaintext',  label: 'Plain' },
+];
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: DOM helpers
+   ═════════════════════════════════════════════════════════════ */
+const $  = (id) => document.getElementById(id);
+const $$ = (sel, ctx = document) => ctx.querySelectorAll(sel);
+const on = (el, ev, fn, opts) => el && el.addEventListener(ev, fn, opts);
+function warn(...a) { try { console.warn('[editor]', ...a); } catch {} }
+function errLog(...a) { try { console.error('[editor]', ...a); } catch {} }
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: state
+   ═════════════════════════════════════════════════════════════ */
+const State = {
+  easyMDE:           null,
+  currentDest:       '_drafts',
+  categories:        [],
+  tags:              [],
+  currentSha:        null,
+  currentLoadedPath: null,
+  /**
+   * Preserve the exact date / last_modified_at strings from the loaded file
+   * so we only rebuild the time+tz portion when the user explicitly edits
+   * the date or time inputs. Fixes DST drift on edit.
+   */
+  loadedDateStr:     null,
+  loadedModifiedStr: null,
+  previewDark:       false,
+  dirty:             false,
+  pendingDiffBody:   null,   // cached new content for the publish diff
+  activeLocalDraftId: null,  // if set, edits autosave to IndexedDB
+};
+
+function setDirty(v = true) {
+  if (State.dirty === v) return;
+  State.dirty = v;
+  const ind = $('dirty-indicator');
+  if (ind) ind.classList.toggle('show', v);
+  // If a local draft is active, persist every edit to IndexedDB (debounced).
+  if (v && State.activeLocalDraftId && typeof Drafts !== 'undefined') {
+    Drafts.scheduleSave();
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: helpers — dates, slugs, base64
+   ═════════════════════════════════════════════════════════════ */
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function tzOffset() {
+  const off = -new Date().getTimezoneOffset();
+  const h = String(Math.floor(Math.abs(off) / 60)).padStart(2, '0');
+  const m = String(Math.abs(off) % 60).padStart(2, '0');
+  return (off >= 0 ? '+' : '-') + h + m;
+}
+
+/** Build a YYYY-MM-DD HH:MM:SS +HHMM timestamp from date + time inputs. */
+function buildTimestamp(dateStr, timeStr) {
+  const d = dateStr || today();
+  const t = (timeStr || DEFAULTS.TIME) + ':00';
+  return `${d} ${t} ${tzOffset()}`;
+}
+
+/** Unicode-aware slug: strip diacritics via NFKD, map ß, then ASCII-filter. */
+function slugify(raw) {
+  return (raw || 'untitled')
+    .normalize('NFKD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/ß/g, 'ss')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    || 'untitled';
+}
+
+/** UTF-8 safe base64 encode — replaces deprecated unescape/encodeURIComponent. */
+function b64encode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+function b64decode(b64) {
+  const bin = atob(b64.replace(/\n/g, ''));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+/** Safely escape HTML for innerHTML insertion. */
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: yaml — build + parse front matter
+   ═════════════════════════════════════════════════════════════ */
+const YAML = {
+  /**
+   * Build the front-matter block for the current sidebar state.
+   * Uses js-yaml where available for correct escaping; falls back to
+   * a hand-rolled escaper only if the library failed to load.
+   */
+  build(opts = {}) {
+    const title    = $('fm-title').value.trim() || 'Untitled';
+    const dateInp  = $('fm-date').value || today();
+    const timeInp  = $('fm-time').value || DEFAULTS.TIME;
+    const modInp   = $('fm-modified').value;
+    const desc     = $('fm-description').value.trim();
+    const pin      = $('fm-pin').value === 'true';
+    const toc      = $('fm-toc').value !== 'false';   // default true
+    const comments = $('fm-comments').value !== 'false';
+    const math     = $('fm-math').value === 'true';
+    const mermaid  = $('fm-mermaid').value === 'true';
+    const image    = $('fm-image').value.trim();
+    const imageAlt = $('fm-image-alt').value.trim();
+
+    // Decide whether to rebuild date string or preserve the loaded one.
+    // Only rebuild if the user has edited date/time since load.
+    let dateStr;
+    if (State.loadedDateStr && opts.preserveDateIfUnchanged) {
+      const loadedDay = State.loadedDateStr.split(' ')[0];
+      const loadedTime = (State.loadedDateStr.match(/\s(\d{2}:\d{2})(?::\d{2})?/) || [,''])[1];
+      if (loadedDay === dateInp && loadedTime === timeInp) {
+        dateStr = State.loadedDateStr;
+      } else {
+        dateStr = buildTimestamp(dateInp, timeInp);
+      }
+    } else {
+      dateStr = buildTimestamp(dateInp, timeInp);
+    }
+
+    let modStr = '';
+    if (modInp) {
+      if (State.loadedModifiedStr && State.loadedModifiedStr.startsWith(modInp)) {
+        modStr = State.loadedModifiedStr;
+      } else {
+        modStr = `${modInp} 00:00:00 ${tzOffset()}`;
+      }
+    }
+
+    const obj = {};
+    obj.title = title;
+    obj.date = dateStr;
+    obj.author = DEFAULTS.AUTHOR;
+    if (modStr) obj.last_modified_at = modStr;
+    if (State.categories.length) obj.categories = [...State.categories];
+    if (State.tags.length)       obj.tags = [...State.tags];
+    if (desc) obj.description = desc;
+    if (pin) obj.pin = true;
+    if (!toc) obj.toc = false;
+    if (!comments) obj.comments = false;
+    if (math) obj.math = true;
+    if (mermaid) obj.mermaid = true;
+    if (image) {
+      obj.image = { path: image };
+      if (imageAlt) obj.image.alt = imageAlt;
+    }
+
+    // js-yaml with flow-style categories/tags (matches existing posts)
+    if (typeof jsyaml !== 'undefined') {
+      try {
+        const categoriesFlow = obj.categories ? jsyaml.dump({ categories: obj.categories }, { flowLevel: 1, forceQuotes: true, quotingType: '"' }).trim() : '';
+        const tagsFlow       = obj.tags       ? jsyaml.dump({ tags: obj.tags },             { flowLevel: 1, forceQuotes: true, quotingType: '"' }).trim() : '';
+        // Build line-by-line to keep the canonical field order.
+        const lines = [];
+        lines.push(`title: ${YAML._quote(obj.title)}`);
+        lines.push(`date: ${obj.date}`);
+        lines.push(`author: ${obj.author}`);
+        if (obj.last_modified_at) lines.push(`last_modified_at: ${obj.last_modified_at}`);
+        if (categoriesFlow) lines.push(categoriesFlow);
+        if (tagsFlow)       lines.push(tagsFlow);
+        if (obj.description) lines.push(`description: ${YAML._quote(obj.description)}`);
+        if (obj.pin)        lines.push(`pin: true`);
+        if (obj.toc === false) lines.push(`toc: false`);
+        if (obj.comments === false) lines.push(`comments: false`);
+        if (obj.math)    lines.push(`math: true`);
+        if (obj.mermaid) lines.push(`mermaid: true`);
+        if (obj.image) {
+          lines.push(`image:`);
+          lines.push(`  path: ${obj.image.path}`);
+          if (obj.image.alt) lines.push(`  alt: ${YAML._quote(obj.image.alt)}`);
+        }
+        return `---\n${lines.join('\n')}\n---`;
+      } catch (e) {
+        warn('js-yaml build failed, falling back to escaped interpolation:', e);
+      }
+    }
+    // Fallback: strict manual escape
+    return YAML._buildFallback(obj);
+  },
+
+  /** Quote a scalar string — uses js-yaml's double-quoted style. */
+  _quote(s) {
+    if (typeof jsyaml !== 'undefined') {
+      // Emit as a single-key doc, take the value text after "k: "
+      try {
+        const out = jsyaml.dump({ k: String(s) }, { forceQuotes: true, quotingType: '"', lineWidth: -1 }).trim();
+        return out.replace(/^k:\s*/, '');
+      } catch {}
+    }
+    return `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  },
+
+  _buildFallback(o) {
+    const esc = (s) => `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+    const L = [];
+    L.push(`title: ${esc(o.title)}`);
+    L.push(`date: ${o.date}`);
+    L.push(`author: ${o.author}`);
+    if (o.last_modified_at) L.push(`last_modified_at: ${o.last_modified_at}`);
+    if (o.categories) L.push(`categories: [${o.categories.map(esc).join(', ')}]`);
+    if (o.tags)       L.push(`tags: [${o.tags.map(esc).join(', ')}]`);
+    if (o.description) L.push(`description: ${esc(o.description)}`);
+    if (o.pin)        L.push(`pin: true`);
+    if (o.toc === false) L.push(`toc: false`);
+    if (o.comments === false) L.push(`comments: false`);
+    if (o.math)    L.push(`math: true`);
+    if (o.mermaid) L.push(`mermaid: true`);
+    if (o.image) {
+      L.push(`image:`);
+      L.push(`  path: ${o.image.path}`);
+      if (o.image.alt) L.push(`  alt: ${esc(o.image.alt)}`);
+    }
+    return `---\n${L.join('\n')}\n---`;
+  },
+
+  /**
+   * Parse a full post file (raw text) and populate sidebar + body.
+   * Tries js-yaml first; falls back to the old regex path on parse error.
+   */
+  parse(raw) {
+    const normalised = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const m = normalised.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+    if (!m) { State.easyMDE.value(normalised); return; }
+    const fmBlock = m[1];
+    const body = m[2].trim();
+
+    let fm = null;
+    if (typeof jsyaml !== 'undefined') {
+      try { fm = jsyaml.load(fmBlock); } catch (e) { warn('js-yaml parse failed, falling back to regex:', e); }
+    }
+    if (fm && typeof fm === 'object') {
+      YAML._applyParsed(fm, body);
+    } else {
+      YAML._applyRegexFallback(fmBlock, body);
+    }
+  },
+
+  _applyParsed(fm, body) {
+    // Preserve raw date strings for TZ fidelity on resave
+    State.loadedDateStr     = typeof fm.date === 'string' ? fm.date : null;
+    State.loadedModifiedStr = typeof fm.last_modified_at === 'string' ? fm.last_modified_at : null;
+
+    $('fm-title').value       = fm.title || '';
+    $('fm-description').value = fm.description || '';
+    $('fm-pin').value         = fm.pin === true ? 'true' : 'false';
+    $('fm-toc').value         = fm.toc === false ? 'false' : 'true';
+    $('fm-comments').value    = fm.comments === false ? 'false' : 'true';
+    $('fm-math').value        = fm.math === true ? 'true' : 'false';
+    $('fm-mermaid').value     = fm.mermaid === true ? 'true' : 'false';
+
+    const d = State.loadedDateStr || '';
+    $('fm-date').value = d ? d.split(' ')[0] : today();
+    const timeMatch = d.match(/\s(\d{2}:\d{2})/);
+    $('fm-time').value = timeMatch ? timeMatch[1] : DEFAULTS.TIME;
+
+    const md = State.loadedModifiedStr || '';
+    $('fm-modified').value = md ? md.split(' ')[0] : '';
+
+    if (fm.image && typeof fm.image === 'object') {
+      $('fm-image').value     = fm.image.path || '';
+      $('fm-image-alt').value = fm.image.alt  || '';
+    } else if (typeof fm.image === 'string') {
+      $('fm-image').value     = fm.image;
+      $('fm-image-alt').value = '';
+    } else {
+      $('fm-image').value     = '';
+      $('fm-image-alt').value = '';
+    }
+
+    State.categories = Array.isArray(fm.categories) ? fm.categories.map(String) : [];
+    State.tags       = Array.isArray(fm.tags)       ? fm.tags.map(String)       : [];
+    UI.renderPills('cat');
+    UI.renderPills('tag');
+
+    State.easyMDE.value(body);
+    UI.onFmChange({ fromLoad: true });
+  },
+
+  _applyRegexFallback(fm, body) {
+    const get = (key) => {
+      const re = new RegExp('^' + key + ':\\s*"?([^"\\n]+)"?', 'm');
+      const mm = fm.match(re);
+      return mm ? mm[1].trim() : '';
+    };
+    State.loadedDateStr     = get('date')             || null;
+    State.loadedModifiedStr = get('last_modified_at') || null;
+
+    $('fm-title').value       = get('title');
+    $('fm-description').value = get('description');
+    $('fm-pin').value         = get('pin') === 'true' ? 'true' : 'false';
+    $('fm-toc').value         = get('toc') === 'false' ? 'false' : 'true';
+    $('fm-comments').value    = get('comments') === 'false' ? 'false' : 'true';
+    $('fm-math').value        = get('math') === 'true' ? 'true' : 'false';
+    $('fm-mermaid').value     = get('mermaid') === 'true' ? 'true' : 'false';
+
+    const dateRaw = State.loadedDateStr || '';
+    $('fm-date').value = dateRaw ? dateRaw.split(' ')[0] : today();
+    const tM = dateRaw.match(/\s(\d{2}:\d{2})/);
+    $('fm-time').value = tM ? tM[1] : DEFAULTS.TIME;
+
+    const modRaw = State.loadedModifiedStr || '';
+    $('fm-modified').value = modRaw ? modRaw.split(' ')[0] : '';
+
+    const imgBlock = (fm.match(/^image:\s*\n((?:[ \t]+[^\n]+\n?)*)/m) || [])[1] || '';
+    const pathM = imgBlock.match(/^\s*path:\s*"?([^"\n]+)"?/m);
+    const altM  = imgBlock.match(/^\s*alt:\s*"?([^"\n]+)"?/m);
+    $('fm-image').value     = pathM ? pathM[1].trim() : '';
+    $('fm-image-alt').value = altM  ? altM[1].trim()  : '';
+
+    const catInline = fm.match(/^categories:\s*\[([^\]]*)\]/m);
+    if (catInline) {
+      State.categories = catInline[1].split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean);
+    } else {
+      const catMulti = fm.match(/^categories:\s*\n((?:[ \t]+-[ \t]*[^\n]+\n?)+)/m);
+      State.categories = catMulti
+        ? [...catMulti[1].matchAll(/^\s*-\s*"?([^"\n]+)"?/gm)].map(x => x[1].trim()).filter(Boolean)
+        : [];
+    }
+    UI.renderPills('cat');
+
+    const tagInline = fm.match(/^tags:\s*\[([^\]]*)\]/m);
+    if (tagInline) {
+      State.tags = tagInline[1].split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean);
+    } else {
+      const tagMulti = fm.match(/^tags:\s*\n((?:[ \t]+-[ \t]*[^\n]+\n?)+)/m);
+      State.tags = tagMulti
+        ? [...tagMulti[1].matchAll(/^\s*-\s*"?([^"\n]+)"?/gm)].map(x => x[1].trim()).filter(Boolean)
+        : [];
+    }
+    UI.renderPills('tag');
+
+    State.easyMDE.value(body);
+    UI.onFmChange({ fromLoad: true });
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: auth — GitHub App device-flow OAuth
+   -----------------------------------------------------------
+   The app is "RM Post Editor" (client ID in AUTH.CLIENT_ID).
+   No client secret — device flow authenticates the user via
+   github.com/login/device, then returns a user-to-server
+   token. Tokens auto-refresh on 401.
+
+   Public API:
+     Auth.init()                — load user from storage, update UI
+     Auth.isAuthenticated()     — true iff a refresh token exists
+     Auth.isAccessExpired()     — true iff access token is near expiry
+     Auth.accessToken()         — current bearer (may be expired — call refresh())
+     Auth.startDeviceFlow()     — open modal, poll until signed in
+     Auth.refresh()             — exchange refresh_token for new access_token
+     Auth.signOut({silent})     — clear all tokens + UI
+     Auth.currentUser()         — {login, avatar_url} or null
+   ═════════════════════════════════════════════════════════════ */
+const Auth = {
+  _poll: null,     // current polling timer id (so Cancel can stop it)
+  _deviceCode: '', // current device_code (only during active flow)
+
+  /* ── storage helpers ── */
+  accessToken()  { return localStorage.getItem(STORAGE.ACCESS_TOKEN)  || ''; },
+  refreshToken() { return localStorage.getItem(STORAGE.REFRESH_TOKEN) || ''; },
+  isAuthenticated() {
+    // Having a refresh token is the source of truth. Access token may be expired
+    // but we can refresh transparently.
+    return !!Auth.refreshToken();
+  },
+  isAccessExpired() {
+    const exp = +localStorage.getItem(STORAGE.TOKEN_EXPIRES) || 0;
+    return !exp || Date.now() + AUTH.SKEW_MS >= exp;
+  },
+  currentUser() {
+    try { return JSON.parse(localStorage.getItem(STORAGE.AUTH_USER) || 'null'); }
+    catch { return null; }
+  },
+  _saveTokens({ access_token, refresh_token, expires_in, refresh_token_expires_in }) {
+    if (access_token)  localStorage.setItem(STORAGE.ACCESS_TOKEN,  access_token);
+    if (refresh_token) localStorage.setItem(STORAGE.REFRESH_TOKEN, refresh_token);
+    if (expires_in)    localStorage.setItem(STORAGE.TOKEN_EXPIRES,   String(Date.now() + expires_in * 1000));
+    if (refresh_token_expires_in) localStorage.setItem(STORAGE.REFRESH_EXPIRES, String(Date.now() + refresh_token_expires_in * 1000));
+  },
+  _clearTokens() {
+    for (const k of [STORAGE.ACCESS_TOKEN, STORAGE.REFRESH_TOKEN, STORAGE.TOKEN_EXPIRES, STORAGE.REFRESH_EXPIRES, STORAGE.AUTH_USER]) {
+      localStorage.removeItem(k);
+    }
+  },
+
+  /* ── init / sign-out ── */
+  async init() {
+    // If we have a refresh token but no cached user, fetch it once.
+    if (Auth.isAuthenticated() && !Auth.currentUser()) {
+      try { await Auth._fetchUser(); } catch (_) { /* best effort */ }
+    }
+    Auth._renderSettings();
+    UI.updatePatDot();
+  },
+  signOut({ silent = false } = {}) {
+    Auth._clearTokens();
+    Auth._renderSettings();
+    UI.updatePatDot();
+    if (!silent) UI.toast('success', '✓ Signed out');
+  },
+
+  /* ── device flow ── */
+  async startDeviceFlow() {
+    Auth.cancelPoll();
+    try {
+      // Step 1: request a device + user code.
+      const res = await fetch(AUTH.DEVICE_URL, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: AUTH.CLIENT_ID }),
+      });
+      if (!res.ok) throw new Error(`device/code ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error_description || data.error);
+
+      Auth._deviceCode = data.device_code;
+      $('device-code').textContent = data.user_code || '────────';
+      $('btn-device-open').href    = data.verification_uri || 'https://github.com/login/device';
+      $('device-status').className = 'device-status';
+      $('device-status-text').textContent = 'Waiting for authorization…';
+
+      // Countdown label (expires_in is seconds).
+      const expiresAt = Date.now() + (data.expires_in || 900) * 1000;
+      const tick = () => {
+        const ms = expiresAt - Date.now();
+        if (ms <= 0) { $('device-expires').textContent = 'Code expired — cancel and try again.'; return; }
+        const m = Math.floor(ms / 60000);
+        const s = Math.floor((ms % 60000) / 1000);
+        $('device-expires').textContent = `Code expires in ${m}:${String(s).padStart(2,'0')}`;
+      };
+      tick();
+      const ticker = setInterval(tick, 1000);
+
+      Modal.open('auth-modal');
+
+      // Step 2: poll for token.
+      try {
+        const tokens = await Auth.pollForToken(data.device_code, data.interval || 5, expiresAt);
+        clearInterval(ticker);
+        Auth._saveTokens(tokens);
+        await Auth._fetchUser();
+        Auth._renderSettings();
+        UI.updatePatDot();
+        $('device-status').className = 'device-status success';
+        $('device-status-text').textContent = '✓ Signed in!';
+        setTimeout(() => Modal.close('auth-modal'), 800);
+        UI.toast('success', '✓ Signed in as @' + (Auth.currentUser()?.login || 'unknown'));
+      } catch (err) {
+        clearInterval(ticker);
+        $('device-status').className = 'device-status error';
+        $('device-status-text').textContent = '✗ ' + (err.message || 'Authorization failed');
+      }
+    } catch (err) {
+      UI.toast('error', '✗ ' + (err.message || 'Device flow failed'));
+    }
+  },
+
+  async pollForToken(device_code, intervalSec, expiresAt) {
+    const delay = (ms) => new Promise((res, rej) => {
+      Auth._poll = setTimeout(() => { Auth._poll = null; res(); }, ms);
+    });
+    let interval = intervalSec;
+    while (Date.now() < expiresAt) {
+      await delay(interval * 1000);
+      // Cancelled mid-wait?
+      if (Auth._deviceCode !== device_code) throw new Error('Cancelled');
+      const res = await fetch(AUTH.TOKEN_URL, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id:   AUTH.CLIENT_ID,
+          device_code,
+          grant_type:  'urn:ietf:params:oauth:grant-type:device_code',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.access_token) return data;
+      // Expected "pending" errors — keep polling.
+      if (data.error === 'authorization_pending') continue;
+      if (data.error === 'slow_down')             { interval += 5; continue; }
+      if (data.error === 'expired_token')         throw new Error('Code expired');
+      if (data.error === 'access_denied')         throw new Error('Access denied');
+      if (data.error)                             throw new Error(data.error_description || data.error);
+    }
+    throw new Error('Code expired');
+  },
+
+  cancelPoll() {
+    if (Auth._poll) { clearTimeout(Auth._poll); Auth._poll = null; }
+    Auth._deviceCode = '';
+  },
+
+  /* ── refresh ── */
+  async refresh() {
+    const rt = Auth.refreshToken();
+    if (!rt) throw new Error('No refresh token');
+    const res = await fetch(AUTH.TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id:     AUTH.CLIENT_ID,
+        grant_type:    'refresh_token',
+        refresh_token: rt,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!data.access_token) {
+      // Refresh failed — clear everything so user can re-auth.
+      Auth._clearTokens();
+      Auth._renderSettings();
+      UI.updatePatDot();
+      throw new Error(data.error_description || data.error || 'Refresh failed');
+    }
+    Auth._saveTokens(data);
+    return data.access_token;
+  },
+
+  /* ── user identity ── */
+  async _fetchUser() {
+    const tok = Auth.accessToken();
+    if (!tok) return null;
+    const r = await fetch('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${tok}`, Accept: 'application/vnd.github+json' },
+    });
+    if (!r.ok) return null;
+    const u = await r.json();
+    const summary = { login: u.login, avatar_url: u.avatar_url };
+    localStorage.setItem(STORAGE.AUTH_USER, JSON.stringify(summary));
+    return summary;
+  },
+
+  /* ── UI rendering inside Settings modal ── */
+  _renderSettings() {
+    const out = $('auth-signed-out');
+    const inn = $('auth-signed-in');
+    if (!out || !inn) return;
+    if (Auth.isAuthenticated()) {
+      const u = Auth.currentUser() || {};
+      out.style.display = 'none';
+      inn.style.display = '';
+      $('auth-login').textContent = '@' + (u.login || 'unknown');
+      const av = $('auth-avatar');
+      if (u.avatar_url) { av.src = u.avatar_url; av.style.display = ''; }
+      else              { av.removeAttribute('src'); av.style.display = 'none'; }
+      // Human-readable expiry.
+      const exp = +localStorage.getItem(STORAGE.TOKEN_EXPIRES) || 0;
+      const lab = $('auth-expires');
+      if (exp) {
+        const mins = Math.round((exp - Date.now()) / 60000);
+        lab.textContent = mins > 0
+          ? `Access token expires in ${mins > 90 ? Math.round(mins/60)+'h' : mins+'m'}`
+          : 'Access token expired (auto-refresh on next call)';
+      } else {
+        lab.textContent = '';
+      }
+    } else {
+      out.style.display = '';
+      inn.style.display = 'none';
+    }
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: github — API wrapper, tree cache, publish, load, revisions
+   ═════════════════════════════════════════════════════════════ */
+const GH = {
+  pat()    { return localStorage.getItem(STORAGE.PAT) || ''; },
+  repo()   { return localStorage.getItem(STORAGE.REPO)   || DEFAULTS.REPO; },
+  branch() { return localStorage.getItem(STORAGE.BRANCH) || DEFAULTS.BRANCH; },
+  /** Which auth mode is active right now? 'oauth' | 'pat' | null */
+  authMode() {
+    if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) return 'oauth';
+    const p = GH.pat(); if (p && p.length > 10) return 'pat';
+    return null;
+  },
+  /** True if we have *any* usable credential. */
+  hasPat() { return GH.authMode() !== null; },
+  /** Active bearer token (prefers OAuth, falls back to PAT). */
+  token() {
+    if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) return Auth.accessToken();
+    return GH.pat();
+  },
+  headers(extra = {}) {
+    const tok = GH.token();
+    const h = { Accept: 'application/vnd.github+json', ...extra };
+    if (tok) h.Authorization = `Bearer ${tok}`;
+    return h;
+  },
+  apiBase() { return `https://api.github.com/repos/${GH.repo()}`; },
+
+  /**
+   * Fetch with auth. If OAuth access token is expired or we get 401,
+   * try one refresh + one retry before giving up.
+   */
+  async _authedFetch(url, init = {}) {
+    // Pre-emptive refresh: if OAuth token is about to expire, get a new one.
+    if (typeof Auth !== 'undefined' && Auth.isAuthenticated() && Auth.isAccessExpired()) {
+      try { await Auth.refresh(); } catch (_) { /* fall through — request below will 401 */ }
+    }
+    let r = await fetch(url, { ...init, headers: { ...GH.headers(), ...(init.headers || {}) } });
+    if (r.status === 401 && typeof Auth !== 'undefined' && Auth.isAuthenticated()) {
+      // Retry once after refresh. If refresh fails too, clear tokens so UI reflects it.
+      try {
+        await Auth.refresh();
+        r = await fetch(url, { ...init, headers: { ...GH.headers(), ...(init.headers || {}) } });
+      } catch (_) {
+        Auth.signOut({ silent: true });
+      }
+    }
+    return r;
+  },
+
+  async fetchJson(url, init = {}) {
+    const r = await GH._authedFetch(url, init);
+    if (!r.ok) {
+      let msg;
+      try { msg = (await r.json()).message; } catch { msg = r.statusText; }
+      const err = new Error(`${r.status} ${msg}`);
+      err.status = r.status;
+      throw err;
+    }
+    return r.json();
+  },
+
+  async fetchText(url, init = {}) {
+    const r = await fetch(url, init);
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    return r.text();
+  },
+
+  /**
+   * List all .md files in _posts and _drafts via the tree API (1 request)
+   * and parse FM for categories/tags using cached entries keyed by blob SHA.
+   * Populates the datalists on the sidebar for autocomplete.
+   */
+  async fetchPostMetaCached() {
+    if (!GH.hasPat()) return;
+    const branch = GH.branch();
+    try {
+      const tree = await GH.fetchJson(`${GH.apiBase()}/git/trees/${branch}?recursive=1`);
+      const cache = JSON.parse(localStorage.getItem(STORAGE.TREE_CACHE) || '{}');
+      const next = {};
+      const catSet = new Set();
+      const tagSet = new Set();
+
+      const mds = (tree.tree || []).filter(x =>
+        x.type === 'blob' && /\.md$/.test(x.path) &&
+        (x.path.startsWith('_posts/') || x.path.startsWith('_drafts/'))
+      );
+
+      // Use cached entries wherever sha matches; only fetch unknown SHAs.
+      const toFetch = [];
+      for (const f of mds) {
+        if (cache[f.sha]) { next[f.sha] = cache[f.sha]; }
+        else              { toFetch.push(f); }
+      }
+
+      await Promise.all(toFetch.map(async f => {
+        try {
+          const blob = await GH.fetchJson(`${GH.apiBase()}/git/blobs/${f.sha}`);
+          const text = b64decode(blob.content);
+          const m = text.match(/^---\n([\s\S]*?)\n---/);
+          if (!m) { next[f.sha] = { cats: [], tags: [], title: '' }; return; }
+          const fmBlock = m[1];
+          let fm = null;
+          if (typeof jsyaml !== 'undefined') { try { fm = jsyaml.load(fmBlock); } catch {} }
+          const cats = (fm && Array.isArray(fm.categories)) ? fm.categories.map(String) : [];
+          const tags = (fm && Array.isArray(fm.tags))       ? fm.tags.map(String)       : [];
+          const title = (fm && typeof fm.title === 'string') ? fm.title : '';
+          next[f.sha] = { cats, tags, title };
+        } catch (e) {
+          warn('fetchPostMetaCached blob failed for', f.path, e);
+          next[f.sha] = { cats: [], tags: [], title: '' };
+        }
+      }));
+
+      // Apply to suggestion sets
+      for (const sha of Object.keys(next)) {
+        (next[sha].cats || []).forEach(c => catSet.add(c));
+        (next[sha].tags || []).forEach(t => tagSet.add(t));
+      }
+
+      try { localStorage.setItem(STORAGE.TREE_CACHE, JSON.stringify(next)); } catch (e) { warn('tree cache store failed:', e); }
+
+      const catDl = $('cat-suggestions');
+      const tagDl = $('tag-suggestions');
+      if (catDl) { catDl.innerHTML = ''; catSet.forEach(c => { const o = document.createElement('option'); o.value = c; catDl.appendChild(o); }); }
+      if (tagDl) { tagDl.innerHTML = ''; tagSet.forEach(t => { const o = document.createElement('option'); o.value = t; tagDl.appendChild(o); }); }
+
+      // Stash the path→title map on State for the load modal
+      State._titleByPath = {};
+      for (const f of mds) State._titleByPath[f.path] = (next[f.sha] && next[f.sha].title) || '';
+    } catch (e) {
+      warn('fetchPostMetaCached failed:', e);
+    }
+  },
+
+  /** List .md files in a folder (used by load modal). */
+  async listFolder(folder) {
+    return GH.fetchJson(`${GH.apiBase()}/contents/${folder}?ref=${GH.branch()}`);
+  },
+
+  /** Load a single file (decodes content + returns sha). */
+  async loadFile(path) {
+    const data = await GH.fetchJson(`${GH.apiBase()}/contents/${path}?ref=${GH.branch()}`);
+    return { sha: data.sha, text: b64decode(data.content) };
+  },
+
+  /** PUT (create or update) a file. */
+  async putFile(path, content, msg, sha) {
+    const body = { message: msg, content: b64encode(content), branch: GH.branch() };
+    if (sha) body.sha = sha;
+    return GH.fetchJson(`${GH.apiBase()}/contents/${path}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  },
+
+  /** PUT a binary (already base64) file. */
+  async putBinary(path, base64, msg, sha) {
+    const body = { message: msg, content: base64, branch: GH.branch() };
+    if (sha) body.sha = sha;
+    return GH.fetchJson(`${GH.apiBase()}/contents/${path}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  },
+
+  /** DELETE a file by path (requires current sha). */
+  async deleteFile(path, sha, msg) {
+    return GH.fetchJson(`${GH.apiBase()}/contents/${path}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, sha, branch: GH.branch() }),
+    });
+  },
+
+  /** Get the current sha for a file (or null if missing). */
+  async getSha(path) {
+    try {
+      const data = await GH.fetchJson(`${GH.apiBase()}/contents/${path}?ref=${GH.branch()}`);
+      return data.sha;
+    } catch (e) {
+      if (e.status === 404) return null;
+      throw e;
+    }
+  },
+
+  /** Fetch last N commits touching a path. */
+  async listCommits(path, perPage = 20) {
+    return GH.fetchJson(`${GH.apiBase()}/commits?path=${encodeURIComponent(path)}&per_page=${perPage}&sha=${GH.branch()}`);
+  },
+
+  /** Fetch a file at a specific commit sha. */
+  async loadFileAtCommit(path, commitSha) {
+    const data = await GH.fetchJson(`${GH.apiBase()}/contents/${path}?ref=${commitSha}`);
+    return b64decode(data.content);
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: upload — images (post body + OG)
+   ═════════════════════════════════════════════════════════════ */
+const Upload = {
+  /** Pick the filename prefix: post's date field first, fall back to today. */
+  _datePrefix() {
+    const d = $('fm-date').value;
+    return d || today();
+  },
+
+  _sanitizeBasename(name) {
+    const ext      = name.split('.').pop().toLowerCase();
+    const basename = name.replace(/\.[^.]+$/, '').toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    return { basename, ext };
+  },
+
+  _sizeGuard(file) {
+    if (file.size > LIMITS.MAX_UPLOAD_HARD) {
+      UI.toast('error', `File too big (${(file.size / 1024 / 1024).toFixed(1)} MB). Hard limit is 10 MB — compress it first.`);
+      return false;
+    }
+    if (file.size > LIMITS.MAX_UPLOAD_WARN) {
+      const ok = confirm(`This file is ${(file.size / 1024 / 1024).toFixed(1)} MB — the GitHub Contents API degrades above ~1 MB on base64. Upload anyway?`);
+      if (!ok) return false;
+    }
+    return true;
+  },
+
+  async postImage(file) {
+    if (!GH.hasPat())                   { UI.toast('error', 'Sign in to GitHub in Settings first'); return; }
+    if (!file.type.startsWith('image/')) { UI.toast('error', 'Only image files are supported'); return; }
+    if (!Upload._sizeGuard(file)) return;
+
+    const { basename, ext } = Upload._sanitizeBasename(file.name);
+    const filename = `${Upload._datePrefix()}-${basename}.${ext}`;
+    const repoPath = `assets/img/posts/${filename}`;
+
+    UI.toast('success', `Uploading ${filename}…`);
+    try {
+      const base64 = await Upload._fileToBase64(file);
+      const sha    = await GH.getSha(repoPath);
+      await GH.putBinary(repoPath, base64, `Upload image: ${filename}`, sha);
+      const snippet = `![${basename}](/${repoPath})`;
+      const cm  = State.easyMDE.codemirror;
+      const cur = cm.getCursor();
+      cm.replaceRange(snippet, cur);
+      UI.toast('success', `✓ Uploaded & inserted ${filename}`);
+      setDirty(true);
+    } catch (e) {
+      errLog('postImage failed:', e);
+      UI.toast('error', `Upload failed: ${e.message}`);
+    }
+  },
+
+  async ogImage(file) {
+    if (!GH.hasPat())                   { UI.toast('error', 'Sign in to GitHub in Settings first'); return; }
+    if (!file.type.startsWith('image/')) { UI.toast('error', 'Only image files are supported'); return; }
+    if (!Upload._sizeGuard(file)) return;
+
+    const { basename, ext } = Upload._sanitizeBasename(file.name);
+    const filename = `og-${basename}.${ext}`;
+    const repoPath = `assets/img/posts/${filename}`;
+
+    UI.toast('success', `Uploading ${filename}…`);
+    try {
+      const base64 = await Upload._fileToBase64(file);
+      const sha    = await GH.getSha(repoPath);
+      await GH.putBinary(repoPath, base64, `Upload OG image: ${filename}`, sha);
+      $('fm-image').value = `/${repoPath}`;
+      UI.onFmChange();
+      UI.toast('success', `✓ Uploaded & path set: /${repoPath}`);
+      setDirty(true);
+    } catch (e) {
+      errLog('ogImage failed:', e);
+      UI.toast('error', `Upload failed: ${e.message}`);
+    }
+  },
+
+  _fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const s = String(r.result || '');
+        const comma = s.indexOf(',');
+        resolve(comma >= 0 ? s.slice(comma + 1) : s);
+      };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: preview — Chirpy post-processing + hljs/mermaid/mathjax
+   ═════════════════════════════════════════════════════════════ */
+const Preview = {
+  _mermaidLoaded: false,
+  _mathJaxLoaded: false,
+
+  postProcess(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    // Convert {: .prompt-TYPE} IAL markers into Chirpy blockquote classes.
+    $$('p', div).forEach(p => {
+      const m = p.textContent.trim().match(/^\{:\s*\.prompt-(tip|info|warning|danger)\s*\}$/);
+      if (m) {
+        const prev = p.previousElementSibling;
+        if (prev && prev.tagName === 'BLOCKQUOTE') prev.classList.add('prompt-' + m[1]);
+        p.remove();
+      }
+    });
+    return div.innerHTML;
+  },
+
+  header() {
+    const title = escHtml($('fm-title').value.trim() || 'Untitled Post');
+    const date  = $('fm-date').value || today();
+    const cats  = State.categories.length
+      ? `<span>📁 ${State.categories.map(c => `<span class="preview-meta-tag">${escHtml(c)}</span>`).join(' ')}</span>` : '';
+    const tags  = State.tags.length
+      ? `<span>🏷 ${State.tags.map(t => `<span class="preview-meta-tag">${escHtml(t)}</span>`).join(' ')}</span>` : '';
+    return `<div class="preview-post-header"><div class="preview-post-title">${title}</div><div class="preview-post-meta"><span>📅 ${date}</span><span>✍️ Robert Magasi</span>${cats}${tags}</div></div>`;
+  },
+
+  runHljs(root) {
+    if (typeof hljs === 'undefined') return;
+    $$('pre code', root).forEach(block => {
+      if (!block.dataset.highlighted) {
+        try { hljs.highlightElement(block); } catch (e) { warn('hljs failed:', e); }
+      }
+    });
+  },
+
+  loadMermaidIfNeeded(root) {
+    if ($('fm-mermaid').value !== 'true') return;
+    const run = () => {
+      try {
+        window.mermaid.initialize({ startOnLoad: false, theme: State.previewDark ? 'dark' : 'default' });
+        $$('code.language-mermaid', root).forEach(block => {
+          const wrap = document.createElement('div');
+          wrap.className = 'mermaid';
+          wrap.textContent = block.textContent;
+          block.closest('pre').replaceWith(wrap);
+        });
+        const nodes = $$('.mermaid', root);
+        if (typeof window.mermaid.run === 'function') window.mermaid.run({ nodes });
+        else window.mermaid.init(undefined, nodes);
+      } catch (e) { warn('mermaid run failed:', e); }
+    };
+    if (typeof window.mermaid !== 'undefined') { run(); return; }
+    if (Preview._mermaidLoaded) return;
+    Preview._mermaidLoaded = true;
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+    s.onload = run;
+    s.onerror = () => warn('mermaid script failed to load');
+    document.head.appendChild(s);
+  },
+
+  loadMathJaxIfNeeded(root) {
+    if ($('fm-math').value !== 'true') return;
+    if (typeof window.MathJax !== 'undefined' && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise([root]).catch(e => warn('MathJax typeset failed:', e));
+      return;
+    }
+    if (Preview._mathJaxLoaded) return;
+    Preview._mathJaxLoaded = true;
+    window.MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] } };
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+    s.onload = () => { if (typeof window.MathJax !== 'undefined') window.MathJax.typesetPromise([root]).catch(e => warn('MathJax typeset failed:', e)); };
+    s.onerror = () => warn('MathJax script failed to load');
+    document.head.appendChild(s);
+  },
+
+  render(text, previewEl) {
+    const repo    = GH.repo();
+    const branch  = GH.branch();
+    const rawBase = `https://raw.githubusercontent.com/${repo}/${branch}`;
+    const imgFixed = text.replace(/!\[([^\]]*)\]\((\/assets\/[^)]+)\)/g,
+      (_, alt, path) => `![${alt}](${rawBase}${path})`);
+    let html = State.easyMDE.markdown(imgFixed);
+    html = Preview.postProcess(html);
+    html = Preview.header() + html;
+    setTimeout(() => {
+      if (State.previewDark) previewEl.setAttribute('data-dark', '1');
+      else                   previewEl.removeAttribute('data-dark');
+      Preview.runHljs(previewEl);
+      Preview.loadMermaidIfNeeded(previewEl);
+      Preview.loadMathJaxIfNeeded(previewEl);
+    }, 20);
+    return html;
+  },
+
+  toggleDark() {
+    State.previewDark = !State.previewDark;
+    $$('.editor-preview, .editor-preview-side').forEach(el => {
+      if (State.previewDark) el.setAttribute('data-dark', '1');
+      else                   el.removeAttribute('data-dark');
+    });
+    $('hljs-preview-light').disabled = State.previewDark;
+    $('hljs-preview-dark').disabled  = !State.previewDark;
+    const btn = $('preview-dark-btn');
+    if (btn) {
+      btn.textContent = State.previewDark ? '☀️' : '🌙';
+      btn.title = State.previewDark ? 'Switch preview to light' : 'Switch preview to dark';
+    }
+    $$('.editor-preview, .editor-preview-side').forEach(el => {
+      $$('pre code[data-highlighted]', el).forEach(block => { delete block.dataset.highlighted; });
+      Preview.runHljs(el);
+    });
+    try { localStorage.setItem(STORAGE.PREVIEW_DARK, State.previewDark ? '1' : '0'); } catch {}
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   NEXT MODULES — placeholder, filled in step 3
+   ═════════════════════════════════════════════════════════════ */
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: ui — tags/pills, filename, theme, dirty, toast
+   ═════════════════════════════════════════════════════════════ */
+let toastTimer;
+const UI = {
+  toast(type, msg) {
+    $('toast-icon').textContent = type === 'success' ? '✓' : '✗';
+    $('toast-msg').textContent  = msg;
+    $('toast').className = `show ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { $('toast').className = ''; }, 4500);
+  },
+
+  updatePatDot() {
+    const mode = GH.authMode();
+    const dot  = $('pat-dot');
+    const txt  = $('pat-status');
+    if (!dot || !txt) return;
+    if (mode === 'oauth') {
+      const u = Auth.currentUser();
+      dot.className = 'dot ok';
+      txt.textContent = u ? `Signed in as @${u.login}` : 'Signed in via GitHub App';
+    } else if (mode === 'pat') {
+      dot.className = 'dot ok';
+      txt.textContent = 'PAT set (legacy)';
+    } else {
+      dot.className = 'dot warn';
+      txt.textContent = 'Not signed in — open Settings';
+    }
+  },
+
+  renderPills(type) {
+    const wrap  = $(type + '-wrap');
+    const field = $(type + '-field');
+    wrap.querySelectorAll('.tag-pill').forEach(p => p.remove());
+    const arr = type === 'cat' ? State.categories : State.tags;
+    arr.forEach(val => {
+      const pill = document.createElement('div');
+      pill.className = 'tag-pill';
+      const label = document.createElement('span');
+      label.textContent = val;                       // safe — no XSS
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.title = 'Remove';
+      btn.textContent = '×';
+      btn.addEventListener('click', () => UI.removeTag(type, val));
+      pill.appendChild(label);
+      pill.appendChild(btn);
+      wrap.insertBefore(pill, field);
+    });
+  },
+
+  removeTag(type, val) {
+    if (type === 'cat') State.categories = State.categories.filter(c => c !== val);
+    else                State.tags       = State.tags.filter(t => t !== val);
+    UI.renderPills(type);
+    UI.onFmChange();
+    setDirty(true);
+  },
+
+  handleTag(e, type) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const field = $(type + '-field');
+      const raw = field.value.trim().replace(/,/g, '');
+      const val = type === 'tag' ? raw.toLowerCase() : raw;
+      if (!val) return;
+      const arr = type === 'cat' ? State.categories : State.tags;
+      if (type === 'cat' && arr.length >= LIMITS.MAX_CATEGORIES) {
+        UI.toast('error', `Chirpy supports a maximum of ${LIMITS.MAX_CATEGORIES} categories`);
+        field.value = '';
+        return;
+      }
+      if (!arr.includes(val)) {
+        arr.push(val);
+        UI.renderPills(type);
+        UI.onFmChange();
+        setDirty(true);
+      }
+      field.value = '';
+    }
+    if (e.key === 'Backspace' && $(type + '-field').value === '') {
+      const arr = type === 'cat' ? State.categories : State.tags;
+      if (arr.length) {
+        arr.pop();
+        UI.renderPills(type);
+        UI.onFmChange();
+        setDirty(true);
+      }
+    }
+  },
+
+  getSlug() { return slugify($('fm-title').value.trim()); },
+  getFilename() { return `${$('fm-date').value || today()}-${UI.getSlug()}.md`; },
+
+  updateFilename() {
+    const fn = UI.getFilename();
+    $('filename-display').textContent = fn;
+    $('dest-status').textContent      = `→ ${State.currentDest}/${fn}`;
+  },
+
+  updateFmPreview() { $('fm-preview').textContent = YAML.build({ preserveDateIfUnchanged: true }); },
+
+  onFmChange(opts = {}) {
+    UI.updateFmPreview();
+    UI.updateFilename();
+    if (!opts.fromLoad) setDirty(true);
+    UI.updateHumanCheckCounter();
+  },
+
+  onEditorChange() {
+    UI.updateFilename();
+    setDirty(true);
+  },
+
+  setDest(dest) {
+    State.currentDest = dest;
+    $('btn-drafts').className = 'dest-btn ' + (dest === '_drafts' ? 'active-drafts' : '');
+    $('btn-posts').className  = 'dest-btn ' + (dest === '_posts'  ? 'active-posts'  : '');
+    UI.updateFilename();
+    UI.refreshPublishButtonTint();
+  },
+
+  toggleHumanCheck() {
+    const body = $('human-check-body');
+    const arrow = $('human-check-arrow');
+    const open = body.style.display === 'none';
+    body.style.display = open ? 'block' : 'none';
+    arrow.textContent = open ? '▼' : '▶';
+  },
+
+  countHumanCheck() {
+    return $$('.hc-item input[type="checkbox"]').length
+      ? Array.from($$('.hc-item input[type="checkbox"]')).filter(x => x.checked).length
+      : 0;
+  },
+
+  updateHumanCheckCounter() {
+    const n = UI.countHumanCheck();
+    const el = $('hc-counter');
+    if (el) {
+      el.textContent = `${n} / 5`;
+      el.className = 'counter' + (n === 5 ? ' ok' : '');
+    }
+    UI.refreshPublishButtonTint();
+  },
+
+  refreshPublishButtonTint() {
+    const btn = $('btn-publish');
+    if (!btn) return;
+    const n = UI.countHumanCheck();
+    const isLivePath = (State.currentLoadedPath || '').startsWith('_posts/') || State.currentDest === '_posts';
+    if (isLivePath && n < 5) btn.classList.add('amber');
+    else                     btn.classList.remove('amber');
+  },
+
+  applyTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    const btn = $('theme-btn');
+    if (btn) {
+      btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+      btn.title = theme === 'dark' ? 'Switch editor to light' : 'Switch editor to dark';
+    }
+    try { localStorage.setItem(STORAGE.THEME, theme); } catch {}
+  },
+
+  toggleTheme() {
+    const cur = document.body.getAttribute('data-theme') || 'light';
+    UI.applyTheme(cur === 'dark' ? 'light' : 'dark');
+  },
+
+  restoreTheme() {
+    const t = localStorage.getItem(STORAGE.THEME) || 'light';
+    UI.applyTheme(t);
+  },
+
+  restorePreviewDark() {
+    const v = localStorage.getItem(STORAGE.PREVIEW_DARK) === '1';
+    if (v) Preview.toggleDark();
+  },
+
+  restoreSidebarWidth() {
+    const w = parseInt(localStorage.getItem(STORAGE.SIDEBAR_W) || '', 10);
+    if (w && w >= 180 && w <= 520) $('sidebar').style.width = w + 'px';
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: diff — jsdiff renderer for publish + revision viewers
+   ═════════════════════════════════════════════════════════════ */
+const Diff = {
+  render(oldText, newText, wrapEl, summaryEl) {
+    wrapEl.innerHTML = '';
+    let parts;
+    try {
+      if (typeof window.Diff !== 'undefined' && window.Diff.diffLines) {
+        parts = window.Diff.diffLines(oldText || '', newText || '');
+      }
+    } catch (e) { warn('jsdiff failed, using naive line diff:', e); }
+    if (!parts) parts = Diff._naive(oldText || '', newText || '');
+
+    let plus = 0, minus = 0, ln = 1;
+    const frag = document.createDocumentFragment();
+    for (const part of parts) {
+      const cls = part.added ? 'add' : part.removed ? 'del' : 'ctx';
+      const sign = part.added ? '+' : part.removed ? '-' : ' ';
+      const lines = String(part.value || '').split('\n');
+      if (lines.length && lines[lines.length - 1] === '') lines.pop();
+      for (const line of lines) {
+        const row = document.createElement('div');
+        row.className = 'diff-line ' + cls;
+        const lnEl = document.createElement('span');
+        lnEl.className = 'ln';
+        lnEl.textContent = sign;
+        const tx = document.createElement('span');
+        tx.className = 'tx';
+        tx.textContent = line;
+        row.appendChild(lnEl);
+        row.appendChild(tx);
+        frag.appendChild(row);
+        if (part.added)   plus++;
+        if (part.removed) minus++;
+        ln++;
+      }
+    }
+    wrapEl.appendChild(frag);
+    if (summaryEl) {
+      summaryEl.style.display = '';
+      summaryEl.innerHTML = `<span class="plus">+${plus}</span> &nbsp; <span class="minus">−${minus}</span> &nbsp; ${plus + minus === 0 ? '(no changes — this is a no-op commit)' : ''}`;
+    }
+    wrapEl.style.display = '';
+  },
+
+  _naive(a, b) {
+    // Fallback: treat each as a single change — not ideal but won't crash.
+    if (a === b) return [{ value: a, added: false, removed: false }];
+    return [
+      { value: a, added: false, removed: true },
+      { value: b, added: true,  removed: false },
+    ];
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: modals — settings, publish, load, code, revisions, confirm
+   ═════════════════════════════════════════════════════════════ */
+const Modal = {
+  open(id)  { $(id).classList.add('open'); },
+  close(id) { $(id).classList.remove('open'); },
+
+  /** Generic confirm dialog — returns a Promise<boolean>. */
+  confirm({ title = 'Confirm', body = '', okLabel = 'Confirm' }) {
+    return new Promise(resolve => {
+      $('confirm-title').textContent = title;
+      $('confirm-body').textContent  = body;
+      $('btn-confirm-ok').textContent = okLabel;
+      Modal.open('confirm-modal');
+      const cleanup = (v) => {
+        Modal.close('confirm-modal');
+        $('btn-confirm-ok').onclick = null;
+        $('btn-confirm-cancel').onclick = null;
+        resolve(v);
+      };
+      $('btn-confirm-ok').onclick     = () => cleanup(true);
+      $('btn-confirm-cancel').onclick = () => cleanup(false);
+    });
+  },
+
+  // ── Settings ──
+  openSettings() {
+    $('pat-input').value    = GH.pat();
+    $('repo-input').value   = GH.repo();
+    $('branch-input').value = GH.branch();
+    Auth._renderSettings();
+    Modal.open('settings-modal');
+  },
+  saveSettings() {
+    const pat = $('pat-input').value.trim();
+    try {
+      localStorage.setItem(STORAGE.PAT,    pat);
+      localStorage.setItem(STORAGE.REPO,   $('repo-input').value.trim()   || DEFAULTS.REPO);
+      localStorage.setItem(STORAGE.BRANCH, $('branch-input').value.trim() || DEFAULTS.BRANCH);
+    } catch (e) { warn('settings save failed:', e); }
+    UI.updatePatDot();
+    Modal.close('settings-modal');
+    GH.fetchPostMetaCached();
+    UI.toast('success', 'Settings saved');
+  },
+  togglePatVisibility() {
+    const i = $('pat-input');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  },
+
+  // ── Publish ──
+  async openPublish() {
+    if (!GH.hasPat())                    { UI.toast('error', 'Sign in to GitHub in Settings first'); return; }
+    if (!$('fm-title').value.trim())     { UI.toast('error', 'Add a title before publishing'); return; }
+
+    const path = State.currentLoadedPath || `${State.currentDest}/${UI.getFilename()}`;
+    const isLive = path.startsWith('_posts');
+    const newContent = YAML.build({ preserveDateIfUnchanged: true }) + '\n\n' + State.easyMDE.value();
+    State.pendingDiffBody = newContent;
+
+    $('commit-preview').innerHTML =
+      `Repo:   <span>${escHtml(GH.repo())}</span>\nBranch: <span>${escHtml(GH.branch())}</span>\nPath:   <span>${escHtml(path)}</span>\nDest:   <span class="dest-tag ${isLive ? 'posts' : 'drafts'}">${isLive ? 'LIVE' : 'DRAFT'}</span>`;
+
+    $('commit-msg').value = `${State.currentLoadedPath ? 'Update' : (isLive ? 'Add post' : 'Add draft')}: ${$('fm-title').value.trim()}`;
+
+    // Human Check gate message
+    const n = UI.countHumanCheck();
+    $('publish-gate').style.display = (isLive && n < 5) ? 'block' : 'none';
+    $('gate-status').textContent    = `${n} of 5 checks ticked`;
+
+    Modal.open('publish-modal');
+
+    // Async diff
+    $('diff-summary').style.display = 'none';
+    $('diff-wrap').style.display    = 'none';
+    $('diff-wrap').innerHTML        = '<div style="padding:12px;color:var(--text-muted);">Computing diff…</div>';
+    $('diff-wrap').style.display    = '';
+    try {
+      let oldText = '';
+      try {
+        const data = await GH.loadFile(path);
+        oldText = data.text;
+      } catch (e) { if (e.status !== 404) warn('diff old fetch failed:', e); /* new file → empty old */ }
+      Diff.render(oldText, newContent, $('diff-wrap'), $('diff-summary'));
+    } catch (e) {
+      warn('diff render failed:', e);
+      $('diff-wrap').innerHTML = '<div style="padding:12px;color:var(--danger);">Could not compute diff.</div>';
+    }
+  },
+
+  async doPublish() {
+    const path = State.currentLoadedPath || `${State.currentDest}/${UI.getFilename()}`;
+    const isLive = path.startsWith('_posts');
+    const n = UI.countHumanCheck();
+    if (isLive && n < 5) {
+      const go = await Modal.confirm({
+        title: 'Publish without completing Human Check?',
+        body:  `Only ${n} of 5 checks are ticked. This post is going to _posts (live). You can still publish, but consider reviewing the checklist first.`,
+        okLabel: 'Publish anyway',
+      });
+      if (!go) return;
+    }
+
+    const msg     = $('commit-msg').value.trim() || `Add: ${UI.getFilename()}`;
+    const content = State.pendingDiffBody || (YAML.build({ preserveDateIfUnchanged: true }) + '\n\n' + State.easyMDE.value());
+
+    const btn = $('btn-publish-do');
+    $('publish-label').textContent = 'Publishing…';
+    $('publish-spinner').style.display = 'block';
+    btn.disabled = true;
+    try {
+      let sha = State.currentSha;
+      if (!sha) sha = await GH.getSha(path);
+      const res = await GH.putFile(path, content, msg, sha);
+      State.currentSha = res.content.sha;
+      State.currentLoadedPath = path;
+      Modal.close('publish-modal');
+      UI.toast('success', `✓ Committed to ${State.currentDest} — Actions deploying`);
+      setDirty(false);
+      // If we were editing a local draft, drop it now that the commit succeeded.
+      if (State.activeLocalDraftId && typeof Drafts !== 'undefined') {
+        await Drafts.clearActiveAfterPublish();
+      }
+    } catch (e) {
+      errLog('publish failed:', e);
+      UI.toast('error', `GitHub: ${e.message}`);
+    } finally {
+      $('publish-label').textContent = 'Commit to GitHub';
+      $('publish-spinner').style.display = 'none';
+      btn.disabled = false;
+    }
+  },
+
+  // ── Load ──
+  _loadTab: '_posts',
+  _allFiles: [],
+
+  async openLoad() {
+    if (!GH.hasPat()) { UI.toast('error', 'Sign in to GitHub in Settings first'); return; }
+    $('load-search').value = '';
+    Modal.open('load-modal');
+    await Modal._fetchFileList(Modal._loadTab);
+  },
+  switchLoadTab(tab) {
+    Modal._loadTab = tab;
+    $('ltab-posts').className  = 'load-tab' + (tab === '_posts'  ? ' active' : '');
+    $('ltab-drafts').className = 'load-tab' + (tab === '_drafts' ? ' active' : '');
+    $('load-search').value = '';
+    Modal._fetchFileList(tab);
+  },
+  async _fetchFileList(folder) {
+    const list = $('file-list');
+    list.innerHTML = '<div class="load-empty">Loading…</div>';
+    try {
+      const data = await GH.listFolder(folder);
+      Modal._allFiles = data
+        .filter(f => f.name.endsWith('.md'))
+        .sort((a, b) => b.name.localeCompare(a.name));
+      Modal._renderFileList(Modal._allFiles, folder);
+    } catch (e) {
+      errLog('fetchFileList failed:', e);
+      list.innerHTML = e.status === 404
+        ? '<div class="load-empty">Folder not found in repo.</div>'
+        : '<div class="load-empty">Error fetching files.</div>';
+    }
+  },
+  _renderFileList(files, folder) {
+    const list = $('file-list');
+    if (!files.length) { list.innerHTML = '<div class="load-empty">No markdown files found.</div>'; return; }
+    list.innerHTML = '';
+    files.forEach(f => {
+      const fullPath = `${folder}/${f.name}`;
+      const title    = (State._titleByPath && State._titleByPath[fullPath]) || '';
+      const dateMatch = f.name.match(/^(\d{4}-\d{2}-\d{2})/);
+      const date = dateMatch ? dateMatch[1] : '';
+      const slug = f.name.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/\.md$/, '');
+
+      const item = document.createElement('div');
+      item.className = 'file-item';
+
+      const icon = document.createElement('span');
+      icon.className = 'file-icon';
+      icon.textContent = '📄';
+
+      const info = document.createElement('div');
+      info.className = 'file-info';
+      const tEl = document.createElement('div');
+      tEl.className = 'file-title';
+      tEl.textContent = title || slug;
+      const nEl = document.createElement('div');
+      nEl.className = 'file-name';
+      nEl.textContent = (date ? date + ' · ' : '') + f.name;
+      info.appendChild(tEl);
+      info.appendChild(nEl);
+
+      const actions = document.createElement('div');
+      actions.className = 'file-actions';
+
+      if (folder === '_drafts') {
+        const pr = document.createElement('button');
+        pr.className = 'file-act-btn promote';
+        pr.textContent = 'Promote →';
+        pr.title = 'Move this draft to _posts (commit + delete)';
+        pr.addEventListener('click', (ev) => { ev.stopPropagation(); Modal.promoteDraft(f.name, f.sha); });
+        actions.appendChild(pr);
+      }
+
+      const hist = document.createElement('button');
+      hist.className = 'file-act-btn history';
+      hist.textContent = 'History';
+      hist.title = 'Show recent commits for this file';
+      hist.addEventListener('click', (ev) => { ev.stopPropagation(); Modal.openRevisions(fullPath); });
+      actions.appendChild(hist);
+
+      const ld = document.createElement('button');
+      ld.className = 'file-act-btn';
+      ld.textContent = 'Load →';
+      ld.addEventListener('click', (ev) => { ev.stopPropagation(); Modal.loadFile(folder, f.name, f.sha); });
+      actions.appendChild(ld);
+
+      item.appendChild(icon);
+      item.appendChild(info);
+      item.appendChild(actions);
+      list.appendChild(item);
+    });
+  },
+  filterFiles() {
+    const q = $('load-search').value.toLowerCase().trim();
+    if (!q) { Modal._renderFileList(Modal._allFiles, Modal._loadTab); return; }
+    const filtered = Modal._allFiles.filter(f => {
+      const fullPath = `${Modal._loadTab}/${f.name}`;
+      const title = ((State._titleByPath && State._titleByPath[fullPath]) || '').toLowerCase();
+      return f.name.toLowerCase().includes(q) || title.includes(q);
+    });
+    Modal._renderFileList(filtered, Modal._loadTab);
+  },
+
+  async loadFile(folder, filename, sha) {
+    if (State.dirty) {
+      const go = await Modal.confirm({
+        title: 'Discard unsaved changes?',
+        body:  'You have unsaved edits. Loading another post will replace the current content.',
+        okLabel: 'Discard & load',
+      });
+      if (!go) return;
+    }
+    UI.toast('success', `Loading ${filename}…`);
+    try {
+      const { sha: loadedSha, text } = await GH.loadFile(`${folder}/${filename}`);
+      State.currentSha         = loadedSha;
+      State.currentLoadedPath  = `${folder}/${filename}`;
+      State.activeLocalDraftId = null;   // loading from GH exits local-draft mode
+      YAML.parse(text);
+      UI.setDest(folder);
+      // swap EasyMDE autosave to a per-path key (empty/no-op so per-post drafts don't collide)
+      Modal._installPerPathAutosave(State.currentLoadedPath);
+      Modal.close('load-modal');
+      setDirty(false);
+      if (typeof Drafts !== 'undefined') Drafts.refreshList();
+      UI.toast('success', `✓ Loaded ${filename}`);
+    } catch (e) {
+      errLog('loadFile failed:', e);
+      UI.toast('error', `Failed to load: ${e.message}`);
+    }
+  },
+
+  /** Swap the EasyMDE autosave key to the per-path one. */
+  _installPerPathAutosave(path) {
+    if (!State.easyMDE) return;
+    const key = path ? STORAGE.DRAFT_PREFIX + path : STORAGE.DRAFT_PREFIX + 'untitled';
+    try { State.easyMDE.options.autosave.uniqueId = key; } catch {}
+  },
+
+  async promoteDraft(filename, draftSha) {
+    const go = await Modal.confirm({
+      title: 'Promote draft to _posts?',
+      body:  `This will commit \`_posts/${filename}\` with the current repo contents and delete the matching \`_drafts/${filename}\`.`,
+      okLabel: 'Promote',
+    });
+    if (!go) return;
+
+    try {
+      const fromPath = `_drafts/${filename}`;
+      const toPath   = `_posts/${filename}`;
+      const draft = await GH.loadFile(fromPath);
+      await GH.putFile(toPath, draft.text, `Promote draft to post: ${filename}`);
+      await GH.deleteFile(fromPath, draft.sha, `Remove promoted draft: ${filename}`);
+      UI.toast('success', `✓ Promoted ${filename} → _posts`);
+      // Refresh the list
+      await Modal._fetchFileList(Modal._loadTab);
+    } catch (e) {
+      errLog('promoteDraft failed:', e);
+      UI.toast('error', `Promote failed: ${e.message}`);
+    }
+  },
+
+  // ── Code lang picker ──
+  openCodeLangPicker() {
+    const grid = $('lang-grid');
+    grid.innerHTML = '';
+    CODE_LANGS.forEach(({ id, label }) => {
+      const b = document.createElement('button');
+      b.className = 'lang-btn';
+      b.textContent = label;
+      b.addEventListener('click', () => Modal.insertCodeBlock(id));
+      grid.appendChild(b);
+    });
+    $('code-lang-input').value = '';
+    Modal.open('code-modal');
+    setTimeout(() => $('code-lang-input').focus(), 50);
+  },
+  insertCodeBlock(lang) {
+    Modal.close('code-modal');
+    const cm  = State.easyMDE.codemirror;
+    const sel = cm.getSelection();
+    const snippet = sel ? `\`\`\`${lang}\n${sel}\n\`\`\`` : `\`\`\`${lang}\n\n\`\`\``;
+    cm.replaceSelection(snippet);
+    if (!sel) { const cur = cm.getCursor(); cm.setCursor({ line: cur.line - 1, ch: 0 }); }
+    cm.focus();
+    setDirty(true);
+  },
+
+  // ── Revisions ──
+  _revPath:        null,
+  _revSelectedSha: null,
+  _revSelectedText: null,
+
+  async openRevisions(path) {
+    Modal._revPath = path;
+    Modal._revSelectedSha = null;
+    Modal._revSelectedText = null;
+    $('rev-file-path').textContent = path;
+    $('rev-list').innerHTML = '<div class="load-empty">Loading history…</div>';
+    $('rev-diff-summary').style.display = 'none';
+    $('rev-diff-wrap').style.display    = 'none';
+    $('btn-rev-revert').style.display   = 'none';
+    Modal.open('revisions-modal');
+    try {
+      const commits = await GH.listCommits(path, 20);
+      Modal._renderRevisions(commits);
+    } catch (e) {
+      errLog('revisions fetch failed:', e);
+      $('rev-list').innerHTML = `<div class="load-empty">Failed to load history: ${escHtml(e.message)}</div>`;
+    }
+  },
+
+  _renderRevisions(commits) {
+    const list = $('rev-list');
+    list.innerHTML = '';
+    if (!commits.length) { list.innerHTML = '<div class="load-empty">No commits found for this path.</div>'; return; }
+    commits.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'rev-item';
+
+      const hash = document.createElement('span');
+      hash.className = 'rev-hash';
+      hash.textContent = (c.sha || '').slice(0, 7);
+
+      const msg = document.createElement('span');
+      msg.className = 'rev-msg';
+      msg.textContent = (c.commit && c.commit.message ? c.commit.message : '').split('\n')[0];
+
+      const date = document.createElement('span');
+      date.className = 'rev-date';
+      const d = c.commit && c.commit.author && c.commit.author.date;
+      date.textContent = d ? new Date(d).toISOString().split('T')[0] : '';
+
+      row.appendChild(hash);
+      row.appendChild(msg);
+      row.appendChild(date);
+      row.addEventListener('click', () => Modal._showRevisionDiff(c.sha, row));
+      list.appendChild(row);
+    });
+  },
+
+  async _showRevisionDiff(commitSha, rowEl) {
+    $$('.rev-item', $('rev-list')).forEach(r => r.classList.remove('active'));
+    rowEl.classList.add('active');
+    $('rev-diff-summary').style.display = 'none';
+    $('rev-diff-wrap').style.display    = 'none';
+    $('rev-diff-wrap').innerHTML        = '<div style="padding:12px;color:var(--text-muted);">Computing diff…</div>';
+    $('rev-diff-wrap').style.display    = '';
+    try {
+      const oldText  = await GH.loadFileAtCommit(Modal._revPath, commitSha);
+      // Compare against current HEAD (what's in the repo right now).
+      let headText = '';
+      try { headText = (await GH.loadFile(Modal._revPath)).text; }
+      catch (e) { if (e.status !== 404) warn('head fetch failed:', e); }
+      Diff.render(oldText, headText, $('rev-diff-wrap'), $('rev-diff-summary'));
+      Modal._revSelectedSha  = commitSha;
+      Modal._revSelectedText = oldText;
+      $('btn-rev-revert').style.display = '';
+    } catch (e) {
+      errLog('rev diff failed:', e);
+      $('rev-diff-wrap').innerHTML = `<div style="padding:12px;color:var(--danger);">${escHtml(e.message)}</div>`;
+    }
+  },
+
+  async revertToRevision() {
+    if (!Modal._revSelectedText) return;
+    if (State.dirty) {
+      const go = await Modal.confirm({
+        title: 'Discard unsaved changes?',
+        body:  'Loading this revision will replace the current editor content.',
+        okLabel: 'Discard & load',
+      });
+      if (!go) return;
+    }
+    YAML.parse(Modal._revSelectedText);
+    State.currentLoadedPath = Modal._revPath;
+    // Refresh current sha (HEAD); a later publish needs it
+    try { State.currentSha = await GH.getSha(Modal._revPath); } catch (e) { warn('getSha after revert failed:', e); }
+    const folder = Modal._revPath.startsWith('_posts/') ? '_posts' : '_drafts';
+    UI.setDest(folder);
+    Modal._installPerPathAutosave(State.currentLoadedPath);
+    Modal.close('revisions-modal');
+    setDirty(true);    // user must re-publish to commit this
+    UI.toast('success', `✓ Loaded revision ${Modal._revSelectedSha.slice(0,7)} — publish to commit it as new HEAD`);
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: local file save / open
+   ═════════════════════════════════════════════════════════════ */
+const LocalFile = {
+  save() {
+    const content  = YAML.build({ preserveDateIfUnchanged: true }) + '\n\n' + State.easyMDE.value();
+    const filename = UI.getFilename();
+    const blob     = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    const url      = URL.createObjectURL(blob);
+    const a        = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    UI.toast('success', `✓ Saved ${filename}`);
+  },
+  openLocal(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      YAML.parse(e.target.result);
+      State.currentSha        = null;
+      State.currentLoadedPath = null;
+      setDirty(true);
+      UI.toast('success', `✓ Opened ${file.name}`);
+    };
+    reader.readAsText(file, 'utf-8');
+    input.value = '';
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: drafts — IndexedDB-backed offline drafts
+
+   Local drafts exist entirely in the browser. No PAT, no network, no
+   GitHub commit needed. Each draft snapshots: title, front-matter field
+   values, tags/categories, and the editor body. A currently-active local
+   draft autosaves on every change (debounced 800ms). "Publish to _drafts/"
+   moves the local draft into the repo via the normal publish flow, then
+   deletes the local copy.
+   ═════════════════════════════════════════════════════════════ */
+const Drafts = {
+  DB_NAME:    'rm-editor',
+  DB_VERSION: 1,
+  STORE:      'drafts',
+  _db:        null,
+  _saveTimer: null,
+  _saveInFlight: false,
+
+  async init() {
+    if (!('indexedDB' in window)) {
+      warn('IndexedDB unavailable — local drafts disabled');
+      return;
+    }
+    Drafts._db = await Drafts._open();
+    await Drafts.refreshList();
+  },
+
+  _open() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(Drafts.DB_NAME, Drafts.DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(Drafts.STORE)) {
+          const store = db.createObjectStore(Drafts.STORE, { keyPath: 'id' });
+          store.createIndex('updatedAt', 'updatedAt', { unique: false });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => reject(req.error);
+    });
+  },
+
+  _tx(mode = 'readonly') {
+    return Drafts._db.transaction(Drafts.STORE, mode).objectStore(Drafts.STORE);
+  },
+
+  async list() {
+    if (!Drafts._db) return [];
+    return new Promise((resolve, reject) => {
+      const req = Drafts._tx().getAll();
+      req.onsuccess = () => {
+        const arr = req.result || [];
+        arr.sort((a, b) => b.updatedAt - a.updatedAt);
+        resolve(arr);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async get(id) {
+    if (!Drafts._db) return null;
+    return new Promise((resolve, reject) => {
+      const req = Drafts._tx().get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror   = () => reject(req.error);
+    });
+  },
+
+  async put(draft) {
+    if (!Drafts._db) return;
+    return new Promise((resolve, reject) => {
+      const req = Drafts._tx('readwrite').put(draft);
+      req.onsuccess = () => resolve();
+      req.onerror   = () => reject(req.error);
+    });
+  },
+
+  async remove(id) {
+    if (!Drafts._db) return;
+    return new Promise((resolve, reject) => {
+      const req = Drafts._tx('readwrite').delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror   = () => reject(req.error);
+    });
+  },
+
+  /** Capture the current editor + sidebar into a draft snapshot. */
+  _snapshot(id) {
+    const now = Date.now();
+    return {
+      id,
+      title:           $('fm-title').value || '',
+      description:    $('fm-description').value || '',
+      date:           $('fm-date').value || '',
+      time:           $('fm-time').value || '',
+      modified:       $('fm-modified').value || '',
+      image:          $('fm-image').value || '',
+      imageAlt:       $('fm-image-alt').value || '',
+      pin:            $('fm-pin').value,
+      toc:            $('fm-toc').value,
+      comments:       $('fm-comments').value,
+      math:           $('fm-math').value,
+      mermaid:        $('fm-mermaid').value,
+      categories:     [...State.categories],
+      tags:           [...State.tags],
+      body:           State.easyMDE ? State.easyMDE.value() : '',
+      dest:           State.currentDest,
+      updatedAt:      now,
+      // `createdAt` is filled by new() and preserved by saveCurrent()
+    };
+  },
+
+  /** Create a new empty local draft and load it into the editor. */
+  async new() {
+    if (!Drafts._db) { UI.toast('error', 'Local drafts unavailable'); return; }
+    if (State.dirty) {
+      const ok = await Modal.confirm({
+        title: 'Discard current changes?',
+        body:  'You have unsaved edits. Start a fresh local draft and lose them?',
+        okLabel: 'Discard & start new',
+      });
+      if (!ok) return;
+    }
+
+    // Reset editor state first
+    newPost();
+
+    // Assign new draft id and persist
+    const id = (crypto.randomUUID && crypto.randomUUID()) ||
+               (Date.now() + '-' + Math.random().toString(36).slice(2));
+    State.activeLocalDraftId = id;
+
+    const snap = Drafts._snapshot(id);
+    snap.createdAt = snap.updatedAt;
+    await Drafts.put(snap);
+    await Drafts.refreshList();
+
+    Drafts._showSavedStatus();
+    UI.toast('success', '✓ New local draft');
+  },
+
+  /** Load an existing local draft into the editor. */
+  async load(id) {
+    if (!Drafts._db) return;
+
+    if (State.dirty) {
+      const ok = await Modal.confirm({
+        title: 'Discard current changes?',
+        body:  'You have unsaved edits. Load this draft and lose them?',
+        okLabel: 'Discard & load',
+      });
+      if (!ok) return;
+    }
+
+    const d = await Drafts.get(id);
+    if (!d) { UI.toast('error', 'Draft not found'); return; }
+
+    // Clear any GH-file state
+    State.currentLoadedPath = null;
+    State.currentSha        = null;
+    State.loadedDateStr     = null;
+    State.loadedModifiedStr = null;
+
+    // Apply to sidebar
+    $('fm-title').value       = d.title || '';
+    $('fm-description').value = d.description || '';
+    $('fm-date').value        = d.date || today();
+    $('fm-time').value        = d.time || DEFAULTS.TIME;
+    $('fm-modified').value    = d.modified || '';
+    $('fm-image').value       = d.image || '';
+    $('fm-image-alt').value   = d.imageAlt || '';
+    $('fm-pin').value         = d.pin      || 'false';
+    $('fm-toc').value         = d.toc      || 'true';
+    $('fm-comments').value    = d.comments || 'true';
+    $('fm-math').value        = d.math     || 'false';
+    $('fm-mermaid').value     = d.mermaid  || 'false';
+    State.categories          = Array.isArray(d.categories) ? [...d.categories] : [];
+    State.tags                = Array.isArray(d.tags)       ? [...d.tags]       : [];
+    UI.renderPills('cat');
+    UI.renderPills('tag');
+
+    State.easyMDE.value(d.body || '');
+    UI.setDest(d.dest === '_posts' ? '_posts' : '_drafts');
+
+    State.activeLocalDraftId = id;
+    UI.onFmChange({ fromLoad: true });
+    UI.updateFilename();
+    UI.updateHumanCheckCounter();
+    setDirty(false);
+
+    await Drafts.refreshList();
+    Drafts._showSavedStatus();
+    UI.toast('success', `✓ Loaded local draft`);
+  },
+
+  /** Delete a local draft (with confirmation). */
+  async delete(id) {
+    const d = await Drafts.get(id);
+    if (!d) return;
+    const label = d.title || '(untitled)';
+    const ok = await Modal.confirm({
+      title: 'Delete local draft?',
+      body:  `Permanently delete "${label}" from this browser? This cannot be undone.`,
+      okLabel: 'Delete',
+    });
+    if (!ok) return;
+
+    await Drafts.remove(id);
+    if (State.activeLocalDraftId === id) {
+      State.activeLocalDraftId = null;
+      $('ld-status').textContent = '';
+      $('ld-status').className   = 'ld-hint';
+    }
+    await Drafts.refreshList();
+    UI.toast('success', '✓ Draft deleted');
+  },
+
+  /**
+   * Persist the currently-active local draft. Called on every edit via
+   * a debounced path, or directly (e.g. before publishing).
+   */
+  scheduleSave() {
+    if (!State.activeLocalDraftId) return;
+    clearTimeout(Drafts._saveTimer);
+    $('ld-status').textContent = 'saving…';
+    $('ld-status').className   = 'ld-hint';
+    Drafts._saveTimer = setTimeout(() => Drafts.saveCurrent(), 800);
+  },
+
+  async saveCurrent() {
+    if (!State.activeLocalDraftId || !Drafts._db) return;
+    if (Drafts._saveInFlight) return;
+    Drafts._saveInFlight = true;
+    try {
+      const existing = await Drafts.get(State.activeLocalDraftId);
+      const snap = Drafts._snapshot(State.activeLocalDraftId);
+      snap.createdAt = existing?.createdAt || snap.updatedAt;
+      await Drafts.put(snap);
+      Drafts._showSavedStatus();
+      await Drafts.refreshList();
+    } catch (e) {
+      errLog('local draft save failed:', e);
+      $('ld-status').textContent = 'save failed — retrying';
+      $('ld-status').className   = 'ld-hint';
+    } finally {
+      Drafts._saveInFlight = false;
+    }
+  },
+
+  _showSavedStatus() {
+    const el = $('ld-status');
+    if (!el) return;
+    el.textContent = 'saved ✓';
+    el.className   = 'ld-hint saved';
+    clearTimeout(Drafts._statusTimer);
+    Drafts._statusTimer = setTimeout(() => {
+      el.textContent = '';
+      el.className   = 'ld-hint';
+    }, 2000);
+  },
+
+  async refreshList() {
+    const list = await Drafts.list();
+    const container = $('ld-list');
+    const counter   = $('ld-counter');
+    if (!container) return;
+    counter.textContent = String(list.length);
+
+    container.innerHTML = '';
+    if (!list.length) {
+      const empty = document.createElement('div');
+      empty.className = 'ld-empty';
+      empty.textContent = 'No local drafts yet. Click "+ New" to start one — works fully offline.';
+      container.appendChild(empty);
+      return;
+    }
+
+    list.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'ld-item' + (d.id === State.activeLocalDraftId ? ' active' : '');
+
+      const info = document.createElement('div');
+      info.className = 'ld-item-info';
+
+      const title = document.createElement('div');
+      title.className = 'ld-item-title';
+      title.textContent = d.title?.trim() || '(untitled)';
+
+      const meta = document.createElement('div');
+      meta.className = 'ld-item-meta';
+      meta.textContent = Drafts._relTime(d.updatedAt);
+
+      info.appendChild(title);
+      info.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'ld-item-actions';
+
+      const loadBtn = document.createElement('button');
+      loadBtn.className = 'ld-item-btn';
+      loadBtn.title = 'Load this draft';
+      loadBtn.textContent = '✎';
+      loadBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        Drafts.load(d.id);
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'ld-item-btn delete';
+      delBtn.title = 'Delete this draft';
+      delBtn.textContent = '🗑';
+      delBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        Drafts.delete(d.id);
+      });
+
+      actions.appendChild(loadBtn);
+      actions.appendChild(delBtn);
+
+      item.appendChild(info);
+      item.appendChild(actions);
+      item.addEventListener('click', () => Drafts.load(d.id));
+      container.appendChild(item);
+    });
+  },
+
+  _relTime(ts) {
+    const diff = Date.now() - ts;
+    const s = Math.max(1, Math.round(diff / 1000));
+    if (s < 60)        return `${s}s ago`;
+    const m = Math.round(s / 60);
+    if (m < 60)        return `${m}m ago`;
+    const h = Math.round(m / 60);
+    if (h < 24)        return `${h}h ago`;
+    const d = Math.round(h / 24);
+    if (d < 7)         return `${d}d ago`;
+    return new Date(ts).toISOString().split('T')[0];
+  },
+
+  /** Called from Modal.doPublish after a successful commit of an
+   *  active local draft — remove the local copy since it now lives in GH. */
+  async clearActiveAfterPublish() {
+    if (!State.activeLocalDraftId) return;
+    const id = State.activeLocalDraftId;
+    State.activeLocalDraftId = null;
+    try { await Drafts.remove(id); } catch (e) { errLog('post-publish cleanup failed:', e); }
+    $('ld-status').textContent = '';
+    $('ld-status').className   = 'ld-hint';
+    await Drafts.refreshList();
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: default template
+   ═════════════════════════════════════════════════════════════ */
+function defaultTemplate() {
+  return `<!-- INTRO — skip the generic problem statement. Start with real context:\n     - What triggered this? (a call, a ticket, something you read, a user report)\n     - What was the pressure or stakes?\n     - One sentence on how you got to the solution.\n     Keep it 2–4 sentences. No heading. -->\n\n## The Situation\n\n<!-- Root cause and context. Who was affected, what was broken, what was at stake.\n     Include one specific real-world detail: a number, a role, a timeframe. -->\n\n## What I Tried First\n\n<!-- The path that didn't work, or the obvious answer you ruled out and why.\n     Even one sentence here changes the feel of the post entirely.\n     "The obvious fix was X. I ruled it out because..." -->\n\n## The Solution\n\n<!-- Step-by-step fix. Use sub-sections if needed.\n     Active voice. Technical jargon is fine — readers are engineers.\n     Include at least one screenshot — a config screen, output, Studio view, Director, etc.\n     Use: ![Alt text](/assets/img/posts/slug-screenshot.png){: w="800" } -->\n\n<!-- Screenshot placeholder:\n![Description of what is shown](/assets/img/posts/slug-screenshot.png){: w="800" }\n_Caption explaining what the screenshot demonstrates_ -->\n\n## The Result\n\n<!-- What changed after the fix. Be specific — what works now that didn't before. -->\n\n## Key Takeaways\n\n<!-- 2–3 things worth remembering. The kind of detail you'd tell a colleague.\n     Avoid generic advice — stick to what's specific to this situation. -->\n\n---\n\n<br>\n\n*Hit the same issue or found a different approach? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*\n\n<br>\n\n> *This post was written with assistance from Claude (Anthropic) as a drafting and editing tool. All technical content, solutions, and recommendations reflect my own hands-on experience and professional judgment.*`;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: main — EasyMDE setup, event wiring, keyboard shortcuts
+   ═════════════════════════════════════════════════════════════ */
+
+function setupEasyMDE() {
+  const mde = new EasyMDE({
+    element: $('editor'),
+    autofocus: true,
+    spellChecker: false,
+    autoDownloadFontAwesome: false,
+    autosave: { enabled: true, uniqueId: STORAGE.DRAFT_PREFIX + 'untitled', delay: 3000 },
+    toolbar: [
+      'bold','italic','strikethrough','|',
+      'heading-1','heading-2','heading-3','|',
+      'unordered-list','ordered-list','|',
+      'link',
+      {
+        name: 'upload-image',
+        action: () => $('img-file-input').click(),
+        className: 'fa fa-upload',
+        title: 'Upload Image to repo',
+      },
+      'table','horizontal-rule','|',
+      {
+        name: 'code-block',
+        action: () => Modal.openCodeLangPicker(),
+        className: 'fa fa-code',
+        title: 'Insert Code Block',
+      },
+      'quote','|',
+      'preview','side-by-side','fullscreen','|',
+      'guide'
+    ],
+    status: ['autosave','lines','words','cursor'],
+    placeholder: 'Write your post here…\n\nUse <!--more--> to set the excerpt break.',
+    renderingConfig: { singleLineBreaks: false },
+    previewRender: function(text, previewEl) { return Preview.render(text, previewEl); },
+    sideBySideFullscreen: false,
+    initialValue: defaultTemplate(),
+  });
+
+  State.easyMDE = mde;
+  mde.codemirror.on('change', UI.onEditorChange);
+
+  // Drag-and-drop + paste image handlers
+  const cm = mde.codemirror.getWrapperElement();
+  cm.addEventListener('dragover',  e => { e.preventDefault(); cm.classList.add('drag-over'); });
+  cm.addEventListener('dragleave', () => cm.classList.remove('drag-over'));
+  cm.addEventListener('drop', e => {
+    e.preventDefault(); cm.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) Upload.postImage(file);
+  });
+  cm.addEventListener('paste', e => {
+    const item = Array.from(e.clipboardData?.items || []).find(i => i.type.startsWith('image/'));
+    if (item) { e.preventDefault(); Upload.postImage(item.getAsFile()); }
+  });
+}
+
+function wireSidebarResize() {
+  const handle  = $('sidebar-resize');
+  const sidebar = $('sidebar');
+  const MIN_W = 180, MAX_W = 520;
+  let dragging = false, startX = 0, startW = 0;
+
+  handle.addEventListener('mousedown', (e) => {
+    dragging = true;
+    startX = e.clientX;
+    startW = sidebar.offsetWidth;
+    handle.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const newW = Math.min(MAX_W, Math.max(MIN_W, startW + (e.clientX - startX)));
+    sidebar.style.width = newW + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    try { localStorage.setItem(STORAGE.SIDEBAR_W, String(sidebar.offsetWidth)); } catch {}
+  });
+}
+
+function wireButtons() {
+  // Top bar
+  on($('theme-btn'),        'click', () => UI.toggleTheme());
+  on($('preview-dark-btn'), 'click', () => Preview.toggleDark());
+  on($('btn-settings'),     'click', () => Modal.openSettings());
+  on($('btn-save-local'),   'click', () => LocalFile.save());
+  on($('btn-open-local'),   'click', () => $('md-file-input').click());
+  on($('md-file-input'),    'change', (e) => LocalFile.openLocal(e.target));
+  on($('btn-load'),         'click', () => Modal.openLoad());
+  on($('btn-new'),          'click', async () => {
+    if (State.dirty) {
+      const ok = await Modal.confirm({
+        title: 'Discard current post?',
+        body: 'You have unsaved changes. Create a new empty post and discard them?',
+        okLabel: 'Discard & start new',
+      });
+      if (!ok) return;
+    }
+    newPost();
+  });
+  on($('btn-publish'),      'click', () => Modal.openPublish());
+
+  // Destination toggle
+  on($('btn-drafts'), 'click', () => UI.setDest('_drafts'));
+  on($('btn-posts'),  'click', () => UI.setDest('_posts'));
+
+  // Sidebar: front-matter inputs
+  ['fm-title','fm-description','fm-image','fm-image-alt',
+   'fm-pin','fm-toc','fm-comments','fm-math','fm-mermaid'
+  ].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    on(el, 'input',  () => UI.onFmChange());
+    on(el, 'change', () => UI.onFmChange());
+  });
+
+  // Date / time / modified — mark TZ as user-edited so YAML.build rebuilds timestamp
+  ['fm-date','fm-time'].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    on(el, 'change', () => { State.loadedDateStr = null; UI.onFmChange(); });
+  });
+  on($('fm-modified'), 'change', () => { State.loadedModifiedStr = null; UI.onFmChange(); });
+  on($('btn-modified-today'), 'click', () => {
+    $('fm-modified').value = today();
+    State.loadedModifiedStr = null;
+    UI.onFmChange();
+  });
+
+  // OG upload
+  on($('btn-og-upload'), 'click', () => $('img-og-input').click());
+  on($('img-og-input'),  'change', (e) => {
+    const f = e.target.files[0];
+    if (f) Upload.ogImage(f);
+    e.target.value = '';
+  });
+
+  // Editor image upload
+  on($('img-file-input'), 'change', (e) => {
+    const f = e.target.files[0];
+    if (f) Upload.postImage(f);
+    e.target.value = '';
+  });
+
+  // Tag / category pills
+  on($('tag-field'), 'keydown', (e) => UI.handleTag(e, 'tag'));
+  on($('cat-field'), 'keydown', (e) => UI.handleTag(e, 'cat'));
+
+  // Human check
+  on($('hc-toggle'), 'click', () => UI.toggleHumanCheck());
+  $$('.hc-item input[type="checkbox"]').forEach(cb => {
+    on(cb, 'change', () => UI.updateHumanCheckCounter());
+  });
+
+  // Local drafts (IndexedDB)
+  on($('ld-toggle'), 'click', () => {
+    const body  = $('ld-body');
+    const arrow = $('ld-arrow');
+    const open  = body.style.display === 'none';
+    body.style.display = open ? 'block' : 'none';
+    arrow.textContent  = open ? '▼' : '▶';
+  });
+  on($('btn-ld-new'), 'click', () => Drafts.new());
+
+  // Settings modal
+  on($('btn-settings-cancel'), 'click', () => Modal.close('settings-modal'));
+  on($('btn-settings-save'),   'click', () => Modal.saveSettings());
+  on($('pat-eye'),             'click', () => Modal.togglePatVisibility());
+
+  // Auth (GitHub App device flow)
+  on($('btn-auth-signin'),  'click', () => Auth.startDeviceFlow());
+  on($('btn-auth-signout'), 'click', async () => {
+    const ok = await Modal.confirm({
+      title:   'Sign out?',
+      body:    'Clears your GitHub App tokens from this browser. Your legacy PAT (if set) will still work as fallback.',
+      okLabel: 'Sign out',
+    });
+    if (ok) Auth.signOut();
+  });
+  on($('btn-device-cancel'), 'click', () => {
+    Auth.cancelPoll();
+    Modal.close('auth-modal');
+  });
+  on($('btn-device-copy'), 'click', async () => {
+    try {
+      await navigator.clipboard.writeText($('device-code').textContent.trim());
+      UI.toast('success', '✓ Code copied');
+    } catch { UI.toast('error', '✗ Copy failed'); }
+  });
+
+  // Publish modal
+  on($('btn-publish-cancel'), 'click', () => Modal.close('publish-modal'));
+  on($('btn-publish-do'),     'click', () => Modal.doPublish());
+
+  // Load modal
+  on($('btn-load-close'), 'click', () => Modal.close('load-modal'));
+  on($('ltab-posts'),     'click', () => Modal.switchLoadTab('_posts'));
+  on($('ltab-drafts'),    'click', () => Modal.switchLoadTab('_drafts'));
+  on($('load-search'),    'input',  () => Modal.filterFiles());
+
+  // Code modal
+  on($('btn-code-cancel'), 'click', () => Modal.close('code-modal'));
+  on($('btn-code-insert'), 'click', () => {
+    const v = $('code-lang-input').value.trim();
+    if (v) Modal.insertCodeBlock(v);
+  });
+  on($('code-lang-input'), 'keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const v = $('code-lang-input').value.trim();
+      if (v) Modal.insertCodeBlock(v);
+    }
+  });
+
+  // Revisions modal
+  on($('btn-rev-close'),  'click', () => Modal.close('revisions-modal'));
+  on($('btn-rev-revert'), 'click', () => Modal.revertToRevision());
+
+  // Modal overlay click-to-close
+  $$('.modal-overlay').forEach(overlay => {
+    on(overlay, 'click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+}
+
+function wireKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    const meta = e.ctrlKey || e.metaKey;
+    if (!meta) return;
+    // Ctrl/Cmd+Enter → publish
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      Modal.openPublish();
+      return;
+    }
+    // Ctrl/Cmd+S → save local
+    if (e.key === 's' || e.key === 'S') {
+      e.preventDefault();
+      LocalFile.save();
+      return;
+    }
+    // Ctrl/Cmd+Shift+O → open from GitHub
+    if ((e.key === 'o' || e.key === 'O') && e.shiftKey) {
+      e.preventDefault();
+      Modal.openLoad();
+      return;
+    }
+    // Ctrl/Cmd+O → open local
+    if ((e.key === 'o' || e.key === 'O') && !e.shiftKey) {
+      e.preventDefault();
+      $('md-file-input').click();
+      return;
+    }
+  });
+}
+
+function wireBeforeUnload() {
+  window.addEventListener('beforeunload', (e) => {
+    if (!State.dirty) return;
+    e.preventDefault();
+    // Most browsers ignore custom text now, but return value is still required.
+    e.returnValue = 'You have unsaved changes. Leave this page?';
+    return e.returnValue;
+  });
+}
+
+function newPost() {
+  State.currentLoadedPath  = null;
+  State.currentSha         = null;
+  State.loadedDateStr      = null;
+  State.loadedModifiedStr  = null;
+  State.activeLocalDraftId = null;
+  State.tags = [];
+  State.categories = [];
+
+  // Reset sidebar inputs
+  $('fm-title').value = '';
+  $('fm-description').value = '';
+  $('fm-image').value = '';
+  $('fm-image-alt').value = '';
+  $('fm-date').value = today();
+  $('fm-time').value = DEFAULTS.TIME;
+  $('fm-modified').value = '';
+  $('fm-pin').value = 'false';
+  $('fm-toc').value = 'true';
+  $('fm-comments').value = 'true';
+  $('fm-math').value = 'false';
+  $('fm-mermaid').value = 'false';
+  $$('.hc-item input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+  UI.renderPills('tag');
+  UI.renderPills('cat');
+  UI.setDest('_drafts');
+
+  // Swap per-path autosave key back to untitled
+  if (State.easyMDE?.options?.autosave) {
+    State.easyMDE.options.autosave.uniqueId = STORAGE.DRAFT_PREFIX + 'untitled';
+  }
+  State.easyMDE.value(defaultTemplate());
+
+  UI.updateFmPreview();
+  UI.updateFilename();
+  UI.updateHumanCheckCounter();
+  setDirty(false);
+  UI.toast('success', '✓ New post started');
+}
+
+function init() {
+  // Theme + layout restore (before EasyMDE creates its UI)
+  UI.restoreTheme();
+  UI.restoreSidebarWidth();
+
+  // Sidebar default values
+  $('fm-date').value = today();
+  $('fm-time').value = DEFAULTS.TIME;
+
+  setupEasyMDE();
+  wireSidebarResize();
+  wireButtons();
+  wireKeyboard();
+  wireBeforeUnload();
+
+  // Preview dark restore (needs EasyMDE + its preview CSS already present)
+  UI.restorePreviewDark();
+
+  // Initial sidebar state
+  UI.renderPills('tag');
+  UI.renderPills('cat');
+  UI.setDest('_drafts');
+  UI.updateFmPreview();
+  UI.updateFilename();
+  UI.updateHumanCheckCounter();
+
+  // Initialise auth (reads cached user, updates PAT dot + Settings UI).
+  // Runs async in background — dot will flip green when user is fetched.
+  Auth.init().catch(e => errLog('Auth.init failed:', e));
+  UI.updatePatDot();
+
+  // Prefetch post metadata in the background for load modal + title search.
+  if (GH.hasPat()) {
+    GH.fetchPostMetaCached().catch(e => errLog('initial post meta prefetch failed:', e));
+  }
+
+  // Open IndexedDB and populate the local-drafts list (works offline, no auth).
+  Drafts.init().catch(e => errLog('Drafts.init failed:', e));
+
+  setDirty(false);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+
+
+</script>
+</body>
+</html>
