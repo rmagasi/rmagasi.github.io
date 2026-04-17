@@ -55,7 +55,7 @@ Citrix file-based licensing goes end of life on **April 15, 2026**. Environments
 })();
 </script>
 
-Not migrated yet? → [Citrix LAS Migration Guide](https://support.citrix.com/external/article/CTX695107/license-activation-service-replacing-our.html)
+**Not migrated yet?** → [Citrix LAS Migration Guide](https://support.citrix.com/external/article/CTX695107/license-activation-service-replacing-our.html)
 
 ---
 
