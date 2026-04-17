@@ -2,7 +2,7 @@
 layout: page
 title: Disclaimer
 icon: fas fa-exclamation-circle
-order: 6
+order: 8
 ---
 
 ## Personal Opinion
@@ -19,4 +19,4 @@ This blog may contain links to third-party websites. I have no control over the 
 
 ## AI Assistance
 
-Some posts on this blog are written with the assistance of AI tools to help with structure and articulation. All technical content, experiences, and opinions are my own.
+Posts on this blog may be written with assistance from Claude (Anthropic) as a drafting and editing tool. All technical content, solutions, and recommendations reflect my own hands-on experience and professional judgment.

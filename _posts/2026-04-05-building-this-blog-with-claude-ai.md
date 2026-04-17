@@ -4,7 +4,7 @@ date: 2026-04-05 09:00:00 +0200
 author: robert
 categories: ["Meta", "AI"]
 tags: ["claude", "ai", "jekyll", "chirpy", "github-pages", "blog", "automation"]
-description: "How I built and customised this blog end-to-end using Claude as an AI pair programmer - from Jekyll setup and Chirpy theme tweaks to a custom post editor, without writing a single line of code manually."
+description: "How I built this blog end-to-end with Claude as an AI pair programmer - Jekyll, Chirpy tweaks, and a custom post editor, without writing code manually."
 image:
   path: /assets/img/posts/og-building-blog-ai.png
   alt: "Building This Blog With Claude AI"
@@ -101,7 +101,8 @@ Claude built a single-file HTML editor (`index.html`) that runs entirely in the 
 - **Category and tag autocomplete** - on startup the editor fetches all existing posts from the GitHub API, parses their front matter, and populates `<datalist>` elements so suggestions appear as you type
 - **Image uploads** via drag-and-drop or paste - converts to base64, pushes to the `assets/img/` folder via the API, and inserts the Markdown reference automatically
 
-![14-02-57-rm-post-editor-and-8-more-pages-personal-mic](/assets/img/posts/2026-04-14-14-02-57-rm-post-editor-and-8-more-pages-personal-mic.png)
+![Custom post editor showing the sidebar and live Chirpy preview](/assets/img/posts/editor-screenshot.png)
+_The custom post editor: EasyMDE on the left, live Chirpy-styled preview on the right, front-matter sidebar on the far right._
 
 The entire thing is one HTML file, no build step, no Node.js, no npm. It runs locally or from any static host.
 
@@ -143,4 +144,8 @@ But here's what I didn't have to do: learn every corner of Jekyll, Chirpy, and C
 
 <br>
 
-*Running into something similar with your own Jekyll/Chirpy setup? Reach out on [Lin
+*Running into something similar with your own Jekyll/Chirpy setup? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+
+<br>
+
+> *This post was written with assistance from Claude (Anthropic) as a drafting and editing tool. All technical content, solutions, and recommendations reflect my own hands-on experience and professional judgment.*
