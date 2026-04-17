@@ -3,8 +3,9 @@
   icon: 'fab fa-linkedin'   # icons powered by <https://fontawesome.com/>
   url:  'https://www.linkedin.com/in/robertmagasi/'                  # Fill with your Linkedin homepage
 
-# - type: github
-#   icon: "fab fa-github"
+- type: github
+  icon: "fab fa-github"
+  url: 'https://github.com/rmagasi'
 
 # - type: twitter
 #   icon: "fa-brands fa-x-twitter"

@@ -2,41 +2,77 @@
 layout: page
 title: Contact
 icon: fas fa-envelope
-order: 5
+order: 6
 ---
 
 Whether you have a question about something I've written, want to discuss an EUC challenge, or are looking for consulting help - feel free to reach out. I typically respond within a few business days.
 
-<form action="https://formspree.io/f/xlgpwpow" method="POST" style="max-width: 600px; margin-top: 1.5rem;">
-  <div style="margin-bottom: 1rem;">
-    <label for="name" style="display: block; margin-bottom: 0.4rem; font-weight: 500;">Name</label>
-    <input type="text" id="name" name="name" required
-      style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background: var(--card-bg, #fff); color: inherit; font-size: 1rem;">
+<form class="contact-form" action="https://formspree.io/f/xlgpwpow" method="POST" id="contact-form">
+  <div class="form-field">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required>
   </div>
 
-  <div style="margin-bottom: 1rem;">
-    <label for="email" style="display: block; margin-bottom: 0.4rem; font-weight: 500;">Email</label>
-    <input type="email" id="email" name="email" required
-      style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background: var(--card-bg, #fff); color: inherit; font-size: 1rem;">
+  <div class="form-field">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
   </div>
 
-  <div style="margin-bottom: 1rem;">
-    <label for="subject" style="display: block; margin-bottom: 0.4rem; font-weight: 500;">Subject</label>
-    <input type="text" id="subject" name="subject"
-      style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background: var(--card-bg, #fff); color: inherit; font-size: 1rem;">
+  <div class="form-field">
+    <label for="subject">Subject</label>
+    <input type="text" id="subject" name="subject">
   </div>
 
-  <div style="margin-bottom: 1.25rem;">
-    <label for="message" style="display: block; margin-bottom: 0.4rem; font-weight: 500;">Message</label>
-    <textarea id="message" name="message" rows="6" required
-      style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background: var(--card-bg, #fff); color: inherit; font-size: 1rem; resize: vertical;"></textarea>
+  <div class="form-field last">
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="6" required></textarea>
   </div>
 
-  <button type="submit"
-    style="padding: 0.55rem 1.5rem; background: var(--link-color, #0d6efd); color: #fff; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer;">
-    Send Message
-  </button>
+  <div class="honeypot" aria-hidden="true">
+    <label for="website">Website (leave blank)</label>
+    <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off">
+  </div>
+
+  <button type="submit">Send Message</button>
+
+  <div class="contact-form-status" id="contact-form-status" role="status" aria-live="polite"></div>
 </form>
+
+<script>
+(function () {
+  var form = document.getElementById('contact-form');
+  if (!form) return;
+  var status = document.getElementById('contact-form-status');
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    status.className = 'contact-form-status';
+    status.textContent = '';
+    var data = new FormData(form);
+    fetch(form.action, {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    }).then(function (response) {
+      if (response.ok) {
+        status.className = 'contact-form-status success';
+        status.textContent = 'Thanks — your message has been sent. I\u2019ll get back to you shortly.';
+        form.reset();
+      } else {
+        response.json().then(function (d) {
+          status.className = 'contact-form-status error';
+          status.textContent = (d && d.errors && d.errors.map(function (e) { return e.message; }).join(', ')) || 'Something went wrong. Please try again or reach me on LinkedIn.';
+        }).catch(function () {
+          status.className = 'contact-form-status error';
+          status.textContent = 'Something went wrong. Please try again or reach me on LinkedIn.';
+        });
+      }
+    }).catch(function () {
+      status.className = 'contact-form-status error';
+      status.textContent = 'Network error. Please try again or reach me on LinkedIn.';
+    });
+  });
+}());
+</script>
 
 <br>
 
