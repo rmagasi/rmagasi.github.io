@@ -2,7 +2,7 @@
 layout: page
 title: Impressum
 icon: fas fa-id-card
-order: 7
+order: 9
 ---
 
 ## Legal Notice (Impressum)

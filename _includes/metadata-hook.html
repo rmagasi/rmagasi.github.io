@@ -61,6 +61,41 @@ div[class^="language-"] .code-header > span::after { color: #333 !important; }
   :root:not([data-mode="light"]) div[class^="language-"] .code-header > span i { color: #cccccc !important; }
   :root:not([data-mode="light"]) div[class^="language-"] .code-header > span::after { color: #cccccc !important; }
 }
+
+/* Site footer (from _includes/footer.html) */
+.shimmer::before { animation: none !important; background: none !important; }
+.site-footer .footer-inner { text-align: center; padding: 1rem 0; font-size: 0.85rem; color: #6b6b6b; }
+.site-footer .footer-inner p { margin: 0; }
+.site-footer .footer-meta { font-size: 0.75rem; color: #9b9b9b; margin-top: 4px; }
+.site-footer .footer-meta a { color: #9b9b9b; }
+
+/* About page author card */
+.about-author-card { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.about-author-card img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.about-author-card .about-author-name { font-size: 1.1rem; font-weight: 700; }
+
+/* Contact form */
+.contact-form { max-width: 600px; margin-top: 1.5rem; }
+.contact-form .form-field { margin-bottom: 1rem; }
+.contact-form .form-field.last { margin-bottom: 1.25rem; }
+.contact-form label { display: block; margin-bottom: 0.4rem; font-weight: 500; }
+.contact-form input,
+.contact-form textarea {
+  width: 100%; padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color, #ccc); border-radius: 6px;
+  background: var(--card-bg, #fff); color: inherit; font-size: 1rem;
+}
+.contact-form textarea { resize: vertical; }
+.contact-form button[type="submit"] {
+  padding: 0.55rem 1.5rem; background: var(--link-color, #0d6efd); color: #fff;
+  border: none; border-radius: 6px; font-size: 1rem; cursor: pointer;
+}
+.contact-form .honeypot { position: absolute; left: -10000px; top: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.contact-form-status { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 6px; display: none; }
+.contact-form-status.success { display: block; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.contact-form-status.error { display: block; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+[data-mode="dark"] .contact-form-status.success { background: #1f3a2a; color: #a3d9b1; border-color: #2d5a3d; }
+[data-mode="dark"] .contact-form-status.error { background: #3a1f25; color: #d9a3a9; border-color: #5a2d35; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js" defer></script>

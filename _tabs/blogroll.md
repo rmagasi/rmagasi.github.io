@@ -2,7 +2,7 @@
 layout: page
 title: Blogroll
 icon: fas fa-link
-order: 4
+order: 5
 ---
 
 A collection of EUC and Citrix blogs I follow and recommend.

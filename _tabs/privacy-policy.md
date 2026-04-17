@@ -2,7 +2,7 @@
 layout: page
 title: Privacy Policy
 icon: fas fa-shield-alt
-order: 5
+order: 7
 ---
 
 *Last updated: April 2026*

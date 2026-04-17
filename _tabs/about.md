@@ -4,10 +4,10 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-<div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-  <img src="/assets/img/avatar.jpg" alt="Robert Magasi" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+<div class="about-author-card">
+  <img src="/assets/img/avatar.jpg" alt="Robert Magasi">
   <div>
-    <strong style="font-size: 1.1rem;">Robert Magasi</strong><br>
+    <span class="about-author-name">Robert Magasi</span><br>
     Senior VDI & EUC Consultant · Technical Lead · Wetzikon, Switzerland<br>
     <a href="https://www.linkedin.com/in/robertmagasi/">linkedin.com/in/robertmagasi</a>
   </div>
