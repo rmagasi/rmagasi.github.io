@@ -3146,4 +3146,122 @@ function wireKeyboard() {
       LocalFile.save();
       return;
     }
-    // Ctrl/Cmd+Shift+O → open from Git
+    // Ctrl/Cmd+Shift+O → open from GitHub
+    if ((e.key === 'o' || e.key === 'O') && e.shiftKey) {
+      e.preventDefault();
+      Modal.openLoad();
+      return;
+    }
+    // Ctrl/Cmd+O → open local
+    if ((e.key === 'o' || e.key === 'O') && !e.shiftKey) {
+      e.preventDefault();
+      $('md-file-input').click();
+      return;
+    }
+  });
+}
+
+function wireBeforeUnload() {
+  window.addEventListener('beforeunload', (e) => {
+    if (!State.dirty) return;
+    e.preventDefault();
+    // Most browsers ignore custom text now, but return value is still required.
+    e.returnValue = 'You have unsaved changes. Leave this page?';
+    return e.returnValue;
+  });
+}
+
+function newPost() {
+  State.currentLoadedPath  = null;
+  State.currentSha         = null;
+  State.loadedDateStr      = null;
+  State.loadedModifiedStr  = null;
+  State.activeLocalDraftId = null;
+  State.tags = [];
+  State.categories = [];
+
+  // Reset sidebar inputs
+  $('fm-title').value = '';
+  $('fm-description').value = '';
+  $('fm-image').value = '';
+  $('fm-image-alt').value = '';
+  $('fm-date').value = today();
+  $('fm-time').value = DEFAULTS.TIME;
+  $('fm-modified').value = '';
+  $('fm-pin').value = 'false';
+  $('fm-toc').value = 'true';
+  $('fm-comments').value = 'true';
+  $('fm-math').value = 'false';
+  $('fm-mermaid').value = 'false';
+  $$('.hc-item input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+  UI.renderPills('tag');
+  UI.renderPills('cat');
+  UI.setDest('_drafts');
+
+  // Swap per-path autosave key back to untitled
+  if (State.easyMDE?.options?.autosave) {
+    State.easyMDE.options.autosave.uniqueId = STORAGE.DRAFT_PREFIX + 'untitled';
+  }
+  State.easyMDE.value(defaultTemplate());
+
+  UI.updateFmPreview();
+  UI.updateFilename();
+  UI.updateHumanCheckCounter();
+  setDirty(false);
+  UI.toast('success', '✓ New post started');
+}
+
+function init() {
+  // Theme + layout restore (before EasyMDE creates its UI)
+  UI.restoreTheme();
+  UI.restoreSidebarWidth();
+
+  // Sidebar default values
+  $('fm-date').value = today();
+  $('fm-time').value = DEFAULTS.TIME;
+
+  setupEasyMDE();
+  wireSidebarResize();
+  wireButtons();
+  wireKeyboard();
+  wireBeforeUnload();
+
+  // Preview dark restore (needs EasyMDE + its preview CSS already present)
+  UI.restorePreviewDark();
+
+  // Initial sidebar state
+  UI.renderPills('tag');
+  UI.renderPills('cat');
+  UI.setDest('_drafts');
+  UI.updateFmPreview();
+  UI.updateFilename();
+  UI.updateHumanCheckCounter();
+
+  // Initialise auth (reads cached user, updates PAT dot + Settings UI).
+  // Runs async in background — dot will flip green when user is fetched.
+  Auth.init().catch(e => errLog('Auth.init failed:', e));
+  UI.updatePatDot();
+
+  // Prefetch post metadata in the background for load modal + title search.
+  if (GH.hasPat()) {
+    GH.fetchPostMetaCached().catch(e => errLog('initial post meta prefetch failed:', e));
+  }
+
+  // Open IndexedDB and populate the local-drafts list (works offline, no auth).
+  Drafts.init().catch(e => errLog('Drafts.init failed:', e));
+
+  setDirty(false);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+
+
+</script>
+</body>
+</html>
