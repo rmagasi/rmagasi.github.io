@@ -1,43 +1,65 @@
-# Chirpy Starter
+# EUC Insights — robertmagasi.com
 
-[![Gem Version](https://img.shields.io/gem/v/jekyll-theme-chirpy)][gem]&nbsp;
-[![GitHub license](https://img.shields.io/github/license/cotes2020/chirpy-starter.svg?color=blue)][mit]
+Personal technical blog by **Robert Magasi** — Senior VDI & EUC Consultant.
+Real-world Citrix, AVD, and EUC knowledge from 15 years in IT.
 
-When installing the [**Chirpy**][chirpy] theme through [RubyGems.org][gem], Jekyll can only read files in the folders
-`_data`, `_layouts`, `_includes`, `_sass` and `assets`, as well as a small part of options of the `_config.yml` file
-from the theme's gem. If you have ever installed this theme gem, you can use the command
-`bundle info --path jekyll-theme-chirpy` to locate these files.
+## Stack
 
-The Jekyll team claims that this is to leave the ball in the user’s court, but this also results in users not being
-able to enjoy the out-of-the-box experience when using feature-rich themes.
+| Layer | Choice |
+|-------|--------|
+| Hosting | GitHub Pages (deployed via GitHub Actions) |
+| Generator | Jekyll 4.x |
+| Theme | [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) v7.4.1 (gem-based) |
+| Comments | [Giscus](https://giscus.app) (GitHub Discussions-backed) |
+| Analytics | [GoatCounter](https://www.goatcounter.com/) (cookieless) |
+| Editor | Custom single-file HTML editor (separate repo) |
 
-To fully use all the features of **Chirpy**, you need to copy the other critical files from the theme's gem to your
-Jekyll site. The following is a list of targets:
+## Publishing workflow
 
-```shell
-.
-├── _config.yml
-├── _plugins
-├── _tabs
-└── index.html
+1. **Draft** a post via the custom Cowork editor — produces a `.md` file under `_drafts/` or `_posts/` using the front matter template.
+2. **Generate the OG image** with `scripts/generate_og.py` (from the `euc-insights-blog` skill) and save to `assets/img/posts/og-<slug>.png`.
+3. **Publish** via the editor's Publish button. The editor pushes `.md` files directly to the repo via the GitHub Contents API.
+4. **Commit image assets manually** — the editor only handles markdown. Run:
+   ```bash
+   git add assets/img/posts/og-<slug>.png
+   git commit -m "add post: <title>"
+   git push
+   ```
+5. **GitHub Actions** (`.github/workflows/pages-deploy.yml`) builds with Jekyll, runs htmlproofer, and deploys to Pages.
+
+## Local development
+
+```bash
+bundle install
+bundle exec jekyll serve
 ```
 
-To save you time, and also in case you lose some files while copying, we extract those files/configurations of the
-latest version of the **Chirpy** theme and the [CD][CD] workflow to here, so that you can start writing in minutes.
+Site will be available at http://localhost:4000.
 
-## Usage
+## Repo layout
 
-Check out the [theme's docs](https://github.com/cotes2020/jekyll-theme-chirpy/wiki).
+```
+_posts/        Published posts (YYYY-MM-DD-slug.md)
+_drafts/       Draft posts + post template
+_tabs/         Sidebar pages (About, Blogroll, Contact, legal pages)
+_includes/
+  metadata-hook.html   All custom JS/CSS
+  comments/giscus.html Giscus widget + theme sync
+_layouts/      Overrides for Chirpy's default layouts
+_data/         Author, contact, share config
+assets/img/    Avatar, OG images, favicons, post screenshots
+assets/scripts/ Downloadable scripts referenced in posts
+```
 
-## Contributing
+## Key conventions
 
-This repository is automatically updated with new releases from the theme repository. If you encounter any issues or want to contribute to its improvement, please visit the [theme repository][chirpy] to provide feedback.
+- **Author** is always `robert` (see `_data/authors.yml`)
+- **Categories** are title-cased; **tags** are lowercase-hyphenated
+- **OG images** are 1200×630 (generated at 2× for retina crispness)
+- **Custom CSS/JS** goes in `_includes/metadata-hook.html` — NOT `_sass/addon/custom.scss` (ignored in gem-based Chirpy)
+- **Inline scripts** must use `/* */` block comments, never `//` — `compress_html` breaks `//`
 
 ## License
 
-This work is published under [MIT][mit] License.
-
-[gem]: https://rubygems.org/gems/jekyll-theme-chirpy
-[chirpy]: https://github.com/cotes2020/jekyll-theme-chirpy/
-[CD]: https://en.wikipedia.org/wiki/Continuous_deployment
-[mit]: https://github.com/cotes2020/chirpy-starter/blob/master/LICENSE
+Post content © Robert Magasi. Code snippets unless otherwise noted are MIT-licensed.
+Chirpy theme is MIT-licensed — see [cotes2020/jekyll-theme-chirpy](https://github.com/cotes2020/jekyll-theme-chirpy).
