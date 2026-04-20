@@ -59,11 +59,12 @@ html[data-mode="dark"] .sa-figure {
   --b: #e8a87c; --b-soft: #3a2418; --b-ink: #f3c8a8;
   --ok: #81c784; --code-bg: #2a2a30;
 }
-.sa-figure *, .sa-figure *::before, .sa-figure *::after { box-sizing: border-box; }
+.sa-figure *, .sa-figure *::before, .sa-figure *::after { box-sizing: border-box; margin: 0; box-shadow: none; text-shadow: none; }
+.sa-figure div { background: transparent; border-radius: 0; }
 .sa-figure .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.9em; }
 .sa-figure .diagram { background: var(--card); border: 1px solid var(--hair); border-radius: var(--radius); overflow: hidden; }
 .sa-figure .layers { display: grid; grid-template-columns: 48px repeat(4, 1fr); background: var(--hair-2); border-bottom: 1px solid var(--hair); }
-.sa-figure .layers .cell { padding: 10px 12px 12px; border-right: 1px solid var(--hair); position: relative; }
+.sa-figure .layers .cell { padding: 10px 12px 12px; border-right: 1px solid var(--hair); position: relative; background: transparent; }
 .sa-figure .layers .cell:last-child { border-right: none; }
 .sa-figure .layers .tag { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 3px; }
 .sa-figure .layers .name { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.25; }
