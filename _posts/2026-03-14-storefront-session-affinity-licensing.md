@@ -36,8 +36,154 @@ The pressure was high. The customer was escalating at executive level, facing bo
 
 After analysing the root cause, I realised the resource conflicts were caused purely by simultaneous sessions landing on the same worker. The fix was to enforce **strict session affinity** - ensuring each account was permanently bound to its own dedicated worker server.
 
-![Session Affinity Solution Architecture](/assets/img/posts/session-affinity-diagram.png){: w="800" h="450" }
-_Full architecture diagram showing the four-layer session affinity solution_
+<div class="sa-figure">
+<style>
+.sa-figure {
+  --bg: #fafafa; --card: #ffffff; --ink: #1d1d1f; --ink-2: #34343a;
+  --ink-3: #6b6b72; --ink-4: #a6a6ad; --hair: #e9e9ec; --hair-2: #f2f2f4;
+  --a: #2a408e; --a-soft: #eaeefb; --a-ink: #1f2f69;
+  --b: #b54708; --b-soft: #fdf0e3; --b-ink: #7a3207;
+  --ok: #2e7d32; --code-bg: #f6f6f8;
+  --radius: 6px; --radius-sm: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Lato", Arial, sans-serif;
+  font-size: 14px; line-height: 1.5;
+  color: var(--ink);
+  max-width: 860px;
+  margin: 16px auto 24px;
+  -webkit-font-smoothing: antialiased;
+}
+html[data-mode="dark"] .sa-figure {
+  --bg: #1b1b1f; --card: #232328; --ink: #f5f5f7; --ink-2: #d9d9de;
+  --ink-3: #9a9aa4; --ink-4: #6b6b72; --hair: #33333a; --hair-2: #2a2a2f;
+  --a: #7aa2f7; --a-soft: #1f2b4a; --a-ink: #c8d4f0;
+  --b: #e8a87c; --b-soft: #3a2418; --b-ink: #f3c8a8;
+  --ok: #81c784; --code-bg: #2a2a30;
+}
+.sa-figure *, .sa-figure *::before, .sa-figure *::after { box-sizing: border-box; }
+.sa-figure .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.9em; }
+.sa-figure .diagram { background: var(--card); border: 1px solid var(--hair); border-radius: var(--radius); overflow: hidden; }
+.sa-figure .layers { display: grid; grid-template-columns: 48px repeat(4, 1fr); background: var(--hair-2); border-bottom: 1px solid var(--hair); }
+.sa-figure .layers .cell { padding: 10px 12px 12px; border-right: 1px solid var(--hair); position: relative; }
+.sa-figure .layers .cell:last-child { border-right: none; }
+.sa-figure .layers .tag { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 3px; }
+.sa-figure .layers .name { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.25; }
+.sa-figure .layers .mech { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.sa-figure .rail { display: grid; grid-template-columns: 48px repeat(4, 1fr); position: relative; }
+.sa-figure .rail + .rail { border-top: 1px solid var(--hair); }
+.sa-figure .rail-chip { display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; letter-spacing: 0.02em; border-right: 1px solid var(--hair); }
+.sa-figure .rail-a .rail-chip { background: var(--a-soft); color: var(--a-ink); }
+.sa-figure .rail-b .rail-chip { background: var(--b-soft); color: var(--b-ink); }
+.sa-figure .rail-chip span { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--card); font-size: 12px; }
+.sa-figure .rail-a .rail-chip span { color: var(--a); box-shadow: inset 0 0 0 1.5px var(--a); }
+.sa-figure .rail-b .rail-chip span { color: var(--b); box-shadow: inset 0 0 0 1.5px var(--b); }
+.sa-figure .node { padding: 12px 14px 14px; border-right: 1px solid var(--hair); position: relative; min-height: 140px; background: var(--card); }
+.sa-figure .node:last-child { border-right: none; }
+.sa-figure .node .cap { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+.sa-figure .node .cap::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 1px; background: var(--ink-4); }
+.sa-figure .rail-a .node .cap { color: var(--a); }
+.sa-figure .rail-a .node .cap::before { background: var(--a); }
+.sa-figure .rail-b .node .cap { color: var(--b); }
+.sa-figure .rail-b .node .cap::before { background: var(--b); }
+.sa-figure .node h4 { margin: 0 0 8px; font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--ink); }
+.sa-figure .node p { margin: 0 0 10px; font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+.sa-figure .kv { background: var(--code-bg); border-radius: var(--radius-sm); padding: 7px 9px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; line-height: 1.55; color: var(--ink-2); display: grid; grid-template-columns: auto 1fr; column-gap: 8px; row-gap: 2px; overflow-wrap: anywhere; }
+.sa-figure .kv .k { color: var(--ink-4); }
+.sa-figure .kv .v { color: var(--ink); }
+.sa-figure .rail-a .kv .v b { color: var(--a); font-weight: 600; }
+.sa-figure .rail-b .kv .v b { color: var(--b); font-weight: 600; }
+.sa-figure .node .arrow { position: absolute; top: 50%; right: -7px; transform: translateY(-50%); width: 14px; height: 14px; z-index: 3; pointer-events: none; background: var(--card); display: flex; align-items: center; justify-content: center; }
+.sa-figure .node .arrow svg { width: 12px; height: 12px; display: block; }
+.sa-figure .rail-a .arrow path { stroke: var(--a); }
+.sa-figure .rail-b .arrow path { stroke: var(--b); }
+.sa-figure .result { display: flex; align-items: center; gap: 10px; padding: 11px 16px; background: var(--hair-2); border-top: 1px solid var(--hair); font-size: 12.5px; color: var(--ink-2); }
+.sa-figure .result .badge { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ok); padding: 3px 8px; border: 1px solid var(--ok); border-radius: 10px; background: var(--card); }
+.sa-figure .caption { margin-top: 10px; font-size: 12.5px; color: var(--ink-3); text-align: center; font-style: italic; line-height: 1.5; }
+@media (max-width: 720px) {
+  .sa-figure .layers { display: none; }
+  .sa-figure .rail { grid-template-columns: 36px 1fr; }
+  .sa-figure .rail-chip { grid-row: span 4; border-right: 1px solid var(--hair); }
+  .sa-figure .node { border-right: none; border-bottom: 1px solid var(--hair); min-height: 0; }
+  .sa-figure .node:last-child { border-bottom: none; }
+  .sa-figure .node::before { content: attr(data-layer); display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 4px; }
+  .sa-figure .node .arrow { display: none; }
+  .sa-figure .rail + .rail { border-top: 2px solid var(--hair); }
+}
+</style>
+<div class="diagram">
+<div class="layers">
+<div class="cell"></div>
+<div class="cell"><div class="tag">Layer 1 · GPO</div><div class="name">Endpoint Routing</div><div class="mech">Workspace App → store URL</div></div>
+<div class="cell"><div class="tag">Layer 2 · StoreFront</div><div class="name">Keyword Filter</div><div class="mech">Store shows one keyword only</div></div>
+<div class="cell"><div class="tag">Layer 3 · Citrix Studio</div><div class="name">VDA Tag Match</div><div class="mech">Broker pins session to tagged VDA</div></div>
+<div class="cell"><div class="tag">Layer 4 · GPO</div><div class="name">FSLogix Profile</div><div class="mech">Per-worker VHD location</div></div>
+</div>
+<div class="rail rail-a">
+<div class="rail-chip"><span>A</span></div>
+<div class="node" data-layer="Layer 1 · Endpoint Routing">
+<div class="cap">Endpoint Group A</div>
+<h4>Routed to Store A</h4>
+<p>Workspace App config applied by GPO filtered on computer OU.</p>
+<div class="kv"><span class="k">url</span><span class="v">…/Citrix/<b>StoreA</b></span></div>
+<div class="arrow"><svg viewBox="0 0 12 12"><path d="M1 6 H10 M7 3 L10 6 L7 9" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+<div class="node" data-layer="Layer 2 · Keyword Filter">
+<div class="cap">Store A</div>
+<h4>Enumerates only<br/>WorkerGroup-A resources</h4>
+<p>Resources without this keyword are invisible to users of Store A.</p>
+<div class="kv"><span class="k">keyword</span><span class="v"><b>WorkerGroup-A</b></span></div>
+<div class="arrow"><svg viewBox="0 0 12 12"><path d="M1 6 H10 M7 3 L10 6 L7 9" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+<div class="node" data-layer="Layer 3 · VDA Tag Match">
+<div class="cap">VDAs · Tag A</div>
+<h4>Single Delivery Group, per-VDA tag</h4>
+<p>Broker only considers workers whose tag matches the keyword.</p>
+<div class="kv"><span class="k">Worker-01</span><span class="v">tag: <b>WorkerGroup-A</b></span><span class="k">Worker-02</span><span class="v">tag: <b>WorkerGroup-A</b></span></div>
+<div class="arrow"><svg viewBox="0 0 12 12"><path d="M1 6 H10 M7 3 L10 6 L7 9" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+<div class="node" data-layer="Layer 4 · FSLogix Profile">
+<div class="cap">Profiles A</div>
+<h4>Per-worker OU, isolated VHD</h4>
+<p>FSLogix <span class="mono">VHDLocations</span> is unique per worker — no shared profile storage.</p>
+<div class="kv"><span class="k">W-01</span><span class="v">\\srv\profiles\<b>worker01</b></span><span class="k">W-02</span><span class="v">\\srv\profiles\<b>worker02</b></span></div>
+</div>
+</div>
+<div class="rail rail-b">
+<div class="rail-chip"><span>B</span></div>
+<div class="node" data-layer="Layer 1 · Endpoint Routing">
+<div class="cap">Endpoint Group B</div>
+<h4>Routed to Store B</h4>
+<p>Same mechanism, different OU — endpoints never configure themselves.</p>
+<div class="kv"><span class="k">url</span><span class="v">…/Citrix/<b>StoreB</b></span></div>
+<div class="arrow"><svg viewBox="0 0 12 12"><path d="M1 6 H10 M7 3 L10 6 L7 9" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+<div class="node" data-layer="Layer 2 · Keyword Filter">
+<div class="cap">Store B</div>
+<h4>Enumerates only<br/>WorkerGroup-B resources</h4>
+<p>Store B users can't see — let alone launch — a WorkerGroup-A resource.</p>
+<div class="kv"><span class="k">keyword</span><span class="v"><b>WorkerGroup-B</b></span></div>
+<div class="arrow"><svg viewBox="0 0 12 12"><path d="M1 6 H10 M7 3 L10 6 L7 9" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+<div class="node" data-layer="Layer 3 · VDA Tag Match">
+<div class="cap">VDAs · Tag B</div>
+<h4>Same Delivery Group, different tag</h4>
+<p>Tags alone carve the worker subset — no parallel Delivery Group needed.</p>
+<div class="kv"><span class="k">Worker-03</span><span class="v">tag: <b>WorkerGroup-B</b></span><span class="k">Worker-04</span><span class="v">tag: <b>WorkerGroup-B</b></span></div>
+<div class="arrow"><svg viewBox="0 0 12 12"><path d="M1 6 H10 M7 3 L10 6 L7 9" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+<div class="node" data-layer="Layer 4 · FSLogix Profile">
+<div class="cap">Profiles B</div>
+<h4>Per-worker OU, isolated VHD</h4>
+<p>Profile conflicts impossible by construction — every worker has its own store.</p>
+<div class="kv"><span class="k">W-03</span><span class="v">\\srv\profiles\<b>worker03</b></span><span class="k">W-04</span><span class="v">\\srv\profiles\<b>worker04</b></span></div>
+</div>
+</div>
+<div class="result">
+<span class="badge">Result</span>
+<span>Each account group is permanently bound to its own worker set — no cross-contamination, one Delivery Group.</span>
+</div>
+</div>
+<div class="caption">Full architecture diagram showing the four-layer session affinity solution.</div>
+</div>
 
 Here's how I built it using only native Citrix features:
 
