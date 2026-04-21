@@ -1,5 +1,5 @@
 ---
-title: "How a StoreFront Keyword Trick Saved a Customer Six Figures in Licensing Costs"
+title: "StoreFront Keyword Trick for Session Affinity"
 date: 2026-03-14 09:00:00 +0100
 categories: ["Citrix", "Troubleshooting"]
 tags: ["citrix", "storefront", "fslogix", "gpo", "licensing", "session-affinity"]
@@ -7,7 +7,7 @@ author: robert
 description: "How native Citrix StoreFront keywords and VDA tags solved a production escalation - and avoided a six-figure licensing bill. No custom code required."
 image:
   path: /assets/img/posts/og-storefront-licensing.png
-  alt: "How a StoreFront Keyword Trick Saved a Customer Six Figures in Licensing Costs"
+  alt: "StoreFront Keyword Trick for Session Affinity"
 ---
 
 I was already on the way home when my manager called. The customer was escalating - executive level, production disrupted, and the options on the table were custom development or a six-figure licensing spend. I put everything else aside the next day and started from scratch. What I found was a solution built entirely from native Citrix features that nobody had thought to combine.

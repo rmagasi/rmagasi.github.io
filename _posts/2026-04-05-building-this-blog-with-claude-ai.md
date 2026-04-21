@@ -1,5 +1,5 @@
 ---
-title: "Building This Blog With Claude AI - How It Actually Went"
+title: "Building This Blog With Claude AI"
 date: 2026-04-05 09:00:00 +0200
 author: robert
 categories: ["Meta", "AI"]

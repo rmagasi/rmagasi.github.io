@@ -1,5 +1,5 @@
 ---
-title: "Citrix Session Shadowing Broken After January 2026 Patches - Here's the Fix"
+title: "Citrix Session Shadowing — Post-Jan 2026 Fix"
 date: 2026-03-15 09:00:00 +0100
 author: robert
 categories: ["Citrix", "Troubleshooting"]
@@ -7,7 +7,7 @@ tags: ["citrix", "director", "shadowing", "msra", "gpo", "firewall", "remote-ass
 description: "Citrix Director shadowing broke after the January 2026 Microsoft patches. Here's the GPO-deployable msra.exe /offerra workaround - no third-party tools."
 image:
   path: /assets/img/posts/og-session-shadowing.png
-  alt: "Citrix Session Shadowing Broken After January 2026 Patches - Here's the Fix"
+  alt: "Citrix Session Shadowing — Post-Jan 2026 Fix"
 ---
 
 Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. I picked this up from the community before our ops team confirmed it internally - once it hits production, support engineers lose their primary tool for helping users mid-session. That's an immediate escalation.
