@@ -551,6 +551,7 @@
         <label class="field-label">Image path</label>
         <div class="field-group row" style="margin-bottom:0;">
           <input type="text" id="fm-image" placeholder="/assets/img/post.jpg">
+          <button class="mini-btn" id="btn-og-design" title="Design OG image with Claude in Cowork">🎨</button>
           <button class="mini-btn" id="btn-og-upload" title="Upload OG image to repo">&#8679;</button>
         </div>
       </div>
@@ -3031,6 +3032,60 @@ function wireButtons() {
     $('fm-modified').value = today();
     State.loadedModifiedStr = null;
     UI.onFmChange();
+  });
+
+  // OG design — build a Cowork prompt from current post state and copy to clipboard
+  on($('btn-og-design'), 'click', () => {
+    const title = $('fm-title').value.trim();
+    if (!title) { UI.toast('error', 'Add a title first'); return; }
+
+    const slug = UI.getSlug();
+    const desc = $('fm-description').value.trim();
+    const cats = (State.categories || []).join(', ');
+    const tags = (State.tags || []).join(', ');
+    const body = State.easyMDE ? State.easyMDE.value() : '';
+
+    const firstPara = body
+      .split(/\n\s*\n/)
+      .map(s => s.trim())
+      .find(s => s && !s.startsWith('#') && !s.startsWith('!') && !s.startsWith('>') && !s.startsWith('```'))
+      || '';
+    const firstParaClean = firstPara.replace(/[*_`]+/g, '').replace(/\s+/g, ' ').slice(0, 600);
+
+    const ogPath = `/assets/img/posts/og-${slug}.png`;
+
+    const lines = [
+      'Build an OG hero image for a new post on my blog.',
+      '',
+      `**Title:** ${title}`,
+      desc ? `**Description:** ${desc}` : null,
+      cats ? `**Categories:** ${cats}` : null,
+      tags ? `**Tags:** ${tags}` : null,
+      `**Slug:** ${slug}`,
+      `**OG filename:** og-${slug}.png   (rename if you want something shorter)`,
+      '',
+      firstParaClean ? '**First paragraph of the post:**' : null,
+      firstParaClean ? firstParaClean : null,
+      '',
+      'Please use the euc-insights-blog skill hero workflow:',
+      `1. Create hero HTML at /sessions/focused-kind-turing/mnt/Cowork/blog/hero-${slug}-light.html`,
+      '2. Render via Playwright at 1200x630, 2x DPR',
+      '3. Show me the PNG for approval',
+      `4. On approval, copy to /sessions/focused-kind-turing/mnt/rmagasi.github.io/assets/img/posts/og-${slug}.png`,
+      '5. Give me the git commands when done.'
+    ].filter(l => l !== null);
+
+    const prompt = lines.join('\n');
+
+    navigator.clipboard.writeText(prompt).then(() => {
+      if (!$('fm-image').value.trim()) {
+        $('fm-image').value = ogPath;
+        UI.onFmChange();
+      }
+      UI.toast('success', '✓ Prompt copied — paste into Cowork');
+    }).catch(() => {
+      UI.toast('error', '✗ Clipboard copy failed');
+    });
   });
 
   // OG upload
