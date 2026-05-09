@@ -1,10 +1,11 @@
 ---
 title: "Building This Blog With Claude AI"
 date: 2026-04-05 09:00:00 +0200
+last_modified_at: 2026-05-09 09:00:00 +0200
 author: robert
 categories: ["Meta", "AI"]
 tags: ["claude", "ai", "jekyll", "chirpy", "github-pages", "blog", "automation"]
-description: "How I built this blog end-to-end with Claude as an AI pair programmer - Jekyll, Chirpy tweaks, and a custom post editor, without writing code manually."
+description: "How I built this blog with Claude as an AI pair programmer - Jekyll, Chirpy tweaks, and a custom post editor that has since grown OAuth auth, offline drafts, and a one-click draft-to-post promote."
 image:
   path: /assets/img/posts/og-building-blog-ai.png
   alt: "Building This Blog With Claude AI"
@@ -90,21 +91,62 @@ One gotcha: Chirpy's post list on the homepage crops preview images to a `40/21`
 
 ## The Custom Post Editor
 
-This was the most unexpected part of the project. I needed a way to write and publish posts without touching a terminal - something I could open in a browser and use like a CMS.
+This was the most unexpected part of the project. I needed a way to write and publish posts without touching a terminal, something I could open in a browser and use like a CMS.
 
-Claude built a single-file HTML editor (`index.html`) that runs entirely in the browser:
-
-- **EasyMDE** for the Markdown editing experience, with a live side-by-side preview
-- The preview renders using the same Chirpy CSS - correct fonts, blockquote styles, prompt boxes (tip/info/warning/danger), code block headers, and dark mode
-- A **sidebar** handles all Jekyll front matter fields: title, date, last modified date, categories, tags, description, OG image path, and toggles for TOC, comments, math, and Mermaid
-- **GitHub Contents API integration** with a personal access token - load existing posts from the repo, edit them, and push changes back with a single button
-- **Category and tag autocomplete** - on startup the editor fetches all existing posts from the GitHub API, parses their front matter, and populates `<datalist>` elements so suggestions appear as you type
-- **Image uploads** via drag-and-drop or paste - converts to base64, pushes to the `assets/img/` folder via the API, and inserts the Markdown reference automatically
+Claude built a single-file HTML editor (`editor/index.html`) that runs entirely in the browser, no build step, no Node, no npm. It is currently around 2 700 lines, served at [`robertmagasi.com/editor/`](https://robertmagasi.com/editor/), and has authored every post on the site since early March.
 
 ![Custom post editor showing the sidebar and live Chirpy preview](/assets/img/posts/editor-screenshot.png)
 _The custom post editor: EasyMDE on the left, live Chirpy-styled preview on the right, front-matter sidebar on the far right._
 
-The entire thing is one HTML file, no build step, no Node.js, no npm. It runs locally or from any static host.
+### What it does today
+
+**Writing experience**
+- [EasyMDE](https://github.com/Ionaru/easy-markdown-editor) Markdown editor with a live side-by-side preview rendered using the same Chirpy CSS, correct fonts, blockquote styles, prompt boxes (tip/info/warning/danger), and code-block headers
+- Full editor dark mode (not just the preview), keyed off `data-theme="dark"` and persisted across reloads
+- Dirty-state indicator in the header plus a `beforeunload` guard, so an accidental tab close cannot lose unsaved work
+- Resizable sidebar with persisted width, plus keyboard shortcuts for save and publish
+
+**Front matter sidebar**
+- All Jekyll fields exposed as inputs: title, date, time, last-modified date, categories, tags, description, OG image path, and toggles for TOC, comments, math, and Mermaid
+- Category and tag autocomplete sourced from the front matter of every post in the repo
+- Unicode-aware slug generation via `String.normalize('NFKD')`, so a Hungarian title like *"Föl és Alá"* slugs cleanly instead of collapsing to `-l-s-al`
+- Date and timezone preserved on load, so a post written in winter (`+0100`) does not silently drift an hour when re-saved in summer
+
+**GitHub integration**
+- [GitHub App](https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/about-creating-github-apps) authentication via the [device-code flow](https://docs.github.com/en/apps/creating-github-apps/writing-code-with-your-github-app/generating-a-user-access-token-for-a-github-app#using-the-device-flow-to-generate-a-user-access-token), no Personal Access Token to paste, no client secret in the browser. Sign in once, the editor stores an access token plus a refresh token, and a 401 triggers an automatic refresh and one retry
+- Load existing posts and drafts from the repo, edit them, push back as a single commit
+- One-click **Promote →** button on every draft that commits the new `_posts/` file and deletes the matching `_drafts/` file in the same operation
+- Image uploads via drag-and-drop or paste, pushed to `assets/img/posts/` with the post's date in the filename, with a warning above 1 MB and a hard block above 10 MB (the [GitHub Contents API degrades on base64 payloads past ~1 MB](https://docs.github.com/en/rest/repos/contents))
+- Single recursive [Git tree call](https://docs.github.com/en/rest/git/trees) on load instead of one HTTP request per post, with the parsed front matter cached in `localStorage` keyed by SHA
+
+**Offline drafts**
+- Local drafts stored in IndexedDB, completely independent of the repo's `_drafts/` folder
+- Every keystroke autosaves into the active local draft
+- Sidebar lists all local drafts with a counter, drafts only touch GitHub when explicitly published or promoted to repo
+- This means I can write on the train without a token, without WiFi, and without polluting the repo history with `wip`-style commits
+
+**Correctness**
+- Proper YAML handling via [js-yaml](https://github.com/nodeca/js-yaml) for both reading and writing front matter, so a title with a quote, a backslash, or an unfortunate combination of accents does not silently break the Chirpy build
+- Modern base64 via `TextEncoder` instead of the deprecated `unescape(encodeURIComponent(...))` pattern
+- Pills (categories, tags) rendered as DOM elements rather than `innerHTML` interpolation, so a tag value cannot inject HTML or break the remove button
+
+### How I write a post with it
+
+**For a new post:**
+1. Open `/editor/` in the browser, sign in once via the device-code flow (the App is already installed on the repo)
+2. Either start typing into a fresh local draft (autosaved to IndexedDB), or click **New** to clear the form
+3. Fill in title, categories, tags, and description in the sidebar, the slug is derived automatically
+4. Write the post in Markdown with the live Chirpy-styled preview alongside
+5. Upload the OG image via the **↑** button next to the Image path field, the editor pushes it to `assets/img/posts/` and fills the path
+6. Toggle the destination to `_posts` (or leave it on `_drafts` for a draft commit), hit **Publish**, the editor commits the `.md` file via the GitHub App
+
+**For editing an existing post:**
+1. Click **Load**, pick the post from the file list (drafts have a green **Promote →** button next to them)
+2. Make edits, the dirty indicator lights up the moment something changes
+3. Click **Today** next to the last-modified field to stamp the edit
+4. **Publish** updates the file in place using the existing SHA
+
+The only step that still happens outside the editor is committing assets that were generated by other tools, the per-post hero PNGs and the animated MP4 social cards. Those still need a `git commit` from the local clone.
 
 ## What Worked Well
 
@@ -133,6 +175,7 @@ The entire thing is one HTML file, no build step, no Node.js, no npm. It runs lo
 | CSV highlighting | Use `plaintext` fence + `{: file="name.csv" }`, then JS for the coloring |
 | OG images | Centre all content - Chirpy crops preview cards from the middle |
 | AI workflow | Paste actual HTML/errors/screenshots - descriptions of symptoms are less efficient |
+| Editor evolution | Auditing your own tooling pays - the v1 of the editor had silent YAML corruption, no offline drafts, and PAT-only auth. All three got fixed in one focused pass. |
 
 ## Final Thought
 
