@@ -79,7 +79,7 @@ All of this is CSS injected via `metadata-hook.html`. The key selector is `div[c
 
 Rouge doesn't know the `csv` language, so fencing a code block with ` ```csv ` generates a bare `<pre>` without the proper `div.language-*` wrapper that Chirpy needs for its code header. The fix: use ` ```plaintext ` as the fence language, then add `{: file="filename.csv" }` on the next line to set the filename attribute.
 
-From there, a small JavaScript function targets `div[file$=".csv"]`, reads the plain text content, and replaces it with colored `<span>` elements - blue bold header row, normal values, grey commas. Rouge does nothing for `plaintext` beyond generating the right DOM structure; the coloring is entirely custom JS.
+From there, a small JavaScript function targets `div[file$=".csv"]`, reads the plain text content, and replaces it with colored `<span>` elements - blue bold header row, normal values, grey commas. Rouge does nothing for `plaintext` beyond generating the right DOM structure, the coloring is entirely custom JS.
 
 ### Social Media OG Images
 
