@@ -1,6 +1,7 @@
 ---
 title: "StoreFront Keyword Trick for Session Affinity"
 date: 2026-03-14 09:00:00 +0100
+last_modified_at: 2026-05-09 09:00:00 +0200
 categories: ["Citrix", "Troubleshooting"]
 tags: ["citrix", "storefront", "fslogix", "gpo", "licensing", "session-affinity"]
 author: robert
@@ -14,27 +15,17 @@ I was already on the way home when my manager called. The customer was escalatin
 
 ## The Situation
 
-A customer was running a Citrix Server OS (RDSH) environment with FSLogix Profile Containers. Their setup involved **non-personalised accounts** - shared credentials with different account names (e.g. Service-Account-A, Service-Account-B, Service-Account-C) - that needed access to specific backend resources.
+The customer ran an RDSH environment with FSLogix Profile Containers and a fleet of **non-personalised accounts** (Service-Account-A, Service-Account-B, Service-Account-C, and so on) that all needed access to a shared backend application. Whenever two of those accounts landed on the **same Citrix worker server simultaneously**, the backend produced errors or failed outright. It couldn't handle the collision.
 
-The problem: whenever two or more of these accounts landed on the **same Citrix worker server simultaneously**, the backend application produced errors or failed outright. The application simply couldn't handle multiple of these accounts sharing the same server at the same time.
-
-This had escalated to **senior management level**. Operations were significantly disrupted. And the obvious fix - converting to personalised user accounts - would have required purchasing hundreds of additional backend application licences, representing a **significant six-figure investment** the customer could not justify.
-
-Several colleagues and vendors had already told the customer this was unsolvable without either:
-
-1. Expensive custom development
-2. Major architectural changes
-3. Moving to personalised accounts (with all the licensing cost that entails)
+The obvious fix would have been converting the accounts to personalised users. That meant buying hundreds of additional backend application licences, a **six-figure spend** the customer wasn't going to approve. Several colleagues and vendors had already told them the only alternatives were expensive custom development or a major architectural change.
 
 ## My Task
 
-I needed to solve this critical production problem urgently - while **preserving the non-personalised account model**. The constraint was clear: these accounts must never land on the same worker server at the same time. Ever.
-
-The pressure was high. The customer was escalating at executive level, facing both operational disruption and potentially massive licensing costs.
+I had to solve this without converting to personalised accounts. The constraint was strict: those accounts must never land on the same worker at the same time. Ever.
 
 ## The Solution: Four Layers, All Native Citrix
 
-After analysing the root cause, I realised the resource conflicts were caused purely by simultaneous sessions landing on the same worker. The fix was to enforce **strict session affinity** - ensuring each account was permanently bound to its own dedicated worker server.
+The conflicts came down to one thing, simultaneous sessions on the same worker. The fix was strict session affinity, with each account permanently bound to its own dedicated worker.
 
 ![Session Affinity - Four-Layer Citrix Solution](/assets/img/posts/session-affinity-diagram.png)
 _Full architecture diagram showing the four-layer session affinity solution._
@@ -61,14 +52,14 @@ This means users connecting through Store A can only ever see and launch resourc
 
 ### Layer 3 - Citrix Tags on Individual Workers
 
-Here's the part that kept the solution simple. Multiple Delivery Groups was the first shape the solution wanted to take. I ruled it out quickly - not because it wouldn't work technically, but because it would create something the ops team couldn't reason about. One Delivery Group with tagged VDAs is something you can explain in two sentences. So rather than creating multiple Delivery Groups, I **tagged each VDA individually** in Citrix Studio and used a **single Delivery Group**.
+Multiple Delivery Groups was the first shape the solution wanted to take. I ruled it out quickly, not because it wouldn't work technically, but because it would create something the ops team couldn't reason about. One Delivery Group with tagged VDAs is something you can explain in two sentences. So rather than creating multiple Delivery Groups, I **tagged each VDA individually** in Citrix Studio and used a **single Delivery Group**.
 
 - Worker-01 → Tag: `WorkerGroup-A`
 - Worker-02 → Tag: `WorkerGroup-A`
 - Worker-03 → Tag: `WorkerGroup-B`
 - Worker-04 → Tag: `WorkerGroup-B`
 
-The combination of the keyword on the published resource and the tag on the VDA ensures the Delivery Controller routes sessions to the correct worker every time. One Delivery Group. No custom brokering logic. No code.
+The combination of the keyword on the published resource and the tag on the VDA routes the session to the correct worker every time. One Delivery Group. No custom brokering logic. No code.
 
 ### Layer 4 - FSLogix Profile Separation via GPO
 
@@ -83,19 +74,9 @@ Each worker maintains completely isolated profile storage, regardless of which a
 
 ## The Result
 
-The solution was deployed to production and immediately resolved the application conflicts. The non-personalised account model was preserved entirely. The customer avoided the six-figure licensing cost they had been facing.
+The solution went into production and the conflicts stopped. The non-personalised account model was preserved entirely. The customer avoided the six-figure licensing bill they had been facing. Native Citrix features only, no custom development, no major architecture changes, no new licences.
 
-The whole thing was built using **native Citrix features** - no custom development, no major architecture changes, no new licences.
-
-One final touch: I documented the solution thoroughly for the operations team, including a tip that's easy to miss - **enable the Tags column in Citrix Studio's Machine Catalogs view** so the ops team can see which workers carry which tags when troubleshooting. Without that, the routing logic is invisible to anyone maintaining the environment.
-
-## Key Takeaways
-
-**Sometimes the elegant solution is the simple one.** Multiple vendors said this required custom development. It didn't. It required understanding how StoreFront keywords and Citrix tags interact - and using them together intentionally.
-
-**One Delivery Group is enough.** There's a temptation to create separate Delivery Groups for each worker group. Unnecessary. Tag the VDAs individually, use a single Delivery Group, and let the keyword + tag combination handle the routing.
-
-**Document for the ops team, not just for yourself.** A solution is only good if the team maintaining it can understand and troubleshoot it. The Tags column tip in Studio is a small thing - but it's the difference between an ops engineer diagnosing a routing issue in two minutes versus two hours.
+One operational detail worth keeping in mind: **enable the Tags column in Citrix Studio's Machine Catalogs view** before you hand the solution over. Without it, the routing logic is invisible to anyone maintaining the environment, and an ops engineer diagnosing a routing issue is looking for something they can't see. With it, the same diagnosis takes two minutes.
 
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: "Citrix LAS Deadline Countdown"
 date: 2026-04-14 09:00:00 +0200
+last_modified_at: 2026-05-09 09:00:00 +0200
 author: robert
 categories: ["Citrix"]
 tags: ["citrix", "licensing", "las", "deadline"]
@@ -11,7 +12,7 @@ image:
   alt: "Citrix LAS Deadline Countdown"
 ---
 
-Citrix file-based licensing goes end of life on **April 15, 2026**. Environments that haven't migrated to the License Activation Service (LAS) can have issues. Not clear what will happen with environments which are not updated to LAS ready versions.
+Citrix file-based licensing goes end of life on **April 15, 2026**. Citrix hasn't published the exact failure mode for environments that haven't migrated, but the pattern with this kind of cutoff is predictable: license renewals stop, cached entitlements expire, and new session launches drop out. Existing sessions tend to hold until they reconnect. The deadline isn't when it breaks. It's when the clock to break starts.
 
 <style>
 #las-timer{display:flex;gap:0.5rem;width:100%;box-sizing:border-box;}

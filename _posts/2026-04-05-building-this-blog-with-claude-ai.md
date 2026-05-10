@@ -13,7 +13,7 @@ image:
 
 I've been wanting a proper technical blog for years. Not a WordPress site with twenty plugins, not a Medium profile where I don't own the content - something lean, fast, and fully mine. I knew the stack I wanted: **GitHub Pages + Jekyll**. What I didn't want was to spend weeks in configuration files and CSS rabbit holes when I had actual work to do.
 
-So I tried something different. I paired with **Claude** (Anthropic's AI assistant) and treated it as a technical co-pilot for the entire build. This post is an honest account of how that went - what worked, what didn't, and what I'd do differently.
+So I tried something different. I paired with **Claude** (Anthropic's AI assistant) and treated it as a technical co-pilot for the entire build.
 
 ## The Stack
 
@@ -175,13 +175,12 @@ The only step that still happens outside the editor is committing assets that we
 | CSV highlighting | Use `plaintext` fence + `{: file="name.csv" }`, then JS for the coloring |
 | OG images | Centre all content - Chirpy crops preview cards from the middle |
 | AI workflow | Paste actual HTML/errors/screenshots - descriptions of symptoms are less efficient |
-| Editor evolution | Auditing your own tooling pays - the v1 of the editor had silent YAML corruption, no offline drafts, and PAT-only auth. All three got fixed in one focused pass. |
 
 ## Final Thought
 
 The blog took about two weeks of evening sessions to build and refine. There were points where this was genuinely frustrating - Claude would get stuck on something that looked simple, I'd hit the session limit, wait for the reset, try again with a different angle, and sometimes it still didn't work on the second attempt. What got it unstuck was usually me pointing it in a more specific direction, not Claude figuring it out independently.
 
-But here's what I didn't have to do: learn every corner of Jekyll, Chirpy, and CSS from scratch. With some manual steering, the hard parts got solved. Without it, I'd have spent significantly more time and probably stopped earlier. That's the honest version of what "AI pair programming" looked like on this project.
+But here's what I didn't have to do: learn every corner of Jekyll, Chirpy, and CSS from scratch. With some manual steering, the hard parts got solved. Without it, I'd have spent much more time and probably stopped earlier. That's the honest version of what "AI pair programming" looked like on this project.
 
 ---
 

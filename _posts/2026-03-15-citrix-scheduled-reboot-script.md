@@ -1,22 +1,21 @@
 ---
 title: "Automating Citrix Server Reboots"
 date: 2026-03-15 09:00:00 +0100
+last_modified_at: 2026-05-09 09:00:00 +0200
 author: robert
 categories: ["Citrix", "PowerShell"]
 tags: ["citrix", "powershell", "automation", "reboot", "maintenance", "gpo", "broker", "scheduled-task"]
-description: "Production-ready PowerShell script that automates Citrix server reboots with user notifications, maintenance mode, and CSV-driven config."
+description: "PowerShell script for automated Citrix server reboots with staggered user notifications, maintenance mode handling, and CSV-driven configuration."
 image:
   path: /assets/img/posts/og-citrix-reboot-script.png
   alt: "Automating Citrix Server Reboots"
 ---
 
-A customer needed Citrix servers rebooted on a specific schedule, with advance notifications going out at meaningful intervals - not the blunt built-in reboot schedule in Delivery Groups, which gives you no control over when and how users are warned. The requirement was clear: automated, predictable, zero manual intervention, with proper user communication. So I built it.
-
-This post walks through the production-ready PowerShell script that came out of that - from enabling maintenance mode to notifying users, forcing logoff, and rebooting, all driven by a simple CSV configuration file.
+Citrix Delivery Groups have a built-in reboot schedule, and it's blunt. You pick a time, the servers reboot, users get one warning shortly before. A customer needed something better, six advance notifications staggered from four hours out down to a final fifteen-minute warning, all automated, all driven by config instead of manual work per server. The built-in schedule can't do that. So I built it.
 
 ## The Solution: Config-Driven Reboot Automation
 
-The script uses a CSV file to define which servers reboot on which day and at what time. One scheduled task runs daily - the script reads the CSV, checks if today matches any entries, and if so starts the reboot workflow.
+The script uses a CSV file to define which servers reboot on which day and at what time. One scheduled task runs daily, the script reads the CSV, checks if today matches any entries, and if so starts the reboot workflow.
 
 ### CSV Configuration
 
@@ -40,7 +39,7 @@ Trigger: Daily at 23:00
 Action:  PowerShell.exe -ExecutionPolicy Bypass -File "path\Citrix-Reboot-v2.ps1"
 ```
 
-The script exits immediately if no servers are scheduled for that day and hour - so there's no overhead on non-reboot days.
+The script exits immediately if no servers are scheduled for that day and hour, so there's no overhead on non-reboot days.
 
 ## The Reboot Workflow
 
@@ -56,17 +55,17 @@ T-15m  → Final warning ("You will be logged off in 15min")
 T-0    → Force logoff remaining sessions → Reboot → Disable maintenance mode
 ```
 
-The notification schedule automatically adjusts based on the `RebootDelayMinutes` parameter. For testing, pass `-RebootDelayMinutes 5` to run through the entire cycle in 5 minutes.
+The notification schedule adjusts automatically based on the `RebootDelayMinutes` parameter. For testing, pass `-RebootDelayMinutes 5` to run through the entire cycle in five minutes.
 
 ## Key Design Decisions
 
-### Maintenance Mode First
+### Maintenance Mode Bracketing
 
-The script enables maintenance mode as the very first action - before any notifications go out. This ensures no new sessions land on the server during the entire reboot window. This is often missed in manual processes where someone forgets to enable maintenance mode before starting notifications.
+The script enables maintenance mode as the very first action, before any notifications go out, and disables it again immediately after issuing the reboot command. The first half stops new sessions from landing on a server that's about to reboot. The second half lets the server start accepting sessions again the moment it comes back online, no manual step required. This is the part most often missed in manual processes, someone forgets to flip the maintenance flag before starting the warnings, or forgets to flip it back after the reboot.
 
 ### Notifications via Citrix Broker
 
-User notifications use `Send-BrokerSessionMessage` - they appear as a pop-up inside the user's Citrix session, not as a Windows toast notification. This works regardless of whether the user is on a thin client, locked-down endpoint, or mobile device.
+User notifications use `Send-BrokerSessionMessage`. They appear as a pop-up inside the user's Citrix session, not as a Windows toast notification. That matters when the user is on a thin client, a locked-down endpoint, or a mobile device, where the toast may never reach them.
 
 ```powershell
 Send-BrokerSessionMessage -InputObject $sessions `
@@ -85,11 +84,7 @@ Start-Sleep -Seconds 30
 New-BrokerHostingPowerAction -MachineName $Machine.MachineName -Action Restart
 ```
 
-### Maintenance Mode Disabled After Reboot
-
-After issuing the reboot command, the script immediately disables maintenance mode. This allows the server to start accepting new sessions as soon as it comes back online - no manual step required.
-
-### Comprehensive Logging
+### Logging
 
 Every action is logged to both a timestamped transcript file and the Windows Event Log:
 
@@ -102,32 +97,21 @@ Every action is logged to both a timestamped transcript file and the Windows Eve
 
 ## Testing
 
-The `-RebootDelayMinutes` parameter makes testing straightforward:
+The `-RebootDelayMinutes` parameter compresses the full cycle into a few minutes for testing:
 
 ```powershell
 # Test with 5 minute cycle
 .\Citrix-Reboot-v2.ps1 -RebootDelayMinutes 5
 ```
 
-This runs through the full notification and reboot cycle in 5 minutes, letting you verify the script works correctly before deploying to production.
+This runs through the full notification and reboot cycle in five minutes, letting you verify the script works correctly before deploying to production.
 
 ## Requirements
 
 - PowerShell 5.1+
 - Run as Administrator
-- Citrix PowerShell SDK (modules or snap-ins - the script handles both)
+- Citrix PowerShell SDK (modules or snap-ins, the script handles both)
 - Service account with Citrix delegated admin rights (Machine Administrator or higher)
-
-## Summary
-
-| Feature | Detail |
-|---------|--------|
-| Configuration | CSV file - no script changes needed |
-| Scheduled Task | One daily task handles all servers |
-| Notification | Up to 6 advance warnings via Citrix session pop-up |
-| Maintenance Mode | Enabled at start, disabled after reboot automatically |
-| Logging | Timestamped transcript + Windows Event Log |
-| Testing | `-RebootDelayMinutes` parameter for quick test cycles |
 
 ## Download the Script
 
