@@ -1,6 +1,6 @@
-# EUC Insights — robertmagasi.com
+# EUC Insights - robertmagasi.com
 
-Personal technical blog by **Robert Magasi** — Senior VDI & EUC Consultant.
+Personal technical blog by **Robert Magasi** - Senior VDI & EUC Consultant.
 Real-world Citrix, AVD, and EUC knowledge from 15 years in IT.
 
 ## Stack
@@ -16,10 +16,10 @@ Real-world Citrix, AVD, and EUC knowledge from 15 years in IT.
 
 ## Publishing workflow
 
-1. **Draft** a post via the custom Cowork editor — produces a `.md` file under `_drafts/` or `_posts/` using the front matter template.
+1. **Draft** a post via the custom Cowork editor - produces a `.md` file under `_drafts/` or `_posts/` using the front matter template.
 2. **Generate the OG image** with `scripts/generate_og.py` (from the `euc-insights-blog` skill) and save to `assets/img/posts/og-<slug>.png`.
 3. **Publish** via the editor's Publish button. The editor pushes `.md` files directly to the repo via the GitHub Contents API.
-4. **Commit image assets manually** — the editor only handles markdown. Run:
+4. **Commit image assets manually** - the editor only handles markdown. Run:
    ```bash
    git add assets/img/posts/og-<slug>.png
    git commit -m "add post: <title>"
@@ -56,10 +56,10 @@ assets/scripts/ Downloadable scripts referenced in posts
 - **Author** is always `robert` (see `_data/authors.yml`)
 - **Categories** are title-cased; **tags** are lowercase-hyphenated
 - **OG images** are 1200×630 (generated at 2× for retina crispness)
-- **Custom CSS/JS** goes in `_includes/metadata-hook.html` — NOT `_sass/addon/custom.scss` (ignored in gem-based Chirpy)
-- **Inline scripts** must use `/* */` block comments, never `//` — `compress_html` breaks `//`
+- **Custom CSS/JS** goes in `_includes/metadata-hook.html` - NOT `_sass/addon/custom.scss` (ignored in gem-based Chirpy)
+- **Inline scripts** must use `/* */` block comments, never `//` - `compress_html` breaks `//`
 
 ## License
 
 Post content © Robert Magasi. Code snippets unless otherwise noted are MIT-licensed.
-Chirpy theme is MIT-licensed — see [cotes2020/jekyll-theme-chirpy](https://github.com/cotes2020/jekyll-theme-chirpy).
+Chirpy theme is MIT-licensed - see [cotes2020/jekyll-theme-chirpy](https://github.com/cotes2020/jekyll-theme-chirpy).
