@@ -1,0 +1,60 @@
+name: IndexNow
+
+# Notify Bing, Yandex, and DuckDuckGo whenever new or updated posts go
+# live. Triggers AFTER the "Build and Deploy" workflow finishes
+# successfully, so the URL is actually reachable before we tell the
+# search engines about it.
+#
+# Also exposes a manual trigger (workflow_dispatch) with a "submit_all"
+# option, useful for the initial seed of existing posts or after a
+# bulk content change.
+
+on:
+  workflow_run:
+    workflows: ["Build and Deploy"]
+    types: [completed]
+    branches: [main]
+
+  workflow_dispatch:
+    inputs:
+      submit_all:
+        description: "Submit every post in _posts/ instead of just changed ones"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    # On workflow_run we only want to fire if the upstream deploy succeeded.
+    # workflow_dispatch always runs.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need at least HEAD and HEAD~1 so the script can diff them.
+          fetch-depth: 2
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Submit changed URLs to IndexNow
+        if: github.event_name == 'workflow_run' || inputs.submit_all == 'false'
+        env:
+          AFTER_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: python3 tools/indexnow-submit.py
+
+      - name: Re-seed all posts (manual full submission)
+        if: github.event_name == 'workflow_dispatch' && inputs.submit_all == 'true'
+        run: python3 tools/indexnow-submit.py --all
