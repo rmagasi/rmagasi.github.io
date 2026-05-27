@@ -5,10 +5,14 @@ layout: default
 {% comment %}
   Local override of Chirpy v7.4.1's _layouts/home.html.
 
-  Only deviation from upstream: post card titles render as <h2>
-  instead of <h1>, so each homepage has a single h1 (handled by the
-  default layout's site title) instead of one per card. Bing SEO
-  inspection flagged the original as "More than one h1 tag".
+  Two deviations from upstream:
+  1. Post card titles render as <h2> instead of <h1>, so the homepage
+     has a single h1 instead of one per card. Bing SEO inspection
+     flagged the original as "More than one h1 tag".
+  2. A visually-hidden <h1> is injected at the top of the post list
+     so every page has exactly one h1 (the canonical SEO pattern).
+     Uses Bootstrap 5's .visually-hidden utility which keeps the
+     element in the accessibility tree but off-screen visually.
 
   Keep this file in sync with the gem version on Chirpy upgrades.
   Source: https://github.com/cotes2020/jekyll-theme-chirpy/blob/v7.4.1/_layouts/home.html
@@ -57,6 +61,8 @@ layout: default
     {% assign posts = posts | push: all_normal[i] %}
   {% endfor %}
 {% endif %}
+
+<h1 class="visually-hidden">EUC Insights - Real-world Citrix, AVD, and EUC Knowledge</h1>
 
 <div id="post-list" class="flex-grow-1 px-xl-1">
   {% for post in posts %}
