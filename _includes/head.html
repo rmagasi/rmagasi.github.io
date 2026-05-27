@@ -1,23 +1,20 @@
 {% comment %}
-  Local override of Chirpy v7.4.1's _includes/head.html.
-
-  Only deviation from upstream: the <title> block respects page.title
-  on ALL layouts, including layout: home. Upstream Chirpy explicitly
-  excludes the home layout (`{%- unless page.layout == 'home' -%}`),
-  which hardcoded the homepage <title> to site.title (13 chars,
-  "Robert Magasi"). Bing Webmaster Tools flagged that as "Title too
-  short". jekyll-seo-tag's title is also suppressed by upstream via
-  `{% seo title=false %}`, so this <title> block is the only one
-  Bing sees.
-
-  Keep this file byte-for-byte synced with upstream on every Chirpy
-  upgrade. Only the <title>...</title> block should differ.
-  Source: https://github.com/cotes2020/jekyll-theme-chirpy/blob/v7.4.1/_includes/head.html
-
-  CLAUDE.md warns against creating _includes/head.html because a
-  partial override breaks the whole head section. This file is a
-  FULL mirror with a one-line behavioural change, which is the only
-  safe form of head override.
+  Local override of Chirpy v7.4.1 head.html. Full byte-mirror of
+  upstream with one logical change in the title block. Upstream uses
+  an unless-home condition that hides page.title on the home layout,
+  which hardcoded the homepage title to site.title and Bing flagged
+  it as too short. The replacement condition below uses if-page-title
+  and an equality check against site.title, so home pages now render
+  the page.title declared in index.html front matter. Note that
+  upstream also suppresses jekyll-seo-tag's title output, so this
+  title block is the only one Bing sees. Keep this file byte-synced
+  with upstream on every Chirpy upgrade, only the title block should
+  differ. Source URL,
+  github.com/cotes2020/jekyll-theme-chirpy blob v7.4.1 _includes head.html
+  CLAUDE.md warns against creating head.html because a partial
+  override breaks the whole head section. This file is the full
+  mirror form with a one-line behavioural change, which is the only
+  safe head override pattern.
 {% endcomment %}
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
