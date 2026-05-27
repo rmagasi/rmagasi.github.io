@@ -1,8 +1,9 @@
 ---
 layout: page
-title: Impressum
+title: "Impressum - Legal Notice"
 icon: fas fa-id-card
 order: 9
+description: "Legal notice and contact information for robertmagasi.com, operated by Robert Magasi in Wetzikon, Switzerland under Swiss and EU regulations."
 ---
 
 ## Legal Notice (Impressum)

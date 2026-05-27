@@ -1,8 +1,9 @@
 ---
 layout: page
-title: Blogroll
+title: "Blogroll - EUC and Citrix Blogs I Read"
 icon: fas fa-link
 order: 5
+description: "Other EUC and Citrix bloggers I follow and recommend, Carl Stalhood, James Kindon, Aaron Parker, Christiaan Brinkhoff, Marius Sandbu, and more."
 ---
 
 A collection of EUC and Citrix blogs I follow and recommend.

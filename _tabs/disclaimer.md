@@ -1,8 +1,9 @@
 ---
 layout: page
-title: Disclaimer
+title: "Disclaimer - Personal Views Only"
 icon: fas fa-exclamation-circle
 order: 8
+description: "Views expressed on EUC Insights are my own, not my employer's. Technical content is based on real experience, but always test in non-production first."
 ---
 
 ## Personal Opinion

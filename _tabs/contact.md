@@ -1,8 +1,9 @@
 ---
 layout: page
-title: Contact
+title: "Contact Robert Magasi for EUC Consulting"
 icon: fas fa-envelope
 order: 6
+description: "Questions about Citrix, AVD, or an EUC project. Reach out about consulting work or to comment on something I have written here. I respond within a few days."
 ---
 
 Whether you have a question about something I've written, want to discuss an EUC challenge, or are looking for consulting help - feel free to reach out. I typically respond within a few business days.

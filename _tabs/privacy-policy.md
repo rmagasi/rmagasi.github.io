@@ -1,8 +1,9 @@
 ---
 layout: page
-title: Privacy Policy
+title: "Privacy Policy"
 icon: fas fa-shield-alt
 order: 7
+description: "How EUC Insights handles visitor data, analytics, and comments. GoatCounter pageviews, Giscus comments, and what gets logged on robertmagasi.com."
 ---
 
 *Last updated: April 2026*

@@ -1,7 +1,8 @@
 ---
-title: About
+title: "About - Senior VDI and EUC Consultant"
 icon: fas fa-info-circle
 order: 4
+description: "Robert Magasi is a Senior VDI and EUC Consultant in Wetzikon, Switzerland, with 15 years in Citrix, AVD, NetScaler, FSLogix, and platform engineering."
 ---
 
 <div class="about-author-card">
