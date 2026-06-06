@@ -1,6 +1,6 @@
 {% comment %}
   Local override of Chirpy v7.4.1 head.html. Full byte-mirror of
-  upstream with two logical deviations, both driven by Bing SEO.
+  upstream with three logical deviations, all driven by Bing SEO.
 
   1. Title block. Upstream skips page.title on the home layout, which
      pinned the homepage title to site.title and Bing flagged as too
@@ -23,6 +23,14 @@
      running it through a Liquid replace on the seo_tags variable
      before output. Every archive page now has a unique description
      embedding its own category or tag name.
+
+  3. Robots meta injection for tag archive pages. Most posts have
+     uniquely used tags, which generates many tag archive pages with
+     just one or two post links and almost no body text. Bing flagged
+     this as insufficient content. A noindex robots meta is injected
+     for tag layout pages so search engines skip the archives but
+     still follow the post links. Category archives stay indexed
+     because they hold more posts per page.
 
   jekyll-seo-tag's title output is also suppressed by upstream via
   the title-equals-false argument to the seo tag, so this title
@@ -97,6 +105,10 @@
   {%- endif -%}
 
   {{ seo_tags }}
+
+  {%- if page.layout == 'tag' -%}
+    <meta name="robots" content="noindex, follow">
+  {%- endif -%}
 
   <title>
     {%- if page.layout == 'category' -%}
