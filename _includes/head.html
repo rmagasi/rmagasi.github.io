@@ -1,19 +1,41 @@
 {% comment %}
   Local override of Chirpy v7.4.1 head.html. Full byte-mirror of
-  upstream with one logical change in the title block. Upstream uses
-  an unless-home condition that hides page.title on the home layout,
-  which hardcoded the homepage title to site.title and Bing flagged
-  it as too short. The replacement condition below uses if-page-title
-  and an equality check against site.title, so home pages now render
-  the page.title declared in index.html front matter. Note that
-  upstream also suppresses jekyll-seo-tag's title output, so this
-  title block is the only one Bing sees. Keep this file byte-synced
-  with upstream on every Chirpy upgrade, only the title block should
+  upstream with two logical deviations, both driven by Bing SEO.
+
+  1. Title block. Upstream skips page.title on the home layout, which
+     pinned the homepage title to site.title and Bing flagged as too
+     short. This file rebuilds the title block with four branches,
+     home and tab pages use page.title with site.title appended,
+     category pages use the pattern, category-name dash EUC Insights
+     posts pipe site.title, tag pages use the pattern, Posts tagged
+     tag-name dash EUC Insights pipe site.title, fallback for missing
+     page.title uses just site.title. All four output between 35 and
+     65 characters with a real category or tag name plugged in.
+
+  2. seo_tags replacement before output. Upstream lets jekyll-seo-tag
+     render its meta description, og:description, and twitter
+     description from page.description with site.description as
+     fallback. Auto-generated category and tag archive pages have no
+     page.description, so they all collapsed onto the same site
+     fallback and Bing flagged duplicate descriptions across many
+     pages. This file injects a per-page custom description for
+     category and tag layouts by capturing the desired string and
+     running it through a Liquid replace on the seo_tags variable
+     before output. Every archive page now has a unique description
+     embedding its own category or tag name.
+
+  jekyll-seo-tag's title output is also suppressed by upstream via
+  the title-equals-false argument to the seo tag, so this title
+  block is the only one Bing sees.
+
+  Keep this file byte-synced with upstream on every Chirpy upgrade.
+  Only the title block and the seo_tags replacement block should
   differ. Source URL,
   github.com/cotes2020/jekyll-theme-chirpy blob v7.4.1 _includes head.html
+
   CLAUDE.md warns against creating head.html because a partial
   override breaks the whole head section. This file is the full
-  mirror form with a one-line behavioural change, which is the only
+  mirror form with targeted behavioural changes, which is the only
   safe head override pattern.
 {% endcomment %}
 <head>
@@ -66,13 +88,26 @@
     {% assign seo_tags = seo_tags | replace: old_meta_clip, new_meta_clip %}
   {% endif %}
 
+  {%- if page.layout == 'category' -%}
+    {%- capture custom_desc -%}Browse EUC Insights posts in the {{ page.title }} category. Real-world Citrix, AVD, NetScaler, and end-user computing knowledge from a Senior VDI Consultant.{%- endcapture -%}
+    {%- assign seo_tags = seo_tags | replace: site.description, custom_desc -%}
+  {%- elsif page.layout == 'tag' -%}
+    {%- capture custom_desc -%}EUC Insights posts tagged {{ page.title }}. Real-world Citrix, AVD, NetScaler, and end-user computing knowledge from a Senior VDI Consultant.{%- endcapture -%}
+    {%- assign seo_tags = seo_tags | replace: site.description, custom_desc -%}
+  {%- endif -%}
+
   {{ seo_tags }}
 
   <title>
-    {%- if page.title and page.title != site.title -%}
-      {{ page.title | append: ' | ' }}
+    {%- if page.layout == 'category' -%}
+      {{ page.title }} - EUC Insights posts | {{ site.title }}
+    {%- elsif page.layout == 'tag' -%}
+      Posts tagged {{ page.title }} - EUC Insights | {{ site.title }}
+    {%- elsif page.title and page.title != site.title -%}
+      {{ page.title | append: ' | ' }}{{ site.title }}
+    {%- else -%}
+      {{ site.title }}
     {%- endif -%}
-    {{ site.title }}
   </title>
 
   {% include_cached favicons.html %}
