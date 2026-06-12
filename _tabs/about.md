@@ -14,7 +14,7 @@ description: "Robert Magasi is a Senior VDI and EUC Consultant in Wetzikon, Swit
   </div>
 </div>
 
-Hi, I'm **Robert Magasi** - a Senior VDI & EUC Consultant and Technical Lead based in Wetzikon, Switzerland, with 15 years of hands-on experience designing and implementing enterprise virtual desktop environments. Currently at **Swisscom**, working across greenfield deployments, cloud migrations, and complex infrastructure optimisations.
+Hi, I'm **Robert Magasi** - a Senior VDI & EUC Consultant and Technical Lead based in Wetzikon, Switzerland, with 15 years of hands-on experience designing and implementing enterprise virtual desktop environments. Currently at **Aveniq**, working across greenfield deployments, cloud migrations, and complex infrastructure optimisations.
 
 ## What I do
 
@@ -37,7 +37,7 @@ My core stack includes:
 
 ## Background
 
-I've been in the EUC space since 2010, working across Switzerland, Germany, Austria, and Hungary with a wide range of enterprise clients - from mid-size companies to large multinationals. Before Swisscom I spent six years at UMB AG managing 30+ customers and 4,000+ users, and before that at Bell Food Group, T-Systems, and IBM.
+I've been in the EUC space since 2010, working across Switzerland, Germany, Austria, and Hungary with a wide range of enterprise clients - from mid-size companies to large multinationals. Before Aveniq I spent two years at Swisscom as Senior Consultant planning and realizeing VDI projects, six years at UMB AG managing 30+ customers and 4,000+ users, and before that at Bell Food Group, T-Systems, and IBM.
 
 I'm multilingual - **German** (native), **English** (professional), **Hungarian** (native), and elementary **Russian** - which helps when working across the DACH region and beyond.
 
