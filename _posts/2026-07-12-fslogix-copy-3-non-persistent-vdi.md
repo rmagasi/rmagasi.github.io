@@ -1,0 +1,113 @@
+---
+title: "FSLogix Copy=3, the redirections.xml Trick for Non-Persistent VDI"
+date: 2026-07-12 09:00:00 +0200
+author: robert
+categories: ["Citrix", "Troubleshooting"]
+tags: ["fslogix", "citrix", "redirections", "sap-b1", "coresuite", "profile-container", "smb", "non-persistent", "vdi-performance", "windows-performance-analyzer"]
+description: "Three lines in FSLogix redirections.xml took SAP Business One launch times from ~2 minutes to ~1 on non-persistent Citrix VDAs. The Copy=3 attribute is the underused trick that makes it work."
+image:
+  path: /assets/img/posts/og-fslogix-copy-3-non-persistent-vdi.png
+  alt: "FSLogix Copy=3, the redirections.xml Trick for Non-Persistent VDI"
+---
+
+By the time this chapter of the escalation started, I had already fixed the worst of it. SAP Business One launches had come down from a catastrophic 10-30 minutes (a story for another post) to a steady 2 minutes on every login. Users were productive again. The taskforce still wasn't closed. The Windows System process (PID 4) sat at 37% CPU across all 8 cores while coresuite was doing its start-up work, and the session felt sluggish behind it while it "installed and customised" itself into a fresh profile. Two minutes was survivable. It was also wrong. This post is about the three lines of XML that took it to one minute and gave the System process back to the kernel.
+
+## The Situation
+
+Non-persistent Citrix DaaS VDAs on Windows Server, MCS-based clones, FSLogix Profile Container hosted on an SMB share. SAP Business One with the coresuite add-on installed. Coresuite has a habit users don't see, on first launch per session it drops per-database compiled .NET assemblies into `%LOCALAPPDATA%\Coresystems` and `%LOCALAPPDATA%\assembly\dl3`. On a non-persistent VDA those paths live inside the FSLogix profile container, which means every DLL read is an SMB round-trip. Multiply that by the roughly 13,000 file opens per second the application was generating at launch and the pattern is obvious once you look at the trace.
+
+Every login. Every user. Even when the compiled assemblies were already present in the container from a previous session.
+
+## What I Chased First
+
+Defender was the obvious next suspect after the earlier MDE cleanup. I added process, path, and extension exclusions for coresuite, the SAP B1 binaries, the .NET compilers (`csc.exe`, `vbc.exe`, `mscorsvw.exe`, `ngen.exe`, `RegAsm.exe`), the CLR temp folders, and WEM. Verified with `Get-MpPreference`. `MsMpEng.exe` dropped to 0% CPU during launch, which is exactly what a correctly excluded workload looks like. The symptom didn't move.
+
+(One thing to add here that I only discovered weeks later. When I revisited the exclusion configuration, I found that nearly every path and process entry had been saved with a trailing newline character and had never matched anything. `Get-MpPreference` listed them by name, but the actual scanner ignored them. The conclusion here still holds, the eventual FSLogix fix required no Defender change at all, but the "exclusions applied and verified" checkbox was dishonest. That is a separate war story worth its own post.)
+
+Ruled out DPCs and ISRs next. Quick primer for readers who don't spend their weekends in kernel traces, an ISR (Interrupt Service Routine) is the tiny piece of code that runs the instant a hardware interrupt fires, a network packet arrives or a disk I/O completes, and a DPC (Deferred Procedure Call) is the follow-on work that the same interrupt queues to run slightly later at a lower priority. Both run above normal thread scheduling and if either takes too long the kernel starves everything else on the CPU. That's why they're the first thing you check when the System process is chewing CPU without an obvious owner.
+
+A WPR/WPA trace over a full launch cycle showed total DPC + ISR time was 2.5 CPU-seconds across 217 seconds of trace, or 0.14% of the available CPU. Top DPC contributors were `NDIS.SYS`, `storport.sys`, and `ntoskrnl!KiAbDeferredProcessingWorker` (Windows Autoboost, fired 2.2 million times, which is the textbook signature of massive kernel lock contention but not itself the root cause). The kernel wasn't spending time in interrupt handlers.
+
+![WPA DPC/ISR Duration by Module view showing modest total DPC time across NDIS, storport, and ntoskrnl](/assets/img/posts/fslogix-copy-3-wpa-dpc-isr.png){: w="900" }
+_Windows Performance Analyzer DPC/ISR by Module view. Total DPC + ISR time was 2.5 CPU-seconds across the trace, ruling out driver interrupts as the cause._
+
+`fltmc` showed six active minifilters in the I/O path: `MsSecFlt` (MDE), `WdFilter` (MDAV), `frxccd` (FSLogix Cloud Cache, loaded but idle), `frxdrv` (FSLogix base), `upmjit` (Citrix UPM), and `frxdrvvt` (FSLogix virtualization). Another quick primer, a filesystem minifilter is a driver that sits above the actual file system and gets called on every read, write, open, and metadata operation. Antivirus, EDR sensors, backup agents, encryption drivers, and profile management tools all install one, and they stack in altitude order. Each one gets a callback on every I/O, and the callbacks run in series. Six of them stacked means every file open pays six times the per-callback cost. That was the shape of the answer, but I still needed the specific evidence.
+
+## The Diagnosis
+
+The turning point was `xperf minifilterdelay` on the full trace, aggregated in PowerShell. **5.8 million filter callback events** across 217 seconds, averaging 27,000 per second and peaking above 50,000. `frxdrvvt.sys` was the top by total time, with one single 225ms callback outlier. The `CREATE` operation (file open) accounted for **53% of all filter callback time**. `QUERY_VOLUME_INFORMATION` averaged 211 microseconds per call, the classic signature of an SMB round-trip. The top file by callback frequency was on the profile share, buried under `\coresuite\`.
+
+![WPA UI Delays view showing multi-second COM Modal Loop and MsgCheck delays across coresuite and SearchApp during SAP B1 launch](/assets/img/posts/fslogix-copy-3-wpa-delays.png){: w="900" }
+_Windows Performance Analyzer UI Delays view. The highlighted row is a single 87-second COM Modal Loop in coresuite during launch. SearchApp posted a 162-second MsgCheck delay in the same window._
+
+The shape of the workload was the problem, not any one component. Coresuite was generating small random reads against a network-backed profile container, and each read had to traverse all six minifilters in series. No single filter dominated. No single process dominated. The system was drowning in file-open microbursts.
+
+## The Fix
+
+Three lines added to `redirections.xml`:
+
+```xml
+<Exclude Copy="3">AppData\Local\Coresystems</Exclude>
+<Exclude Copy="3">AppData\Local\assembly\dl3</Exclude>
+<Exclude Copy="3">AppData\Local\assembly\tmp</Exclude>
+```
+{: file="redirections.xml" }
+
+The `Copy="3"` attribute is the important part. Most examples online show `Copy="0"` for cache folders, which excludes them entirely and forces regeneration every session. On non-persistent MCS clones that would mean every user re-compiling their coresuite assemblies on every single logon, which is essentially the original symptom rebranded. `Copy="3"` means bidirectional sync between the FSLogix VHD and the local VDA disk. At logon, FSLogix pulls the excluded folders from the VHD to local NVMe once as a bulk sequential SMB transfer. All session I/O then runs against the local copy. At logoff, FSLogix pushes any changes back to the VHD. On non-persistent MCS clones the assemblies survive across reboots exactly like before, but during the session they behave like local files.
+
+Same amount of data moves across SMB per session, the shape is completely different. Two bulk sequential transfers instead of millions of small random reads.
+
+> One consequence of `Copy="3"` worth watching, the excluded folders now get written to the VDA's local write cache disk at logon and every time the assemblies change. On our MCS clones that is the D: drive. Under normal use the coresuite content is not large and the cache handles it comfortably. In a scenario with many users cycling in and out of sessions on the same host over a working day, the cache can grow faster than it used to. It has not caused an incident here yet, but D: drive free space is on the watch list until we have a longer sample of real usage.
+{: .prompt-warning }
+
+## A Note on the Workload Itself
+
+One thing worth flagging before anyone applies this workaround to their own environment. The customer runs an older version of SAP Business One in production. In a newly-built demo system on a current release, coresuite does not behave this way, the per-database assembly storm is absent. The design of the addon's assembly handling appears to have changed between the two versions, and the customer's planned SAP B1 upgrade may make this entire post moot for their environment.
+
+What the older version does is drop a lot of small compiled files into the user profile and touch every one of them on every launch. I do not fully understand what those files carry, why they need to be per-user rather than shared machine-wide, or why they get re-touched on every start when they already exist from the previous session. From the outside it looks more like a specific design choice than a technical requirement, and the newer version does not appear to make the same choice. If you are on the older release and hit the same wall, the redirections.xml trick above is the right workaround. The right long-term answer is probably the upgrade, and if you already run the newer release you likely never noticed any of this.
+
+## Two Things That Still Matter
+
+Even though the Defender exclusion configuration wasn't the root cause of this particular symptom, correct AV exclusions still matter for every FSLogix deployment. Process exclusions for `frxsvc.exe`, `frxccd.exe`, and `frxccds.exe`, plus path exclusions for the VHD/VHDX locations and the mount temp folders, are in the Microsoft docs for a reason. Get them right and validate them by behaviour, not just by presence in `Get-MpPreference` output. Reference, [Microsoft FSLogix antivirus prerequisites](https://learn.microsoft.com/en-us/fslogix/overview-prerequisites#exclusions-for-antivirus).
+
+The other trap, and this one I now guard against by default because I've seen the fallout, is **the master image must never be onboarded to Defender for Endpoint**. Microsoft is explicit about this in the VDI onboarding guidance, template and replica images must not be onboarded, and if a primary image was onboarded the SENSE service needs to be offboarded and the local registration data cleared before returning to production. The reason is mechanical, not stylistic. When an MDE-onboarded master image gets cloned, every MCS clone inherits the master's `senseGuid` registry value and its accumulated sensor cache under `C:\ProgramData\Microsoft\Windows Defender Advanced Threat Protection\Cyber`. All clones then report telemetry to the backend under the same device identity. The cloud sees one device flapping between many hostnames, sensor state churns forever, and `MsSense.exe` sits at unexplained high CPU on every clone without ever settling. Microsoft's own community docs and third-party writeups have the same fingerprint.
+
+The pattern I use to guard against this is a startup script that runs the MDE onboarding, linked via GPO to only the OU that holds the deployed VDA clones - never the OU that holds the master. When you boot the master for patching or configuration, the MDE onboarding is dormant. Only the clones ever touch the backend, and only after they're differentiated by hostname. Five minutes of GPO scoping, saves the exact incident this environment had already survived once.
+
+## The Result
+
+- SAP B1 launch time from ~2 minutes to ~1 minute (from 10-30 minutes at the start of the wider engagement)
+- Windows System process CPU during launch dropped from ~37% back into the idle range
+- Coresuite finishes its "installing and customising" phase in about a minute, previously multi-minute with the whole session sluggish behind it
+- No changes to Defender, no changes to the storage backend, no re-architecture of the profile container
+
+## What I'd Tell a Colleague
+
+"Defender is slow" is almost never Defender on its own. When you've applied every exclusion the docs recommend and `MsMpEng.exe` drops to 0% CPU but the symptom stays, the filter driver stack is doing work on behalf of I/O that Defender didn't cause. That's a real shift in where to look next, and it's the shift most troubleshooting sessions miss. (Validate the exclusions actually work while you're there, that's the other lesson from this engagement, and yes it's a future post.)
+
+File-system minifilter chains compound. Six active filters times 5.8 million operations is tens of CPU-seconds nobody attributes to any single component. If your VDA has more than three or four minifilters registered (check with `fltmc`), consider the I/O volume before you consider the individual drivers.
+
+FSLogix on SMB is well-behaved for well-behaved workloads. It's brutal for applications that memory-map hundreds of small DLLs per launch. `redirections.xml` with `Copy="3"` is the underused tool for exactly those cases, and non-persistent VDI is exactly the environment where it earns its keep.
+
+## Sources
+
+- Microsoft, [FSLogix redirections.xml Copy attribute reference](https://learn.microsoft.com/en-us/fslogix/reference-configuration-settings?tabs=profiles#configure-profile-container-redirection)
+- Microsoft, [Configure and manage FSLogix redirections](https://learn.microsoft.com/en-us/fslogix/how-to-manage-redirections)
+- Microsoft, [FSLogix antivirus prerequisites](https://learn.microsoft.com/en-us/fslogix/overview-prerequisites#exclusions-for-antivirus)
+- Microsoft, [Onboard non-persistent VDI devices to Defender for Endpoint](https://learn.microsoft.com/en-us/defender-endpoint/configure-endpoints-vdi)
+- Microsoft, [VDI image servicing, senseGuid deletion and Cyber folder cleanup](https://learn.microsoft.com/en-us/purview/device-onboarding-vdi#updating-non-persistent-virtual-desktop-infrastructure-vdi-images)
+- Microsoft, [xperf minifilterdelay action](https://learn.microsoft.com/en-us/windows-hardware/test/wpt/analyzing-file-system-activity)
+- Microsoft, [File system minifilter callback concepts](https://learn.microsoft.com/en-us/windows-hardware/drivers/ifs/filter-manager-concepts)
+- Microsoft Tech Community, [MDE for non-persistent VDI, implementation guide and best practices](https://techcommunity.microsoft.com/blog/coreinfrastructureandsecurityblog/mde-for-non%E2%80%91persistent-vdi-%E2%80%94-implementation-guide--best-practices-/4470439)
+- Jeffrey Appel, [Onboard and configure Defender for Endpoint for non-persistent VDI environments](https://jeffreyappel.nl/onboard-and-configure-defender-for-endpoint-for-non-persistent-vdi-environments/)
+- Coresystems / SAP, [coresuite for SAP Business One](https://help.sap.com/docs/SAP_BUSINESS_ONE/68a2e87fb29941b5bf959a184d9c6727/coresuite.html)
+
+---
+
+<br>
+
+*Hit the same class of issue on FSLogix or another SMB-backed profile container? Reach out on [LinkedIn](https://www.linkedin.com/in/robertmagasi/).*
+
+<br>
+
+> *This post was written with assistance from Claude (Anthropic) as a drafting and editing tool. All technical content, solutions, and recommendations reflect my own hands-on experience and professional judgment.*
