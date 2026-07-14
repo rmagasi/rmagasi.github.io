@@ -3,19 +3,24 @@ layout: default
 ---
 
 {% comment %}
-  Local override of Chirpy v7.4.1's _layouts/home.html.
+  Local override of Chirpy v7.4.1 home layout. Three deviations from
+  upstream, all driven by Bing SEO.
 
-  Two deviations from upstream:
-  1. Post card titles render as <h2> instead of <h1>, so the homepage
-     has a single h1 instead of one per card. Bing SEO inspection
-     flagged the original as "More than one h1 tag".
-  2. A visually-hidden <h1> is injected at the top of the post list
-     so every page has exactly one h1 (the canonical SEO pattern).
-     Uses Bootstrap 5's .visually-hidden utility which keeps the
-     element in the accessibility tree but off-screen visually.
+  1. Post card titles render as h2 instead of h1, so the homepage has
+     one h1 instead of one per card. Bing flagged the original as
+     "More than one h1 tag".
+  2. A visually-hidden h1 is injected at the top of the post list so
+     every page has exactly one h1. Uses Bootstrap 5 visually-hidden
+     utility, keeps the element in the accessibility tree but off
+     screen visually.
+  3. A content block is rendered above the post list so index.html
+     can carry a short intro paragraph. Bing flagged the homepage as
+     Content quality Needs attention because the page had no unique
+     body text of its own, only a list of links to other pages.
 
-  Keep this file in sync with the gem version on Chirpy upgrades.
-  Source: https://github.com/cotes2020/jekyll-theme-chirpy/blob/v7.4.1/_layouts/home.html
+  Keep this file in sync with the upstream Chirpy version on gem
+  upgrades. Source URL,
+  github.com/cotes2020/jekyll-theme-chirpy blob v7.4.1 _layouts home.html
 {% endcomment %}
 
 {% include lang.html %}
@@ -63,6 +68,12 @@ layout: default
 {% endif %}
 
 <h1 class="visually-hidden">EUC Insights - Real-world Citrix, AVD, and EUC Knowledge</h1>
+
+{% if content and content != '' %}
+<div class="home-intro mb-4 pb-2" style="max-width: 720px; line-height: 1.7;">
+  {{ content }}
+</div>
+{% endif %}
 
 <div id="post-list" class="flex-grow-1 px-xl-1">
   {% for post in posts %}
