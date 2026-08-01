@@ -16,9 +16,18 @@
   "Robert Magasi" entity Bing already knows from LinkedIn and GitHub.
   Lives here rather than in head.html to keep that byte-mirror override clean.
   JSON-LD in the body is valid and is parsed by both Bing and Google.
-  Scoped to the homepage and /about/ so it is not repeated on every post.
+
+  DO NOT wrap this in a page-conditional. Chirpy's _layouts/default.html calls
+  this file with the include_cached tag, not include. That renders the file once
+  and reuses the output sitewide, so any page-conditional here is evaluated
+  against whichever page builds first and the result is frozen for every page.
+  An earlier attempt scoped this to home plus /about/ and silently emitted
+  nothing anywhere. It is emitted unconditionally instead, which is safe because
+  every value below is static and absolute.
+
+  Also note: Liquid parses tags inside comment blocks, so never write literal
+  tag delimiters in here. It breaks the build.
 {%- endcomment -%}
-{%- if page.layout == 'home' or page.url == '/about/' -%}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -42,4 +51,3 @@
   ]
 }
 </script>
-{%- endif -%}
