@@ -10,3 +10,36 @@
     </p>
   </div>
 </footer>
+
+{%- comment -%}
+  Person entity schema. Added Aug 2026 to tie this domain to the existing
+  "Robert Magasi" entity Bing already knows from LinkedIn and GitHub.
+  Lives here rather than in head.html to keep that byte-mirror override clean.
+  JSON-LD in the body is valid and is parsed by both Bing and Google.
+  Scoped to the homepage and /about/ so it is not repeated on every post.
+{%- endcomment -%}
+{%- if page.layout == 'home' or page.url == '/about/' -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Robert Magasi",
+  "url": "https://robertmagasi.com/",
+  "image": "https://robertmagasi.com/assets/img/avatar.jpg",
+  "jobTitle": "Senior VDI and EUC Consultant",
+  "description": "Senior VDI and EUC consultant writing about Citrix, Azure Virtual Desktop, NetScaler, and FSLogix.",
+  "knowsAbout": [
+    "Citrix Virtual Apps and Desktops",
+    "Azure Virtual Desktop",
+    "Citrix NetScaler",
+    "FSLogix",
+    "End-User Computing",
+    "VDI"
+  ],
+  "sameAs": [
+    "https://www.linkedin.com/in/robertmagasi/",
+    "https://github.com/rmagasi"
+  ]
+}
+</script>
+{%- endif -%}
