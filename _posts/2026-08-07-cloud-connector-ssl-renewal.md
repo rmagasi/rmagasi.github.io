@@ -58,7 +58,7 @@ netsh http update sslcert ipport=0.0.0.0:443 `
     appid={<application-id-from-the-existing-binding>}
 ```
 
-> The Application ID is **not** a constant. It is generated per installation, which is why the command above carries a placeholder. Read yours out of the existing binding. Never copy a GUID from a blog post or a KB article, several of them publish one.
+> The Application ID is **not** a constant. Citrix's own documentation says any valid GUID will do when you first add a binding, because the field only records which application created it. That is precisely why you cannot guess it afterwards. Yours is whatever was used on your connectors, so read it out of `netsh http show sslcert` instead of copying a GUID from a blog post or a KB article.
 {: .prompt-warning }
 
 ## Verify
