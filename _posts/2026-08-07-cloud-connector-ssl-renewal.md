@@ -31,15 +31,21 @@ The binding is not in IIS and it is not in Citrix Studio. It lives in the HTTP.s
 netsh http show sslcert ipport=0.0.0.0:443
 ```
 
-Note the **Application ID**. Then pull the thumbprint of the new certificate after you have imported it:
+Note the **Application ID**. 
+
+Then pull the thumbprint of the new certificate after you have imported it:
+
+
+![netsh http show sslcert output next to the certificate thumbprint in the MMC](/assets/img/posts/cloud-connector-ssl-renewal-netsh.png){: w="800" }
+_The Certificate Hash in the binding is the thumbprint from the MMC_
+
+With Powershell:
 
 ```powershell
 Get-ChildItem -Path Cert:\LocalMachine\My |
     Select-Object FriendlyName, Thumbprint, Subject, NotBefore, NotAfter
 ```
 
-![netsh http show sslcert output next to the certificate thumbprint in the MMC](/assets/img/posts/cloud-connector-ssl-renewal-netsh.png){: w="800" }
-_The Certificate Hash in the binding is the thumbprint from the MMC_
 
 ## Update the binding, do not add it
 
