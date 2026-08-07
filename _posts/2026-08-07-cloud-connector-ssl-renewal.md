@@ -10,7 +10,7 @@ image:
   alt: "Renewing SSL certificates on Citrix Cloud Connectors"
 ---
 
-Certificate renewal season has a checklist, and in most Citrix environments that checklist has two entries: StoreFront and NetScaler. Both get updated, both get verified, and the change record gets closed. Then a few weeks later launches start failing through Gateway and nobody can explain why.
+Familiar? Certificate renewal, and in most Citrix environments you think on StoreFront and NetScaler. Both get updated, both get verified, and the change record gets closed. Then a few weeks later launches start failing through Gateway and nobody can explain why.
 
 The Cloud Connectors hold a certificate too.
 
