@@ -1,5 +1,5 @@
 ---
-title: "Renewing your Citrix certificate? Don't forget the Cloud Connectors"
+title: "Renewing your Citrix SSL certificate? Don't forget the Cloud Connectors"
 date: 2026-08-07 09:00:00 +0200
 author: robert
 categories: ["Citrix"]
