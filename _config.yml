@@ -75,7 +75,7 @@ analytics:
 
 # Page views settings
 pageviews:
-  provider: goatcounter
+  provider: # disabled - view counter hidden on posts. GoatCounter tracking stays active via analytics.goatcounter.id
 
 # Prefer color scheme setting.
 #
