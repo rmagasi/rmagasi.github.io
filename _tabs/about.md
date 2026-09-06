@@ -41,7 +41,7 @@ I've been in the EUC space since 2010, working across Switzerland, Germany, Aust
 
 I'm multilingual - **German** (native), **English** (professional), **Hungarian** (native), and elementary **Russian** - which helps when working across the DACH region and beyond.
 
-Outside of work I am a proud husband and father of two girls, manage a Hattrick football team, and maintain a homelab VDI environment at home (because apparently I don't get enough of this at work).
+Outside of work I am a proud husband and father of two girls. Formula 1 is the one I never miss. I also play and watch football, manage a team in [Hattrick Football Manager](https://www.hattrick.org/en-us/), and maintain a homelab VDI environment at home (because apparently I don't get enough of this at work).
 
 ## Get in touch
 
