@@ -36,7 +36,18 @@ _Rendezvous Protocol explicitly Allowed, HDX adaptive transport left at its Pref
 
 **HDX adaptive transport** at Preferred means the client tries EDT over UDP and falls back to TCP if that fails. Through the Gateway Service, EDT depends on Rendezvous and needs UDP 443 outbound from the VDA.
 
-When those preconditions are missing, Citrix documents the consequence directly: EDT negotiation fails, the session falls back to TCP with Rendezvous, and if that fails too the session falls back to proxying through the Cloud Connectors. Every step has to time out before the next one starts. The session does connect in the end, which is exactly why nobody flags it, it just pays the full price of two failed attempts first.
+When those preconditions are missing, Citrix documents the consequence directly:
+
+> If EDT negotiation fails for any reason, the session falls back to TCP with Rendezvous. And if that fails, then the session falls back to proxying through the Cloud Connectors.
+>
+> Citrix, [HDX adaptive transport with EDT support for Citrix Gateway service](https://docs.citrix.com/en-us/citrix-gateway-service/hdx-edt-support-for-gateway-service.html)
+
+That is three attempts in a fixed order, and each one has to fail before the next begins.
+
+![Flowchart of HDX connection establishment in Citrix DaaS through the Gateway Service, showing EDT Rendezvous, then TCP Rendezvous, then TCP through the Cloud Connector, each with a connection success decision leading to session established or the next attempt](/assets/img/posts/hdx-rendezvous-connection-flow.png){: w="850" }
+_The documented order, with the transport stack each attempt produces. These are the strings `ctxsession.exe` reports, so you can match a live session to the attempt it landed on._
+
+The session does connect in the end, which is exactly why nobody flags it. It just pays the full price of two failed attempts first.
 
 Monitor's session launch diagnostics names it plainly when you look.
 
