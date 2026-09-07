@@ -52,7 +52,7 @@ The session does connect in the end, which is exactly why nobody flags it. It ju
 Monitor's session launch diagnostics names it plainly when you look.
 
 ![Citrix Monitor session launch diagnostics showing a VDA error, outbound Rendezvous connection attempt from VDA to Citrix Gateway rendezvous point over TCP failed, code RENDEZVOUS_CONNECT_FAILED_TCP](/assets/img/posts/hdx-rendezvous-launch-diagnostic.png){: w="700" }
-_RENDEZVOUS\_CONNECT\_FAILED\_TCP. Worth reading precisely, this does not say UDP is blocked. It says the VDA could not reach the rendezvous point over TCP either, so both legs of Rendezvous were unavailable._
+_RENDEZVOUS\_CONNECT\_FAILED\_TCP, raised by the VDA on a failed launch. Worth reading precisely, this does not say UDP is blocked. It says the VDA could not reach the rendezvous point over TCP. Since TCP Rendezvous is only attempted after EDT Rendezvous has already failed, both legs were gone._
 
 ## How to Check It
 
