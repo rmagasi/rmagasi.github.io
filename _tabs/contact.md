@@ -56,7 +56,7 @@ Whether you have a question about something I've written, want to discuss an EUC
     }).then(function (response) {
       if (response.ok) {
         status.className = 'contact-form-status success';
-        status.textContent = 'Thanks — your message has been sent. I\u2019ll get back to you shortly.';
+        status.textContent = 'Thanks - your message has been sent. I\u2019ll get back to you shortly.';
         form.reset();
       } else {
         response.json().then(function (d) {
