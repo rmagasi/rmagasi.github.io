@@ -14,9 +14,15 @@ A collection of EUC and Citrix blogs I follow and recommend.
 
 **Carl Stalhood** — [carlstalhood.com](https://www.carlstalhood.com/)
 
+**Carl Webster** — [carlwebster.com](https://www.carlwebster.com/)
+
 **Christiaan Brinkhoff** — [christiaanbrinkhoff.com](https://christiaanbrinkhoff.com/)
 
 **Dennis Span** — [dennisspan.com](https://dennisspan.com/)
+
+**Fredrik Brattstig** — [virtualbrat.com](https://virtualbrat.com/)
+
+**Guy Leech** — [guyrleech.wordpress.com](https://guyrleech.wordpress.com/)
 
 **Helge Klein** — [helgeklein.com](https://helgeklein.com/)
 
@@ -25,6 +31,8 @@ A collection of EUC and Citrix blogs I follow and recommend.
 **James Rankin** — [james-rankin.com](https://james-rankin.com/)
 
 **Jason Samuel** — [jasonsamuel.com](https://jasonsamuel.com/)
+
+**Johan van Amersfoort** — [vhojan.nl](https://vhojan.nl/)
 
 **Johannes Norz** — [norz.at/blog](https://norz.at/blog)
 
@@ -36,15 +44,25 @@ A collection of EUC and Citrix blogs I follow and recommend.
 
 **Manuel Winkel** — [deyda.net](https://deyda.net/)
 
+**Marcel Meurer** — [blog.itprocloud.de](https://blog.itprocloud.de/)
+
 **Marco Hofmann** — [meinekleinefarm.net](https://www.meinekleinefarm.net/)
+
+**Marius Sandbu** — [msandbu.org](https://msandbu.org/)
 
 **Matthias Schlimm** — [eucweb.com](https://eucweb.com/)
 
+**Neil McLoughlin** — [virtualmanc.co.uk](https://www.virtualmanc.co.uk/)
+
 **René Bigler** — [dready.ch](https://dready.ch/)
+
+**Robin Hobo** — [robinhobo.com](https://robinhobo.com/)
 
 **Ryan Ververs-Bijkerk & Eltjo van Gulik** — [go-euc.com](https://www.go-euc.com/)
 
 **Sacha Thomet** — [blog.sachathomet.ch](https://blog.sachathomet.ch/)
+
+**Sander Rozemuller** — [rozemuller.com](https://rozemuller.com/)
 
 **Stefan Beckmann** — [beckmann.ch](https://beckmann.ch/)
 
