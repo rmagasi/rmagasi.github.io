@@ -56,8 +56,6 @@ A collection of EUC and Citrix blogs I follow and recommend.
 
 **René Bigler** - [dready.ch](https://dready.ch/)
 
-**Robin Hobo** - [robinhobo.com](https://robinhobo.com/)
-
 **Ryan Ververs-Bijkerk & Eltjo van Gulik** - [go-euc.com](https://www.go-euc.com/)
 
 **Sacha Thomet** - [blog.sachathomet.ch](https://blog.sachathomet.ch/)
@@ -65,6 +63,8 @@ A collection of EUC and Citrix blogs I follow and recommend.
 **Sander Rozemuller** - [rozemuller.com](https://rozemuller.com/)
 
 **Stefan Beckmann** - [beckmann.ch](https://beckmann.ch/)
+
+**Stephen Wagner** - [stephenwagner.com](https://www.stephenwagner.com/)
 
 **Thomas Kötzing** - [koetzingit.de](https://www.koetzingit.de/)
 
