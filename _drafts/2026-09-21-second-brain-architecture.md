@@ -1,6 +1,6 @@
 ---
 title: "My Second Brain: Claude, Obsidian and Git"
-date: 2026-09-21 09:00:00 +0200
+date: 2099-12-31 09:00:00 +0200  # on hold, set the real date when publishing
 author: robert
 categories: ["Meta", "AI"]
 tags: ["obsidian", "claude", "ai", "knowledge-management", "git", "automation", "second-brain"]
