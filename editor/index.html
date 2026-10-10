@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/diff@5/dist/diff.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -429,6 +430,30 @@
   #toast.show    { display: flex; }
   #toast.success { border-color: var(--success); }
   #toast.error   { border-color: var(--danger); }
+
+  /* ─── SITE PREVIEW (post rendered inside the real blog page) ─── */
+  .EasyMDEContainer .rm-site-mode { padding: 0 !important; overflow: hidden !important; background: #e9edf2 !important; }
+  [data-theme="dark"] .EasyMDEContainer .rm-site-mode { background: #0b0e13 !important; }
+  .EasyMDEContainer .rm-site-mode.editor-preview-active-side,
+  .EasyMDEContainer .rm-site-mode.editor-preview-active { display: flex !important; }
+  .rm-site-host { position: relative; flex: 1; min-width: 0; height: 100%; overflow: hidden; display: flex; justify-content: center; }
+  .rm-site-stage { position: relative; height: 100%; overflow: hidden; flex-shrink: 0; }
+  .rm-site-frame { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: transparent; visibility: hidden; }
+  .rm-site-frame.front { visibility: visible; }
+  .rm-site-bar { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(255,255,255,.94); border: 1px solid var(--border-strong); box-shadow: 0 2px 10px rgba(0,0,0,.14); opacity: .3; transition: opacity .15s; z-index: 5; }
+  .rm-site-host:hover .rm-site-bar { opacity: 1; }
+  .rm-site-bar button { width: 26px; height: 24px; border: 0; border-radius: 5px; background: transparent; color: #4b5563; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .rm-site-bar button:hover { background: rgba(0,86,178,.08); color: #0056b2; }
+  .rm-site-bar button.active { background: rgba(0,86,178,.14); color: #0056b2; }
+  .rm-site-bar svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .rm-site-bar .rm-sep { width: 1px; margin: 3px; background: var(--border-strong); }
+  [data-theme="dark"] .rm-site-bar { background: rgba(22,27,34,.94); }
+  [data-theme="dark"] .rm-site-bar button { color: #9ca3af; }
+  [data-theme="dark"] .rm-site-bar button.active, [data-theme="dark"] .rm-site-bar button:hover { color: #58a6ff; background: rgba(88,166,255,.14); }
+  .rm-site-status { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 6px 12px; border-radius: 6px; font-size: 12px; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border-strong); box-shadow: var(--shadow-modal); display: none; max-width: 70%; text-align: center; z-index: 6; }
+  .rm-site-status.show { display: block; }
+  .rm-site-status.error { color: var(--danger); border-color: var(--danger); }
+  #site-preview-btn.active { color: var(--accent); border-color: var(--accent); background: var(--bg-tagpill); }
 </style>
 </head>
 <body data-theme="light">
@@ -451,6 +476,7 @@
   </div>
   <button class="top-btn icon-only" id="theme-btn" title="Toggle editor theme">🌙</button>
   <button class="top-btn icon-only" id="preview-dark-btn" title="Switch preview to dark mode">🌙</button>
+  <button class="top-btn icon-only" id="site-preview-btn" title="Site preview"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></button>
   <button class="top-btn" id="btn-settings">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     Settings
@@ -795,6 +821,8 @@ const STORAGE = {
   BRANCH:         'rm_branch',
   THEME:          'rm_theme',
   PREVIEW_DARK:   'rm_preview_dark',
+  SITE_PREVIEW:   'rm_site_preview',        // '0' = simple preview, otherwise site preview
+  SITE_DEVICE:    'rm_site_device',
   SIDEBAR_W:      'rm_sidebar_w',
   TREE_CACHE:     'rm_tree_cache',
   DRAFT_PREFIX:   'rm-editor-draft:',       // per-path: rm-editor-draft:<path-or-untitled>
@@ -861,6 +889,7 @@ const State = {
   tags:              [],
   currentSha:        null,
   currentLoadedPath: null,
+  openedFileName:    null,   // name of a .md opened from disk (site preview URL)
   /**
    * Preserve the exact date / last_modified_at strings from the loaded file
    * so we only rebuild the time+tz portion when the user explicitly edits
@@ -1715,6 +1744,1490 @@ const Upload = {
 };
 
 /* ═════════════════════════════════════════════════════════════
+   MODULE: kramdown — browser emulation of the site's Markdown stack
+   Jekyll kramdown (GFM parser, smart quotes, typographic symbols,
+   IAL, footnotes, abbreviations, definition lists, math), Rouge code
+   blocks with line-number tables, then Chirpy's refactor-content.html.
+   Output matches what Jekyll writes into <div class="content">.
+   Verified against `jekyll build` output of every post.
+   ═════════════════════════════════════════════════════════════ */
+const Kramdown = (() => {
+  /* All nodes are built in an inert template document, so <img> never fetches during parsing */
+  let D = document;
+  /* Rouge 4.7 lexer tags + aliases. Kramdown only wraps a fenced block in
+     the Rouge table when Rouge knows the language, otherwise it emits a
+     bare <pre><code class="language-x">. */
+  const ROUGE_LEXERS = new Set('Containerfile Dockerfile HAML Isabelle LaTeX OCL R S TeX abap abl actionscript ada apache apex apib apiblueprint applescript armasm as as3 aug augeas awk bash bat batch batchfile bbcbasic behat bf bib bibtex bicep biml bpf brainfuck brightscript brs bs bsdmake bsl c c# c++ ceylon cfc cfscript cisco_ios cl clean clj cljs clojure cmake cmhg cmm cobol codeowners coffee coffee-script coffeescript common-lisp common_lisp conf config configuration console containerfile coq cpp cr crystal cs csharp css csvs cucumber cuda cypher cython d dafny dart datastudio diff digdag django dlang docker dockerfile dosbatch dot e-mail ecl eex eiffel elisp elixir elm emacs-lisp email eml epp eps erb erl erlang eruby esc escape ex exs factor fea ff fluent fortran freefem fsharp ftl gd gdscript ghc-cmm ghc-core gherkin gjs glsl gnumake go golang gradle graphql graphviz groovy gts hack haml handlebars haskell haxe hbs hcl heex hh hlsl hocon hql hs html http hx hy hylang idlang idr idris iecst igorpro ini io irb irb_output isa isabelle isbl j janet java javascript jdn jinja jl js jsl json json-doc json5 jsonc jsonnet jsp jsx julia kdb+ kotlin ksh lasso lassoscript latex lean leex lhaskell lhs liquid lisp litcoffee literate_coffeescript literate_haskell lithaskell livescript llvm ls lua lustre lutin m m68k magik make makefile markdown mason mathematica matlab md meson mf microsoftshell minizinc mkd ml mojo moon moonscript mosel msgtrans msshell mustache mxml nasm nes nesasm nextflow nf nginx nial nim nimrod nix nixos obj-c obj-c++ obj-cpp obj_c obj_c++ obj_cpp objc objc++ objcpp objective-c objective_c objective_cpp objectivec objectivec++ objectivecpp ocaml ocl openedge opentype opentype_feature_file opentypefeature p4 pascal patch perl php php3 php4 php5 pl plaintext plist plsql pony posh postscr postscript powershell pp praat prolog prometheus properties proto protobuf pry ps puppet py pyrex python pyx q qml r racket rb react realbasic reasonml rego rescript rhtml rml robot robot-framework robot_framework rs rs,ignore rs,no_run rs,should_panic ruby rust rust,ignore rust,no_run rust,should_panic s sas sass scala scheme scss sed sh shell shell-session shell_session sieve slice slim smalltalk smarty sml sparql sqf sql squeak ssh st stan stata supercollider svelte swift systemd syzlang syzprog tap tcl terminal terraform tex text tf toml ts tsx ttcn3 tulip turtle twig typescript udiff unit-file vala varnish varnishconf vb vcl velocity verilog vhdl vim viml vimscript visualbasic vue vuejs winbatch wl wolfram wollok xml xojo xpath xquery yaml yang yml zig zir zsh'.split(' '));
+
+  /* Kramdown treats lines that start with these tags as paragraphs. */
+  const SPAN_HTML = new Set(('a abbr acronym b big bdo br button cite code del dfn em i img input ins kbd ' +
+    'label mark option q rb rbc rp rt rtc ruby s samp select small span strike strong sub sup ' +
+    'textarea tt u var').split(' '));
+
+  /* highlight.js scope → Rouge short class, so Chirpy's Rouge palette applies. */
+  const HL2ROUGE = {
+    keyword: 'k', built_in: 'nb', type: 'kt', literal: 'kc', number: 'm', operator: 'o',
+    punctuation: 'p', property: 'py', attr: 'na', attribute: 'na', symbol: 'ss', regexp: 'sr',
+    string: 's', subst: 'si', 'char.escape': 'se', comment: 'c', doctag: 'sd', meta: 'cp',
+    'meta-keyword': 'cp', 'meta-string': 's', section: 'gh', tag: 'nt', name: 'nt',
+    'title.class': 'nc', 'title.class.inherited': 'nc', 'title.function': 'nf', title: 'nf',
+    variable: 'nv', 'variable.language': 'bp', 'variable.constant': 'no', 'template-variable': 'nv',
+    'selector-tag': 'nt', 'selector-id': 'nn', 'selector-class': 'nc', 'selector-attr': 'na',
+    'selector-pseudo': 'nd', addition: 'gi', deletion: 'gd', emphasis: 'ge', strong: 'gs',
+    bullet: 'p', link: 'nl', quote: 'c1', code: 'sb', params: 'n', function: 'nf', class: 'nc',
+  };
+  /* Rouge lexer name → highlight.js language. */
+  const HL_LANG = {
+    sh: 'bash', shell: 'bash', zsh: 'bash', ksh: 'bash', console: 'bash', terminal: 'bash',
+    ps1: 'powershell', posh: 'powershell', psm1: 'powershell', batch: 'dos', bat: 'dos', cmd: 'dos',
+    batchfile: 'dos', cs: 'csharp', 'c#': 'csharp', js: 'javascript', ts: 'typescript',
+    py: 'python', rb: 'ruby', yml: 'yaml', html: 'xml', xhtml: 'xml', svg: 'xml', md: 'markdown',
+    conf: 'ini', cfg: 'ini', toml: 'ini', jsonc: 'json', tsql: 'sql', mssql: 'sql', vb: 'vbnet',
+    docker: 'dockerfile', hcl: 'ini', make: 'makefile', plist: 'xml',
+  };
+  const NO_HL = new Set(['plaintext', 'text', 'txt', 'plain']);
+
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const escAttr = (s) => esc(s).replace(/"/g, '&quot;');
+  const enc = (s) => encodeURIComponent(s);
+  const dec = (s) => { try { return decodeURIComponent(s); } catch { return s; } };
+
+  /* ── IAL parsing: .class #id key="v" key='v' key=v ── */
+  function parseIAL(body) {
+    const res = { cls: [], id: null, attrs: [] };
+    const re = /\.([\w-]+)|#([\w-]+)|([\w:-]+)=("([^"]*)"|'([^']*)'|(\S+))/g;
+    let m;
+    while ((m = re.exec(body))) {
+      if (m[1]) res.cls.push(m[1]);
+      else if (m[2]) res.id = m[2];
+      else if (m[3]) res.attrs.push([m[3], m[5] ?? m[6] ?? m[7] ?? '']);
+    }
+    return res;
+  }
+  /* kramdown order: IAL key/values first, then id, classes appended to class. */
+  function applyIAL(el, body) {
+    const ial = parseIAL(body);
+    if (el.classList && el.classList.contains('highlighter-rouge')) {
+      /* Rouge block: IAL attrs first, class = language-x <ial classes> highlighter-rouge */
+      const lang = [...el.classList].find(c => c.startsWith('language-'));
+      el.removeAttribute('class');
+      if (ial.id) el.setAttribute('id', ial.id);
+      for (const [k, v] of ial.attrs) { try { el.setAttribute(k, v); } catch {} }
+      el.setAttribute('class', [lang, ...ial.cls, 'highlighter-rouge'].filter(Boolean).join(' '));
+      return;
+    }
+    if (ial.cls.length) {
+      const cur = el.getAttribute('class');
+      el.setAttribute('class', (cur ? cur + ' ' : '') + ial.cls.join(' '));
+    }
+    if (ial.id) el.setAttribute('id', ial.id);
+    for (const [k, v] of ial.attrs) { try { el.setAttribute(k, v); } catch {} }
+  }
+
+  /* ── Source preprocessing (fence-aware, line based) ── */
+  const FENCE_OPEN = /^((?:[ \t]*>)*[ \t]*)(`{3,}|~{3,})(.*)$/;
+  function maskCode(line, fn) {
+    const parts = [];
+    /* \| inside code spans stays literal in kramdown tables, marked would unescape it */
+    const masked = line.replace(/(`+)([\s\S]*?[^`])\1(?!`)/g, (m) => { parts.push(m.replace(/\\\|/g, '\uE002')); return `\u0000${parts.length - 1}\u0000`; });
+    return fn(masked).replace(/\u0000(\d+)\u0000/g, (_, i) => parts[+i]);
+  }
+
+  function preprocess(src, ctx) {
+    src = src.replace(/\r\n?/g, '\n').replace(/\t/g, '    ');
+    const lines = src.split('\n');
+    const keep = [];
+    let fence = null;
+
+    /* pass 1: collect footnote + abbreviation definitions outside fences */
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (fence) { keep.push({ line, code: true }); if (fence.test(line)) fence = null; continue; }
+      const fo = line.match(FENCE_OPEN);
+      if (fo && !(fo[2][0] === '`' && fo[3].includes('`'))) {
+        const ch = fo[2][0] === '`' ? '`' : '~';
+        fence = new RegExp('^(?:[ \\t]*>)*[ \\t]*' + (ch === '`' ? '`' : '~') + '{' + fo[2].length + ',}[ \\t]*$');
+        keep.push({ line, code: true }); continue;
+      }
+      const fn = line.match(/^\[\^([^\]\s]+)\]:[ \t]?(.*)$/);
+      if (fn) {
+        const body = [fn[2]];
+        while (i + 1 < lines.length && (/^ {4}\S/.test(lines[i + 1]) ||
+               (/^\s*$/.test(lines[i + 1]) && i + 2 < lines.length && /^ {4}\S/.test(lines[i + 2])))) {
+          i++; body.push(lines[i].replace(/^ {4}/, ''));
+        }
+        ctx.footnotes[fn[1]] = body.join('\n');
+        continue;
+      }
+      const ab = line.match(/^\*\[([^\]]+)\]:[ \t]*(.*)$/);
+      if (ab) { ctx.abbrs[ab[1]] = ab[2].trim(); continue; }
+      if (/^ {0,3}\{:[\w-]+:.*\}\s*$/.test(line)) continue;           /* ALD, unsupported, dropped */
+      keep.push({ line, code: false });
+    }
+
+    /* pass 2: IAL markers, footnote refs, math */
+    const out = [];
+    let prevBlank = true;
+    for (let i = 0; i < keep.length; i++) {
+      let { line, code } = keep[i];
+      if (code) { out.push(line); prevBlank = false; continue; }
+      const blank = /^\s*$/.test(line);
+      const bial = line.match(/^((?:[ \t]*>)*)([ \t]*)\{:(?!:)([^}]*)\}\s*$/);
+      if (bial) {
+        out.push(`${bial[1]}${bial[2]}<!--KIAL ${enc(bial[3])} ${prevBlank ? 1 : 0}-->`);
+        prevBlank = false; continue;
+      }
+      /* block math: a paragraph that is only $$ ... $$ */
+      if (prevBlank && /^\s*\$\$/.test(line)) {
+        let j = i, buf = [];
+        for (; j < keep.length && !keep[j].code; j++) { if (/^\s*$/.test(keep[j].line)) break; buf.push(keep[j].line); }
+        const joined = buf.join('\n').trim();
+        const mm = joined.match(/^\$\$([\s\S]+?)\$\$$/);
+        if (mm) {
+          ctx.math.push(mm[1].trim());
+          out.push(`<!--KMATHB ${ctx.math.length - 1}-->`);
+          i = j - 1; prevBlank = false; continue;
+        }
+      }
+      line = maskCode(line, (l) => {
+        /* << and >> win over HTML in kramdown (typographic syms match first) */
+        const lead = (l.match(/^(?:[ \t]*>)*/) || [''])[0];
+        l = lead + l.slice(lead.length).replace(/<</g, '\uE000').replace(/>>/g, '\uE001');
+        l = l.replace(/([^\s\\])\{:(?!:)([^}]*)\}/g, (_, pre, body) => `${pre}<span data-kial="${enc(body)}"></span>`);
+        l = l.replace(/\[\^([^\]\s]+)\](?!:)/g, (m, id) => (id in ctx.footnotes ? `<sup data-kfn="${enc(id)}"></sup>` : m));
+        l = l.replace(/\$\$(.+?)\$\$/g, (_, tex) => { ctx.math.push(tex); return `<span data-kmath="${ctx.math.length - 1}"></span>`; });
+        return l;
+      });
+      out.push(line);
+      prevBlank = blank;
+    }
+    return out.join('\n');
+  }
+
+  /* ── Rouge-style highlighting ── */
+  function rougeHighlight(code, lang) {
+    const hl = typeof hljs !== 'undefined' ? hljs : null;
+    const l = lang.toLowerCase();
+    if (NO_HL.has(l) || !hl) return esc(code);
+    const hlLang = HL_LANG[l] || l;
+    if (!hl.getLanguage(hlLang)) return esc(code);
+    let html;
+    try { html = hl.highlight(code, { language: hlLang, ignoreIllegals: true }).value; } catch { return esc(code); }
+    return html.replace(/<span class="([^"]+)">/g, (_, cls) => {
+      const scope = cls.split(' ').map(c => c.replace(/^hljs-/, '').replace(/_$/, '')).filter(Boolean);
+      const key = scope.join('.');
+      const r = HL2ROUGE[key] || HL2ROUGE[scope[0]] || '';
+      return r ? `<span class="${r}">` : '<span>';
+    });
+  }
+
+  function codeBlock(text, info) {
+    const lang = ((info || '').match(/^\S*/)[0].replace(/\?.*$/, '')) || 'plaintext';
+    const code = text.endsWith('\n') ? text : text + '\n';
+    if (!ROUGE_LEXERS.has(lang.toLowerCase())) {
+      return `<pre><code class="language-${escAttr(lang)}">${esc(code)}</code></pre>\n`;
+    }
+    const n = code.split('\n').length - 1;
+    let gutter = '';
+    for (let i = 1; i <= n; i++) gutter += i + '\n';
+    const body = rougeHighlight(code.slice(0, -1), lang) + '\n';
+    return `<div class="language-${escAttr(lang)} highlighter-rouge"><div class="highlight"><pre class="highlight"><code>` +
+      `<table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">${gutter}</pre></td>` +
+      `<td class="rouge-code"><pre>${body}</pre></td></tr></tbody></table></code></pre></div></div>\n`;
+  }
+
+  /* ── marked instance configured to emit kramdown-shaped HTML ── */
+  let _md = null;
+  function md() {
+    if (_md) return _md;
+    const M = new marked.Marked({ gfm: true, breaks: false });
+    M.use({
+      tokenizer: {
+        url() { return undefined; },                       /* kramdown GFM does not autolink bare URLs */
+        del(src) { return src.startsWith('~~') ? false : undefined; },  /* single ~ is literal */
+      },
+      extensions: [
+        /* kramdown codespans: a lone ` between spaces is literal, the closer is a plain substring search */
+        { name: 'kcode', level: 'inline',
+          start(src) { const i = src.indexOf('`'); return i < 0 ? undefined : i; },
+          tokenizer(src, tokens) {
+            const m = src.match(/^`+/);
+            if (!m) return undefined;
+            const delim = m[0];
+            const prev = tokens.length ? tokens[tokens.length - 1].raw.slice(-1) : '';
+            if (delim.length === 1 && /\s/.test(prev) && /^\s/.test(src.slice(1))) {
+              return { type: 'text', raw: '`', text: '`' };
+            }
+            const end = src.indexOf(delim, delim.length);
+            if (end < 0) return { type: 'text', raw: delim, text: delim };
+            let text = src.slice(delim.length, end);
+            if (delim.length > 1) { if (text[0] === ' ') text = text.slice(1); if (text.slice(-1) === ' ') text = text.slice(0, -1); }
+            return { type: 'codespan', raw: src.slice(0, end + delim.length), text };
+          } },
+        { name: 'kdl', level: 'block', renderer(t) {
+          return `<dl>\n  <dt>${this.parser.parseInline(t.term)}</dt>\n` +
+            t.defs.map(d => `  <dd>${this.parser.parseInline(d)}</dd>\n`).join('') + '</dl>\n';
+        } },
+      ],
+      renderer: {
+        code(t) { return codeBlock(t.text, t.lang); },
+        codespan(t) { return `<code class="language-plaintext highlighter-rouge">${esc(t.text.replace(/\uE002/g, '\\|'))}</code>`; },
+        heading(t) { return `<h${t.depth}>${this.parser.parseInline(t.tokens)}</h${t.depth}>\n`; },
+        hr() { return '<hr />\n'; },
+        br() { return '<br />\n'; },
+        blockquote(t) { return `<blockquote>\n${this.parser.parse(t.tokens)}</blockquote>\n`; },
+        paragraph(t) { return `<p>${this.parser.parseInline(t.tokens)}</p>\n`; },
+        image(t) {
+          return `<img src="${escAttr(t.href)}" alt="${escAttr(t.text)}"${t.title ? ` title="${escAttr(t.title)}"` : ''} />`;
+        },
+        link(t) {
+          return `<a href="${escAttr(t.href)}"${t.title ? ` title="${escAttr(t.title)}"` : ''}>${this.parser.parseInline(t.tokens)}</a>`;
+        },
+        html(t) {
+          const raw = t.text;
+          if (!t.block) return raw;
+          const mb = raw.match(/^<!--KMATHB (\d+)-->\s*$/);
+          if (mb) return `<k-math data-b="${mb[1]}"></k-math>\n`;
+          if (/^<!--KIAL /.test(raw.trim())) return raw;
+          const tag = (raw.match(/^\s*<\/?([A-Za-z][\w-]*)/) || [])[1];
+          if (tag && SPAN_HTML.has(tag.toLowerCase())) {
+            return `<p>${this.parser.parseInline(marked.Lexer.lexInline(raw.replace(/\n+$/, ''), M.defaults))}</p>\n`;
+          }
+          const mdAttr = raw.match(/^\s*<([A-Za-z][\w-]*)([^>]*?)\smarkdown=(["'])1\3([^>]*)>([\s\S]*)<\/\1>\s*$/);
+          if (mdAttr) {
+            return `<${mdAttr[1]}${mdAttr[2]}${mdAttr[4]}>\n${M.parse(mdAttr[5])}</${mdAttr[1]}>\n`;
+          }
+          return `<k-raw>${raw}</k-raw>`;
+        },
+        table(t) {
+          const al = (a) => (a ? ` style="text-align: ${a}"` : '');
+          const cell = (c) => this.parser.parseInline(c.tokens) || '\u00A0';
+          let h = '<table>\n  <thead>\n    <tr>\n';
+          t.header.forEach((c, i) => { h += `      <th${al(t.align[i])}>${cell(c)}</th>\n`; });
+          h += '    </tr>\n  </thead>\n';
+          if (t.rows.length) {
+            h += '  <tbody>\n';
+            for (const row of t.rows) {
+              h += '    <tr>\n';
+              row.forEach((c, i) => { h += `      <td${al(t.align[i])}>${cell(c)}</td>\n`; });
+              h += '    </tr>\n';
+            }
+            h += '  </tbody>\n';
+          }
+          return h + '</table>\n';
+        },
+        list(t) {
+          /* kramdown list.rb: when is the first paragraph of an item "transparent" (no <p>)? */
+          const tag = t.ordered ? 'ol' : 'ul';
+          const info = t.items.map((item, idx) => {
+            const isLast = idx === t.items.length - 1;
+            const toks = item.tokens || [];
+            const blocks = toks.filter(x => x.type !== 'space');
+            const firstIsP = !!blocks[0] && (blocks[0].type === 'text' || blocks[0].type === 'paragraph');
+            const trailingBlank = !!item._kTrailBlank || /\n[ \t]*\n\s*$/.test(item.raw);
+            const more = blocks.length > 1;
+            const child1Blank = more ? ((toks[1] && toks[1].type === 'space') || /\n[ \t]*\n\s*$/.test(toks[0].raw)) : trailingBlank;
+            const A = firstIsP && (!child1Blank || (isLast && !more && trailingBlank));
+            return { isLast, firstIsP, A };
+          });
+          let task = false, body = '';
+          t.items.forEach((item, idx) => {
+            const it = info[idx];
+            const B = !it.isLast || t.items.length === 1 ||
+              info.slice(0, -1).some(x => !x.firstIsP || x.transparent);
+            it.transparent = it.A && B;
+            const toks = item.tokens || [];
+            let inner;
+            if (it.transparent) {
+              let k = 0; while (k < toks.length && toks[k].type === 'text') k++;
+              inner = this.parser.parse(toks.slice(0, k), false) + this.parser.parse(toks.slice(k), true);
+            } else inner = this.parser.parse(toks, true);
+            if (item.task || task) {
+              if (item.task) task = true;
+            }
+            if (item.task) {
+              const box = `<input type="checkbox" class="task-list-item-checkbox" disabled="disabled"${item.checked ? ' checked="checked"' : ''} />`;
+              inner = inner.startsWith('<p>') ? '<p>' + box + inner.slice(3) : box + inner;
+            }
+            body += `  <li${task ? ' class="task-list-item"' : ''}>${inner}</li>\n`;
+          });
+          return `<${tag}${task ? ' class="task-list"' : ''}>\n${body}</${tag}>\n`;
+        },
+        checkbox() { return ''; },
+      },
+    });
+    /* marked strips "[ ] " itself for task items; keep that, render our own box */
+    _md = M;
+    return M;
+  }
+
+  /* ── token post-pass: kramdown block quirks ── */
+  function fixTokens(tokens) {
+    const out = [];
+    for (let i = 0; i < tokens.length; i++) {
+      let t = tokens[i];
+      /* block HTML runs to its matching close tag (parse_block_html: false) */
+      if (t.type === 'html' && t.block) {
+        const m = t.raw.match(/^\s*<([A-Za-z][\w-]*)[\s>]/);
+        if (m && !SPAN_HTML.has(m[1].toLowerCase()) && !/^(hr|br|img|input|meta|link)$/i.test(m[1])) {
+          const name = m[1];
+          const count = (s) => (s.match(new RegExp('<' + name + '[\\s>]', 'gi')) || []).length -
+                               (s.match(new RegExp('</' + name + '\\s*>', 'gi')) || []).length;
+          let raw = t.raw, j = i;
+          while (count(raw) > 0 && j + 1 < tokens.length) { j++; raw += tokens[j].raw; }
+          if (j > i) { t = { type: 'html', block: true, raw, text: raw }; i = j; }
+        }
+      }
+      /* kramdown merges consecutive lists of the same kind across blank lines */
+      if (t.type === 'list') {
+        let j = i;
+        const merged = { ...t, items: [...t.items] };
+        while (true) {
+          let k = j + 1;
+          while (k < tokens.length && tokens[k].type === 'space') k++;
+          if (k < tokens.length && tokens[k].type === 'list' && tokens[k].ordered === t.ordered) {
+            if (k > j + 1) merged.items[merged.items.length - 1]._kTrailBlank = true;
+            merged.items.push(...tokens[k].items);
+            j = k;
+          } else break;
+        }
+        for (const it of merged.items) it.tokens = fixTokens(it.tokens);
+        t = merged; i = j;
+      }
+      /* definition lists: "Term\n: definition" */
+      if (t.type === 'paragraph') {
+        const dm = t.raw.replace(/\n+$/, '').match(/^([^\n]+)\n((?::[ \t]+[^\n]+\n?)+)$/);
+        if (dm) {
+          const defs = dm[2].split('\n').filter(Boolean).map(l => marked.Lexer.lexInline(l.replace(/^:[ \t]+/, ''), md().defaults));
+          t = { type: 'kdl', raw: t.raw, term: marked.Lexer.lexInline(dm[1], md().defaults), defs };
+        }
+      }
+      if (t.type === 'blockquote' && t.tokens) t.tokens = fixTokens(t.tokens);
+      out.push(t);
+    }
+    return out;
+  }
+
+  /* ── smart quotes + typographic symbols, kramdown's rules ── */
+  const SQ_PUNCT = "[!\"#$%'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~]";
+  const SQ_CLOSE = "[^ \\\\\\t\\r\\n\\[{(-]";
+  const Q = { '"': ['“', '”'], "'": ['‘', '’'] };
+  const SQ_RULES = [
+    [new RegExp(`(["'])(?=[_*]{1,2}\\S)`, 'y'), (m) => [Q[m[1]][0]]],
+    [new RegExp(`(["'])(?=${SQ_PUNCT}(?!\\.\\.)\\B)`, 'y'), (m) => [Q[m[1]][1]]],
+    [/(\s?)"'(?=\w)/y, (m) => [m[1], '“', '‘']],
+    [/(\s?)'"(?=\w)/y, (m) => [m[1], '‘', '“']],
+    [/(\s?)'(?=\d\ds)/y, (m) => [m[1], '’']],
+    [/(\s)(['"])(?=\w)/y, (m) => [m[1], Q[m[2]][0]]],
+    [new RegExp(`(${SQ_CLOSE}\\s?)(['"])`, 'y'), (m) => [m[1], Q[m[2]][1]]],
+    [/(["'])(?=\s|s\b|$)/y, (m) => [Q[m[1]][1]]],
+    [/([\s\S]?)'/y, (m) => [m[1], '‘']],
+    [/([\s\S]?)"/y, (m) => [m[1], '“']],
+  ];
+  const TYPO = { '---': '—', '--': '–', '...': '…', ' ': '« ', ' ': ' »', '': '«', '': '»' };
+  const SPAN_START = /([^\\]?["'])|(---|--|\.\.\.| | ||)/g;
+
+  function typographize(s, tail) {
+    const full = s + tail;
+    let out = '', pos = 0;
+    while (pos < s.length) {
+      SPAN_START.lastIndex = pos;
+      const m = SPAN_START.exec(s);
+      if (!m) break;
+      out += s.slice(pos, m.index);
+      if (m[2]) { out += TYPO[m[2]]; pos = m.index + m[2].length; continue; }
+      let done = false;
+      for (const [re, fn] of SQ_RULES) {
+        re.lastIndex = m.index;
+        const r = re.exec(full);
+        if (r && r.index === m.index) {
+          out += fn(r).join('');
+          pos = m.index + r[0].length;
+          done = true; break;
+        }
+      }
+      if (!done) { out += s[m.index]; pos = m.index + 1; }
+    }
+    return out + s.slice(pos);
+  }
+
+  const SKIP_TEXT = new Set(['CODE', 'PRE', 'SCRIPT', 'STYLE', 'K-RAW', 'K-MATH', 'TEXTAREA', 'KBD-RAW']);
+  function walkText(root, fn) {
+    const walk = (node) => {
+      for (let c = node.firstChild; c; c = c.nextSibling) {
+        if (c.nodeType === 3) fn(c);
+        else if (c.nodeType === 1 && !SKIP_TEXT.has(c.tagName)) walk(c);
+      }
+    };
+    walk(root);
+  }
+  /* What kramdown sees right after this text run in the source. */
+  function walkTextAll(root, fn) {
+    const tw = D.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const list = []; while (tw.nextNode()) list.push(tw.currentNode); list.forEach(fn);
+  }
+  function tailFor(t) {
+    let n = t.nextSibling;
+    while (n && n.nodeType === 8) n = n.nextSibling;
+    if (n) {
+      if (n.nodeType === 3) return n.nodeValue.slice(0, 3);
+      if (n.tagName === 'BR') return '\n';
+      if (n.tagName === 'EM' || n.tagName === 'STRONG' || n.tagName === 'DEL') return '*a';
+      return '[a';
+    }
+    const p = t.parentNode;
+    if (p && p.nodeType === 1) {
+      const after = p.nextSibling;
+      const rest = after ? (after.nodeType === 3 ? after.nodeValue.slice(0, 2) : 'a') : '';
+      if (p.tagName === 'EM' || p.tagName === 'STRONG' || p.tagName === 'DEL') return '*' + rest;
+      if (p.tagName === 'A') return '](';
+      if (/^(SPAN|SUP|SUB|MARK|ABBR|B|I|U|S|SMALL|KBD|Q|CITE|SAMP|VAR|INS)$/.test(p.tagName)) return '</';
+    }
+    return '';
+  }
+
+  /* ── GFM header ids (kramdown-parser-gfm generate_gfm_header_id) ── */
+  function headerIds(root) {
+    const counter = Object.create(null);
+    root.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => {
+      if (h.closest('k-raw')) return;
+      if (h.hasAttribute('id')) return;
+      const clone = h.cloneNode(true);
+      clone.querySelectorAll('sup[data-kfn], .footnote').forEach(x => x.remove());
+      let id = clone.textContent.toLowerCase()
+        .replace(/[^\p{L}\p{M}\p{Nd}\p{Pc}\- \t]/gu, '')
+        .replace(/[ \t]/g, '-');
+      counter[id] = (counter[id] ?? -1) + 1;
+      if (counter[id] > 0) id += '-' + counter[id];
+      h.setAttribute('id', id);
+    });
+  }
+
+  function prevEl(node) { let n = node.previousSibling; while (n && n.nodeType !== 1) { if (n.nodeType === 3 && n.nodeValue.trim()) return null; n = n.previousSibling; } return n; }
+  function nextEl(node) { let n = node.nextSibling; while (n && n.nodeType !== 1) { if (n.nodeType === 3 && n.nodeValue.trim()) return null; n = n.nextSibling; } return n; }
+
+  /* ── markdown → kramdown HTML (DOM) ── */
+  function toKramdownDOM(src) {
+    const ctx = { footnotes: {}, abbrs: {}, math: [] };
+    const pre = preprocess(src, ctx);
+    const M = md();
+    const tokens = fixTokens(M.lexer(pre));
+    let html = M.parser(tokens);
+
+    const tpl = document.createElement('template');
+    tpl.innerHTML = html;
+    const root = tpl.content;
+    D = root.ownerDocument;
+
+    /* block IALs */
+    const comments = [];
+    const tw = D.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
+    while (tw.nextNode()) comments.push(tw.currentNode);
+    for (const c of comments) {
+      const m = c.data.match(/^KIAL (\S*) ([01])$/);
+      if (!m) continue;
+      const target = m[2] === '0' ? prevEl(c) : nextEl(c);
+      if (target) applyIAL(target, dec(m[1]));
+      c.remove();
+    }
+    /* span IALs */
+    root.querySelectorAll('span[data-kial]').forEach(sp => {
+      const t = sp.previousSibling;
+      if (t && t.nodeType === 1) applyIAL(t, dec(sp.dataset.kial));
+      sp.remove();
+    });
+
+    /* footnotes */
+    const fnOrder = [], fnRefs = {};
+    root.querySelectorAll('sup[data-kfn]').forEach(sup => {
+      const id = dec(sup.dataset.kfn);
+      if (!(id in fnRefs)) { fnOrder.push(id); fnRefs[id] = 0; } else fnRefs[id]++;
+      const n = fnOrder.indexOf(id) + 1;
+      const refId = fnRefs[id] ? `fnref:${id}:${fnRefs[id]}` : `fnref:${id}`;
+      const s = D.createElement('sup');
+      s.id = refId;
+      s.innerHTML = `<a href="#fn:${escAttr(id)}" class="footnote" rel="footnote" role="doc-noteref">${n}</a>`;
+      sup.replaceWith(s);
+    });
+    if (fnOrder.length) {
+      const div = D.createElement('div');
+      div.className = 'footnotes';
+      div.setAttribute('role', 'doc-endnotes');
+      const ol = D.createElement('ol');
+      for (const id of fnOrder) {
+        const li = D.createElement('li');
+        li.id = `fn:${id}`;
+        li.innerHTML = M.parser(fixTokens(M.lexer(ctx.footnotes[id])));
+        let target = li.lastElementChild;
+        if (!target || target.tagName !== 'P') { target = D.createElement('p'); li.appendChild(target); }
+        let back = ` <a href="#fnref:${escAttr(id)}" class="reversefootnote" role="doc-backlink">&#8617;&#xfe0e;</a>`;
+        for (let k = 1; k <= fnRefs[id]; k++) {
+          back += `\u00A0<a href="#fnref:${escAttr(id)}:${k}" class="reversefootnote" role="doc-backlink">&#8617;&#xfe0e;<sup>${k + 1}</sup></a>`;
+        }
+        target.insertAdjacentHTML('beforeend', back);
+        ol.appendChild(li);
+      }
+      div.appendChild(ol);
+      root.appendChild(div);
+    }
+
+    /* typography + smart quotes on text runs */
+    walkText(root, (t) => {
+      if (!/["'.\uE000\uE001-]/.test(t.nodeValue)) return;
+      const v = typographize(t.nodeValue, tailFor(t));
+      if (v !== t.nodeValue) t.nodeValue = v;
+    });
+
+    /* abbreviations */
+    const abbrKeys = Object.keys(ctx.abbrs);
+    if (abbrKeys.length) {
+      const re = new RegExp('(?<![\\w])(' + abbrKeys.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')(?![\\w])', 'g');
+      const nodes = []; walkText(root, (t) => { if (re.test(t.nodeValue)) nodes.push(t); re.lastIndex = 0; });
+      for (const t of nodes) {
+        const frag = D.createDocumentFragment();
+        let last = 0; const s = t.nodeValue; re.lastIndex = 0; let m;
+        while ((m = re.exec(s))) {
+          frag.appendChild(D.createTextNode(s.slice(last, m.index)));
+          const a = D.createElement('abbr');
+          if (ctx.abbrs[m[1]]) a.title = ctx.abbrs[m[1]];
+          a.textContent = m[1]; frag.appendChild(a); last = m.index + m[1].length;
+        }
+        frag.appendChild(D.createTextNode(s.slice(last)));
+        t.replaceWith(frag);
+      }
+    }
+
+    /* restore any << >> placeholders left in raw HTML or attributes */
+    walkTextAll(root, (t) => { if (/[\uE000-\uE002]/.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(/\uE000/g, '<<').replace(/\uE001/g, '>>').replace(/\uE002/g, '|'); });
+    root.querySelectorAll('*').forEach(el => { for (const a of el.attributes) if (/[\uE000\uE001]/.test(a.value)) a.value = a.value.replace(/\uE000/g, '<<').replace(/\uE001/g, '>>'); });
+
+    headerIds(root);
+
+    /* math */
+    root.querySelectorAll('span[data-kmath]').forEach(sp => sp.replaceWith(D.createTextNode(`\\(${ctx.math[+sp.dataset.kmath]}\\)`)));
+    root.querySelectorAll('k-math').forEach(km => km.replaceWith(D.createTextNode(`\\[${ctx.math[+km.dataset.b]}\\]`)));
+
+    root.querySelectorAll('k-raw').forEach(r => r.replaceWith(...r.childNodes));
+    return root;
+  }
+
+  /* ── Chirpy _includes/refactor-content.html, ported to DOM ── */
+  function langAlias(l) {
+    const map = {
+      actionscript: 'ActionScript', as: 'ActionScript', as3: 'ActionScript', applescript: 'AppleScript',
+      brightscript: 'BrightScript', bs: 'BrightScript', brs: 'BrightScript', cfscript: 'CFScript', cfc: 'CFScript',
+      coffeescript: 'CoffeeScript', coffee: 'CoffeeScript', 'coffee-script': 'CoffeeScript', cs: 'C#', csharp: 'C#',
+      erl: 'Erlang', graphql: 'GraphQL', haskell: 'Haskell', hs: 'Haskell', javascript: 'JavaScript', js: 'JavaScript',
+      make: 'Makefile', mf: 'Makefile', gnumake: 'Makefile', bsdmake: 'Makefile', md: 'Markdown', mkd: 'Markdown',
+      m: 'Matlab', objective_c: 'Objective-C', objc: 'Objective-C', 'obj-c': 'Objective-C', obj_c: 'Objective-C',
+      objectivec: 'Objective-C', perl: 'Perl', pl: 'Perl', php: 'PHP', php3: 'PHP', php4: 'PHP', php5: 'PHP',
+      py: 'Python', rb: 'Ruby', rs: 'Rust', no_run: 'Rust', ignore: 'Rust', should_panic: 'Rust',
+      bash: 'Shell', zsh: 'Shell', ksh: 'Shell', sh: 'Shell', st: 'Smalltalk', squeak: 'Smalltalk', tex: 'TeX',
+      latex: 'LaTex', ts: 'TypeScript', typescript: 'TypeScript', vb: 'Visual Basic', visualbasic: 'Visual Basic',
+      vue: 'Vue.js', vuejs: 'Vue.js', yml: 'YAML',
+    };
+    if (map[l]) return map[l];
+    if (['css', 'html', 'scss', 'ssh', 'toml', 'xml', 'yaml', 'json'].includes(l)) return l.toUpperCase();
+    return l ? l.charAt(0).toUpperCase() + l.slice(1).toLowerCase() : '';
+  }
+
+  function refactor(root, { copySucceed = 'Copied!' } = {}) {
+    D = root.ownerDocument || document;
+    /* tables scroll horizontally */
+    root.querySelectorAll('table').forEach(t => {
+      if (t.parentElement && t.parentElement.tagName === 'CODE') return;
+      if (t.closest('code')) return;
+      const w = D.createElement('div');
+      w.className = 'table-wrapper';
+      t.replaceWith(w); w.appendChild(t);
+    });
+    /* div.highlight > pre.highlight > code  →  div.highlight > code */
+    root.querySelectorAll('div.highlight > pre.highlight').forEach(p => {
+      if (p.attributes.length === 1 && p.firstElementChild && p.firstElementChild.tagName === 'CODE') p.replaceWith(...p.childNodes);
+    });
+    /* task list checkboxes */
+    root.querySelectorAll('input.task-list-item-checkbox').forEach(cb => {
+      const i = D.createElement('i');
+      i.className = cb.hasAttribute('checked') ? 'fas fa-check-circle fa-fw checked' : 'far fa-circle fa-fw';
+      cb.replaceWith(i);
+    });
+    /* images */
+    root.querySelectorAll('img').forEach(img => {
+      if (!img.hasAttribute('src')) return;
+      for (const [a, b] of [['w', 'width'], ['h', 'height']]) {
+        if (img.hasAttribute(a)) { img.setAttribute(b, img.getAttribute(a)); img.removeAttribute(a); }
+      }
+      let wrapper = '';
+      const cls = img.getAttribute('class');
+      if (cls) {
+        const keepCls = [];
+        for (const c of cls.split(' ').filter(Boolean)) {
+          if (['preview-img', 'normal', 'left', 'right', 'light', 'dark'].includes(c) || /^w-/.test(c)) wrapper += ' ' + c;
+          else keepCls.push(c);
+        }
+        if (wrapper) { if (keepCls.length) img.setAttribute('class', keepCls.join(' ')); else img.removeAttribute('class'); }
+      }
+      const lqip = img.getAttribute('lqip');
+      if (lqip) {
+        wrapper += ' blur';
+        img.setAttribute('data-src', img.getAttribute('src'));
+        img.setAttribute('data-lqip', 'true');
+        img.setAttribute('src', lqip);
+        img.removeAttribute('lqip');
+      } else {
+        wrapper += ' shimmer';
+        img.setAttribute('loading', 'lazy');
+      }
+      const p = img.parentElement;
+      const nxt = img.nextSibling;
+      if (p && p.tagName === 'A' && !nxt) {
+        if (!p.hasAttribute('class')) p.setAttribute('class', 'img-link' + (lqip ? '' : ' shimmer'));
+      } else {
+        const a = D.createElement('a');
+        a.setAttribute('href', img.getAttribute('data-src') || img.getAttribute('src'));
+        a.setAttribute('class', 'popup img-link' + wrapper);
+        img.replaceWith(a); a.appendChild(img);
+      }
+    });
+    /* code block headers */
+    root.querySelectorAll('div.highlight').forEach(hl => {
+      if (!hl.firstElementChild || hl.firstElementChild.tagName !== 'CODE') return;
+      const box = hl.parentElement;
+      if (!box) return;
+      let label, icon;
+      if (box.hasAttribute('file')) { label = box.getAttribute('file'); icon = 'far fa-file-code fa-fw'; }
+      else {
+        const m = (box.getAttribute('class') || '').match(/language-([^ ]*)/);
+        label = langAlias(m ? m[1] : ''); icon = 'fas fa-code fa-fw small';
+      }
+      const head = D.createElement('div');
+      head.className = 'code-header';
+      head.innerHTML = `<span data-label-text="${escAttr(label)}"><i class="${icon}"></i></span>` +
+        `<button aria-label="copy" data-title-succeed="${escAttr(copySucceed)}"><i class="far fa-clipboard"></i></button>`;
+      box.insertBefore(head, hl);
+    });
+    /* heading anchors (only when id is the first attribute, like the Liquid split) */
+    root.querySelectorAll('h2,h3,h4,h5').forEach(h => {
+      if (!h.attributes.length || h.attributes[0].name !== 'id') return;
+      const id = h.getAttribute('id');
+      const span = D.createElement('span');
+      span.className = 'me-2';
+      while (h.firstChild) span.appendChild(h.firstChild);
+      h.appendChild(span);
+      h.insertAdjacentHTML('beforeend', `<a href="#${escAttr(id)}" class="anchor text-muted"><i class="fas fa-hashtag"></i></a>`);
+    });
+    return root;
+  }
+
+  /* Jekyll strip_html | number_of_words */
+  function countWords(html) {
+    const text = html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<[\s\S]*?>/g, '');
+    const cjk = text.match(/[\p{Script=Han}\p{Script=Katakana}\p{Script=Hiragana}\p{Script=Hangul}]/gu) || [];
+    const rest = text.replace(/[\p{Script=Han}\p{Script=Katakana}\p{Script=Hiragana}\p{Script=Hangul}]/gu, ' ');
+    return cjk.length + rest.split(/[ \t\n\v\f\r]+/).filter(Boolean).length;
+  }
+
+  function serialize(root) { const t = D.createElement('template'); t.content.appendChild(root.cloneNode(true)); return t.innerHTML; }
+
+  /** Full pipeline: markdown body → { html (content div inner), raw (kramdown), words } */
+  function render(src, opts = {}) {
+    const root = toKramdownDOM(src);
+    const raw = serialize(root);
+    const words = countWords(raw);
+    refactor(root, opts);
+    return { html: serialize(root), raw, words };
+  }
+
+  return { render, toKramdownDOM, refactor, countWords, typographize, langAlias };
+})();
+
+/* ═════════════════════════════════════════════════════════════
+   MODULE: sitePreview — the post rendered inside the real blog page
+   Fetches a live post page (CSS, sidebar, panel, metadata-hook, Chirpy JS),
+   swaps in the post being edited and shows it in an iframe. Two iframes
+   are double-buffered so re-renders never flash. Desktop/tablet/mobile
+   widths are scaled to fit the preview pane.
+   ═════════════════════════════════════════════════════════════ */
+const SitePreview = {
+  /* Live site, or the local Jekyll site when the editor itself is served by it */
+  SITE: (/^https?:$/.test(location.protocol) && /\/editor(\/|\/index\.html)?$/.test(location.pathname))
+    ? location.origin : 'https://robertmagasi.com',
+  DEVICES: { desktop: 1440, tablet: 834, mobile: 390, fit: 0 },
+  MATHJAX: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js',
+  MERMAID: 'npm/mermaid@11.12.0/dist/mermaid.min.js',
+  TOCBOT:  'npm/tocbot@4.36.4/dist/tocbot.min.js',
+
+  enabled: true,
+  device: 'desktop',
+  host: null,
+  frames: [],
+  front: 0,
+  token: 0,
+  pendingToken: 0,
+  timer: null,
+  templates: new Map(),     // url → Promise<html>
+  index: null,              // Promise<{posts, summaries}>
+  lastSrc: '',
+  lastError: null,
+  sourceAnchors: [],
+
+  init() {
+    try {
+      this.enabled = localStorage.getItem(STORAGE.SITE_PREVIEW) !== '0';
+      const d = localStorage.getItem(STORAGE.SITE_DEVICE);
+      if (d && d in this.DEVICES) this.device = d;
+    } catch {}
+    window.addEventListener('message', (e) => this.onMessage(e));
+    this.updateButton();
+  },
+
+  /* ── EasyMDE integration: take over the preview element ── */
+  claim(el) {
+    if (!el.__rmSiteClaimed) {
+      el.__rmSiteClaimed = true;
+      /* EasyMDE writes previewRender() output via innerHTML; ignore it while site mode is on */
+      Object.defineProperty(el, 'innerHTML', {
+        configurable: true,
+        get() { return ''; },
+        set(_) {},
+      });
+      el.classList.add('rm-site-mode');
+      while (el.firstChild) el.removeChild(el.firstChild);
+    }
+    if (!this.host) this.buildHost();
+    if (this.host.parentNode !== el) {
+      el.appendChild(this.host);
+      this.fit();
+    }
+  },
+
+  release() {
+    $$('.editor-preview, .editor-preview-side').forEach(el => {
+      if (!el.__rmSiteClaimed) return;
+      delete el.innerHTML;
+      el.__rmSiteClaimed = false;
+      el.classList.remove('rm-site-mode');
+      if (this.host && this.host.parentNode === el) el.removeChild(this.host);
+    });
+  },
+
+  buildHost() {
+    const host = document.createElement('div');
+    host.className = 'rm-site-host';
+    const stage = document.createElement('div');
+    stage.className = 'rm-site-stage';
+    for (let i = 0; i < 2; i++) {
+      const f = document.createElement('iframe');
+      f.className = 'rm-site-frame';
+      f.setAttribute('title', 'Site preview');
+      f.setAttribute('referrerpolicy', 'no-referrer');
+      stage.appendChild(f);
+      this.frames.push(f);
+    }
+    this.frames[0].classList.add('front');
+    host.appendChild(stage);
+
+    const bar = document.createElement('div');
+    bar.className = 'rm-site-bar';
+    const devs = [['desktop', 'Desktop 1440px'], ['tablet', 'Tablet 834px'], ['mobile', 'Mobile 390px'], ['fit', 'Pane width']];
+    const icons = {
+      desktop: '<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+      tablet:  '<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+      mobile:  '<svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+      fit:     '<svg viewBox="0 0 24 24"><path d="M4 12h16M4 12l4-4M4 12l4 4M20 12l-4-4M20 12l-4 4"/></svg>',
+    };
+    for (const [id, label] of devs) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.device = id;
+      b.title = label;
+      b.innerHTML = icons[id];
+      b.addEventListener('click', () => this.setDevice(id));
+      bar.appendChild(b);
+    }
+    const sep = document.createElement('span'); sep.className = 'rm-sep'; bar.appendChild(sep);
+    const reload = document.createElement('button');
+    reload.type = 'button';
+    reload.title = 'Reload the site template (after a deploy)';
+    reload.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>';
+    reload.addEventListener('click', () => this.reloadTemplate());
+    bar.appendChild(reload);
+    const pop = document.createElement('button');
+    pop.type = 'button';
+    pop.title = 'Open this preview in a new tab';
+    pop.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 3h7v7M21 3l-9 9"/><path d="M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg>';
+    pop.addEventListener('click', () => this.openInTab());
+    bar.appendChild(pop);
+    host.appendChild(bar);
+
+    const status = document.createElement('div');
+    status.className = 'rm-site-status';
+    host.appendChild(status);
+
+    this.host = host;
+    this.stage = stage;
+    this.bar = bar;
+    this.status = status;
+    this.updateBar();
+    new ResizeObserver(() => this.fit()).observe(host);
+  },
+
+  setStatus(text, kind = '') {
+    if (!this.status) return;
+    this.status.textContent = text || '';
+    this.status.className = 'rm-site-status' + (text ? ' show' : '') + (kind ? ' ' + kind : '');
+  },
+
+  updateBar() {
+    if (!this.bar) return;
+    $$('button[data-device]', this.bar).forEach(b => b.classList.toggle('active', b.dataset.device === this.device));
+  },
+
+  updateButton() {
+    const btn = $('site-preview-btn');
+    if (!btn) return;
+    btn.classList.toggle('active', this.enabled);
+    btn.title = this.enabled
+      ? 'Site preview on: rendered inside the real blog page. Click for the simple preview.'
+      : 'Simple preview. Click to render inside the real blog page.';
+  },
+
+  setDevice(id) {
+    this.device = id;
+    try { localStorage.setItem(STORAGE.SITE_DEVICE, id); } catch {}
+    this.updateBar();
+    this.fit();
+    this.syncFromEditor();
+  },
+
+  toggle() {
+    this.enabled = !this.enabled;
+    try { localStorage.setItem(STORAGE.SITE_PREVIEW, this.enabled ? '1' : '0'); } catch {}
+    this.updateButton();
+    if (!this.enabled) this.release();
+    /* re-run EasyMDE's preview so the active pane repaints in the new mode */
+    const mde = State.easyMDE;
+    const el = $$('.editor-preview-active-side, .editor-preview-active')[0];
+    if (mde && el) {
+      const html = mde.options.previewRender(mde.value(), el);
+      if (!this.enabled) el.innerHTML = html;
+    }
+  },
+
+  /* Scale the fixed-width viewport into the pane */
+  fit() {
+    if (!this.host || !this.host.isConnected) return;
+    const w = this.host.clientWidth, h = this.host.clientHeight;
+    if (!w || !h) return;
+    const vw = this.DEVICES[this.device] || w;
+    const s = Math.min(1, w / vw);
+    for (const f of this.frames) {
+      f.style.width = vw + 'px';
+      f.style.height = Math.ceil(h / s) + 'px';
+      f.style.transform = s < 1 ? `scale(${s})` : '';
+    }
+    this.stage.style.width = Math.round(vw * s) + 'px';
+  },
+
+  /* ── schedule / render ── */
+  schedule(delay = 300) {
+    if (!this.enabled) return;
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.render(), delay);
+  },
+
+  async reloadTemplate() {
+    this.templates.clear();
+    this.index = null;
+    this.setStatus('Reloading site template…');
+    await this.render(true);
+  },
+
+  currentUrl() {
+    const p = State.currentLoadedPath || (State.openedFileName ? '_posts/' + State.openedFileName : '');
+    const m = p.match(/^_posts\/\d{4}-\d{2}-\d{2}-(.+)\.(md|markdown)$/);
+    return m ? `/posts/${m[1]}/` : null;
+  },
+
+  fetchText(url, fresh) {
+    return fetch(url, { cache: fresh ? 'reload' : 'default', credentials: 'omit' }).then(r => {
+      if (!r.ok) throw new Error(`${r.status} ${url}`);
+      return r.text();
+    });
+  },
+
+  /* Own published page if it exists, otherwise the newest post as template */
+  async template(fresh) {
+    const own = this.currentUrl();
+    const tryUrl = async (path) => {
+      const url = this.SITE + path;
+      if (!this.templates.has(url)) {
+        const p = this.fetchText(url, fresh);
+        this.templates.set(url, p);
+        p.catch(() => this.templates.delete(url));
+      }
+      return { html: await this.templates.get(url), path };
+    };
+    if (own) { try { return { ...(await tryUrl(own)), own: true }; } catch {} }
+    const idx = await this.postIndex(fresh).catch(() => null);
+    const first = idx && idx.posts.find(p => p.url !== own);
+    if (first) return { ...(await tryUrl(first.url)), own: false };
+    const home = await this.fetchText(this.SITE + '/', fresh);
+    const m = home.match(/href="(\/posts\/[^"]+\/)"/);
+    if (!m) throw new Error('no post page found on ' + this.SITE);
+    return { ...(await tryUrl(m[1])), own: false };
+  },
+
+  /* search.json (taxonomy, dates) + home page cards (post-summary text) for related posts and post nav */
+  postIndex(fresh) {
+    if (!this.index || fresh) {
+      this.index = (async () => {
+        const list = JSON.parse(await this.fetchText(this.SITE + '/assets/js/data/search.json', fresh));
+        const summaries = {};
+        const pages = Math.max(1, Math.ceil(list.length / 10));
+        const htmls = await Promise.all(Array.from({ length: pages }, (_, i) =>
+          this.fetchText(this.SITE + (i ? `/page${i + 1}/` : '/'), fresh).catch(() => '')));
+        for (const h of htmls) {
+          if (!h) continue;
+          const d = new DOMParser().parseFromString(h, 'text/html');
+          d.querySelectorAll('#post-list a.post-preview').forEach(a => {
+            const p = a.querySelector('.card-text');
+            if (p) summaries[a.getAttribute('href')] = p.textContent.trim();
+          });
+        }
+        const split = (x) => (x || '').split(',').map(v => v.trim()).filter(Boolean);
+        const posts = list.map(p => ({
+          url: p.url, title: p.title, date: this.parseDate(p.date),
+          categories: split(p.categories), tags: split(p.tags),
+          summary: summaries[p.url] ?? Liquid.truncate(p.content || '', 200),
+        }));
+        return { posts };
+      })();
+      this.index.catch(() => { this.index = null; });
+    }
+    return this.index;
+  },
+
+  parseDate(s) {
+    if (!s) return new Date();
+    if (s instanceof Date) return s;
+    const m = String(s).match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})(?::(\d{2}))?(?:\.\d+)?\s*([+-]\d{2}):?(\d{2})?$/);
+    if (m) return new Date(`${m[1]}T${m[2]}:${m[3] || '00'}${m[4]}:${m[5] || '00'}`);
+    const d = new Date(String(s).replace(' ', 'T'));
+    return isNaN(d) ? new Date() : d;
+  },
+
+  /* Front matter as Jekyll would see it */
+  page() {
+    const dateInp = $('fm-date').value || today();
+    const timeInp = $('fm-time').value || DEFAULTS.TIME;
+    let dateStr = buildTimestamp(dateInp, timeInp);
+    if (State.loadedDateStr) {
+      const day = State.loadedDateStr.split(' ')[0];
+      const time = (State.loadedDateStr.match(/\s(\d{2}:\d{2})(?::\d{2})?/) || [, ''])[1];
+      if (day === dateInp && time === timeInp) dateStr = State.loadedDateStr;
+    }
+    const mod = $('fm-modified').value;
+    let modStr = null;
+    if (mod) modStr = (State.loadedModifiedStr && State.loadedModifiedStr.startsWith(mod)) ? State.loadedModifiedStr : `${mod} 00:00:00 ${tzOffset()}`;
+    return {
+      title: $('fm-title').value.trim() || 'Untitled',
+      description: $('fm-description').value.trim(),
+      date: this.parseDate(dateStr),
+      dateStr,
+      modified: modStr ? this.parseDate(modStr) : null,
+      modifiedStr: modStr,
+      categories: [...State.categories],
+      tags: [...State.tags],
+      toc: $('fm-toc').value !== 'false',
+      comments: $('fm-comments').value !== 'false',
+      math: $('fm-math').value === 'true',
+      mermaid: $('fm-mermaid').value === 'true',
+      image: $('fm-image').value.trim(),
+      imageAlt: $('fm-image-alt').value.trim(),
+      url: this.currentUrl() || `/posts/${UI.getFilename().replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/\.md$/, '')}/`,
+    };
+  },
+
+  async render(fresh) {
+    if (!this.enabled || !this.host || !this.host.isConnected) return;
+    const myToken = ++this.token;
+    let tpl, idx = null;
+    try {
+      tpl = await this.template(fresh);
+      idx = await this.postIndex(fresh).catch(() => null);
+    } catch (e) {
+      this.lastError = e;
+      this.setStatus(`Site template unavailable (${e.message}). Check the connection, or switch to the simple preview with the globe button.`, 'error');
+      return;
+    }
+    if (myToken !== this.token) return;
+    const page = this.page();
+    const body = State.easyMDE.value();
+    /* EasyMDE re-runs previewRender on every CodeMirror update, scrolling included: skip no-op renders */
+    const key = JSON.stringify([body, page, State.previewDark, tpl.path, !!idx, this.device]);
+    if (key === this.lastKey && !fresh) return;
+    this.lastKey = key;
+    let html;
+    try {
+      html = this.buildPage(tpl, page, body, idx);
+    } catch (e) {
+      errLog('site preview build failed:', e);
+      this.setStatus('Preview failed: ' + e.message, 'error');
+      return;
+    }
+    this.lastSrc = html;
+    this.pendingToken = myToken;
+    if (this.firstPaint === undefined) { this.firstPaint = true; this.setStatus('Loading the blog page…'); }
+    const back = this.frames[1 - this.front];
+    back.srcdoc = html.replace('__RM_TOKEN__', String(myToken));
+  },
+
+  onMessage(e) {
+    const d = e.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.rmSitePreview && Number(d.rmSitePreview) === this.pendingToken) {
+      const back = this.frames[1 - this.front];
+      if (e.source !== back.contentWindow) return;
+      const front = this.frames[this.front];
+      /* carry the reading position over: follow the editor, or keep where the reader scrolled to */
+      let y = 0;
+      try { y = front.contentWindow ? front.contentWindow.scrollY : 0; } catch {}
+      const restore = () => {
+        if (this.driver === 'preview') { try { back.contentWindow.scrollTo({ top: y, behavior: 'instant' }); } catch {} }
+        else this.syncFromEditor();
+      };
+      back.classList.add('front');
+      front.classList.remove('front');
+      this.front = 1 - this.front;
+      restore();
+      /* images arrive later and move the layout, settle once more */
+      try { back.contentWindow.addEventListener('load', restore, { once: true }); } catch {}
+      this.watchReader(back);
+      this.setStatus('');
+      this.firstPaint = false;
+    } else if (d.rmSitePreviewMode) {
+      const dark = d.rmSitePreviewMode === 'dark';
+      if (dark !== State.previewDark) Preview.toggleDark();
+    }
+  },
+
+  /* editor's light/dark preview switch: flip the visible page now, re-render behind it */
+  setMode(dark) {
+    const win = this.frontWin();
+    try {
+      if (win && win.document && win.document.documentElement) {
+        win.document.documentElement.setAttribute('data-mode', dark ? 'dark' : 'light');
+        win.sessionStorage.setItem('mode', dark ? 'dark' : 'light');
+      }
+    } catch {}
+    this.schedule(50);
+  },
+
+  /* who moved last: the editor (sync preview to it) or the reader inside the preview */
+  driver: 'editor',
+  watchReader(frame) {
+    try {
+      const w = frame.contentWindow;
+      const mark = () => { this.driver = 'preview'; };
+      w.addEventListener('wheel', mark, { passive: true });
+      w.addEventListener('touchmove', mark, { passive: true });
+      w.addEventListener('keydown', mark);
+      w.addEventListener('mousedown', mark);
+    } catch {}
+  },
+
+  frontWin() { try { return this.frames[this.front].contentWindow; } catch { return null; } },
+
+  openInTab() {
+    if (!this.lastSrc) return;
+    const blob = new Blob([this.lastSrc.replace('__RM_TOKEN__', '0')], { type: 'text/html' });
+    window.open(URL.createObjectURL(blob), '_blank', 'noopener');
+  },
+
+  /* ── editor → preview scroll sync, anchored on headings ── */
+  syncFromEditor(fromScroll) {
+    if (fromScroll) this.driver = 'editor';
+    if (!this.enabled || !this.host || !this.host.isConnected) return;
+    const win = this.frontWin();
+    const cm = State.easyMDE && State.easyMDE.codemirror;
+    if (!win || !cm || !win.document || !win.document.body) return;
+    const doc = win.document;
+    const info = cm.getScrollInfo();
+    const line = cm.lineAtHeight(info.top, 'local');
+    const total = cm.lineCount();
+    const maxY = Math.max(0, doc.documentElement.scrollHeight - win.innerHeight);
+    const go = (y) => win.scrollTo({ top: y, behavior: 'instant' });   /* Bootstrap sets scroll-behavior: smooth */
+    if (info.top <= 0) { go(0); return; }
+    if (info.top + info.clientHeight >= info.height - 2) { go(maxY); return; }
+
+    const heads = [...doc.querySelectorAll('article .content h1, article .content h2, article .content h3, article .content h4, article .content h5, article .content h6')];
+    const src = this.sourceAnchors;
+    const pts = [{ line: 0, y: 0 }];
+    if (heads.length === src.length) {
+      heads.forEach((h, i) => pts.push({ line: src[i], y: h.getBoundingClientRect().top + win.scrollY - 80 }));
+    }
+    pts.push({ line: total, y: maxY });
+    let a = pts[0], b = pts[pts.length - 1];
+    for (let i = 0; i < pts.length - 1; i++) {
+      if (line >= pts[i].line && line < pts[i + 1].line) { a = pts[i]; b = pts[i + 1]; break; }
+    }
+    const f = b.line > a.line ? (line - a.line) / (b.line - a.line) : 0;
+    go(Math.max(0, Math.min(maxY, a.y + f * (b.y - a.y))));
+  },
+
+  /* line numbers of headings in the markdown source, fence-aware */
+  computeAnchors(src) {
+    const out = [];
+    let fence = null;
+    src.split('\n').forEach((l, i) => {
+      if (fence) { if (fence.test(l)) fence = null; return; }
+      const fo = l.match(/^\s{0,3}(`{3,}|~{3,})/);
+      if (fo) { fence = new RegExp('^\\s{0,3}' + fo[1][0] + '{' + fo[1].length + ',}\\s*$'); return; }
+      if (/^\s{0,3}#{1,6}\s+\S/.test(l)) out.push(i);
+    });
+    this.sourceAnchors = out;
+  },
+
+  /* ── page assembly ── */
+  buildPage(tpl, page, body, idx) {
+    const SITE = this.SITE;
+    const doc = new DOMParser().parseFromString(tpl.html, 'text/html');
+    const q = (s, r = doc) => r.querySelector(s);
+    const qa = (s, r = doc) => [...r.querySelectorAll(s)];
+    const mk = (html) => { const t = doc.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+    const rawBase = `https://raw.githubusercontent.com/${GH.repo()}/${GH.branch()}`;
+    const media = (p) => (p && !p.includes('//') ? ('/' + p).replace(/\/+/g, '/') : p);
+
+    this.computeAnchors(body);
+    const rendered = Kramdown.render(body);
+    const hasHeads = /<h[23][\s>]/.test(rendered.raw);
+    const enableToc = page.toc && hasHeads;
+
+    /* <base> first, so every relative URL in the template resolves to the site */
+    const base = doc.createElement('base');
+    base.href = SITE + page.url;
+    doc.head.insertBefore(base, doc.head.firstChild);
+
+    /* theme: the editor's preview light/dark switch wins */
+    const mode = State.previewDark ? 'dark' : 'light';
+    doc.documentElement.setAttribute('data-mode', mode);
+    const modeScript = doc.createElement('script');
+    modeScript.textContent = `try{sessionStorage.setItem('mode','${mode}')}catch(e){}`;
+    doc.head.insertBefore(modeScript, base.nextSibling);
+
+    /* strip analytics, the PWA/service-worker loader and comment loader; we re-add giscus below */
+    qa('script').forEach(s => {
+      const src = s.getAttribute('src') || '';
+      const txt = s.textContent || '';
+      if (/goatcounter|gc\.zgo\.at|app\.min\.js|googletagmanager|umami|matomo|cloudflareinsights|plausible/.test(src) ||
+          /goatcounter|giscus\.app\/client\.js/.test(txt) || s.hasAttribute('data-goatcounter')) s.remove();
+    });
+
+    const title = page.title;
+    doc.title = `${title} | ${(doc.title.split(' | ').pop()) || 'Robert Magasi'}`;
+    qa('script').forEach(s => { if (/^\s*document\.title\s*=/.test(s.textContent)) s.textContent = `document.title=${JSON.stringify(doc.title)};`; });
+
+    const article = q('article[data-toc]') || q('main article');
+    if (!article) throw new Error('template has no <article>');
+    article.setAttribute('data-toc', String(enableToc));
+
+    /* header */
+    const h1 = q('header h1', article); if (h1) h1.textContent = title;
+    let desc = q('.post-desc', article);
+    if (page.description) {
+      if (!desc && h1) { desc = mk('<p class="post-desc fw-light mb-4"></p>'); h1.after(desc); }
+      if (desc) desc.textContent = page.description;
+    } else if (desc) desc.remove();
+
+    const meta = q('header .post-meta', article);
+    if (meta) {
+      const spans = qa(':scope > span', meta);
+      const posted = spans[0];
+      spans.slice(1).forEach(s => s.remove());
+      const setTime = (span, d) => {
+        const t = q('time', span);
+        if (!t) return;
+        t.setAttribute('data-ts', String(Math.floor(d.getTime() / 1000)));
+        t.textContent = ' ' + Liquid.strftimePost(d) + ' ';
+      };
+      if (posted) {
+        setTime(posted, page.date);
+        if (page.modified && page.modifiedStr !== page.dateStr) {
+          const upd = posted.cloneNode(true);
+          const tn = [...upd.childNodes].find(n => n.nodeType === 3 && n.nodeValue.trim());
+          if (tn) tn.nodeValue = ' Updated ';
+          setTime(upd, page.modified);
+          posted.after(upd);
+        }
+      }
+      qa(':scope > div.mt-3.mb-3', meta).forEach(d => d.remove());
+      if (page.image) {
+        const src = media(page.image);
+        const alt = page.imageAlt || 'Preview Image';
+        const box = mk(`<div class="mt-3 mb-3"><a class="popup img-link preview-img shimmer"><img width="1200" height="630" loading="lazy"></a></div>`);
+        q('a', box).setAttribute('href', src);
+        const img = q('img', box);
+        img.setAttribute('src', src);
+        img.setAttribute('alt', alt);
+        if (page.imageAlt) {
+          const cap = mk('<figcaption class="text-center pt-2 pb-2"></figcaption>');
+          cap.textContent = page.imageAlt;
+          box.appendChild(cap);
+        }
+        const row = q(':scope > div.d-flex', meta);
+        if (row) meta.insertBefore(box, row); else meta.appendChild(box);
+      }
+      const rt = q('.readtime', meta);
+      if (rt) {
+        rt.setAttribute('title', `${rendered.words} words`);
+        const em = q('em', rt);
+        if (em) em.textContent = `${Math.max(1, Math.floor(rendered.words / 180))} min`;
+      }
+    }
+
+    /* TOC chrome */
+    if (enableToc) {
+      qa('#toc-bar .label, #toc-popup .label').forEach(l => { l.textContent = title; });
+    } else {
+      qa('#toc-bar, #toc-solo-trigger, #toc-popup, #toc-wrapper, .toc-border-cover').forEach(e => e.remove());
+    }
+
+    /* the post itself */
+    const content = q('.content', article);
+    if (!content) throw new Error('template has no .content');
+    content.innerHTML = rendered.html;
+
+    /* tail: categories + tags */
+    const tail = q('.post-tail-wrapper', article);
+    if (tail) {
+      qa(':scope > .post-meta, :scope > .post-tags', tail).forEach(e => e.remove());
+      const first = tail.firstElementChild;
+      if (page.categories.length) {
+        const c = mk('<div class="post-meta mb-3"><i class="far fa-folder-open fa-fw me-1"></i></div>');
+        c.appendChild(doc.createTextNode(' '));
+        page.categories.forEach((cat, i) => {
+          const a = doc.createElement('a');
+          a.href = `/categories/${encodeURIComponent(Liquid.slugify(cat))}/`;
+          a.textContent = cat;
+          c.appendChild(a);
+          if (i < page.categories.length - 1) c.appendChild(doc.createTextNode(', '));
+        });
+        tail.insertBefore(c, first);
+      }
+      if (page.tags.length) {
+        const t = mk('<div class="post-tags"><i class="fa fa-tags fa-fw me-1"></i></div>');
+        page.tags.forEach(tag => {
+          const a = doc.createElement('a');
+          a.href = `/tags/${encodeURIComponent(Liquid.slugify(tag))}/`;
+          a.className = 'post-tag no-text-decoration';
+          a.textContent = tag;
+          t.appendChild(doc.createTextNode(' '));
+          t.appendChild(a);
+        });
+        tail.insertBefore(t, first);
+      }
+      /* share links point at the post */
+      const shareTitle = encodeURIComponent(`${title} - Robert Magasi`);
+      const shareUrl = encodeURIComponent(SITE.replace(/^http:\/\/localhost(:\d+)?/, 'https://robertmagasi.com') + page.url);
+      qa('.share-icons a[href]', tail).forEach(a => {
+        try {
+          const u = new URL(a.getAttribute('href'));
+          for (const k of ['url', 'u', 'shareUrl']) if (u.searchParams.has(k)) u.searchParams.set(k, decodeURIComponent(shareUrl));
+          for (const k of ['text', 'title']) if (u.searchParams.has(k)) u.searchParams.set(k, decodeURIComponent(shareTitle));
+          a.setAttribute('href', u.toString());
+        } catch {}
+      });
+    }
+
+    /* breadcrumb */
+    const crumbs = qa('#breadcrumb > span');
+    if (crumbs.length) crumbs[crumbs.length - 1].textContent = title;
+
+    /* related posts + older/newer navigation, computed like Chirpy does */
+    if (idx) {
+      this.relatedPosts(doc, page, idx.posts, mk);
+      this.postNav(doc, page, idx.posts, mk);
+    } else if (!tpl.own) {
+      qa('#related-posts, nav.post-navigation').forEach(e => e.remove());
+    }
+
+    /* comments: giscus keyed to the post's pathname, like the live page */
+    const gc = q('#giscus-container');
+    if (gc) {
+      while (gc.firstChild) gc.removeChild(gc.firstChild);
+      if (page.comments && location.origin === 'https://robertmagasi.com') {
+        const s = doc.createElement('script');
+        s.textContent = this.giscusScript(page.url.replace(/^\//, ''), 'https://robertmagasi.com' + page.url);
+        gc.after(s);
+      } else if (!page.comments) {
+        gc.remove();
+      }
+    }
+
+    /* scripts the template page may not carry */
+    const combine = qa('script[src*="cdn.jsdelivr.net/combine/"]')[0];
+    const addCombine = (pkg) => {
+      if (!combine) return false;
+      const src = combine.getAttribute('src');
+      if (!src.includes(pkg.split('@')[0] + '@')) combine.setAttribute('src', src + ',' + pkg);
+      return true;
+    };
+    if (enableToc) addCombine(this.TOCBOT);
+    if (page.mermaid) addCombine(this.MERMAID);
+    if (page.math && !q('#MathJax-script')) {
+      const cfg = doc.createElement('script'); cfg.src = '/assets/js/data/mathjax.js';
+      const mj = doc.createElement('script'); mj.id = 'MathJax-script'; mj.async = true; mj.src = this.MATHJAX;
+      const post = q('script[src*="/assets/js/dist/"]');
+      (post ? post.parentNode : doc.head).insertBefore(cfg, post ? post.nextSibling : null);
+      cfg.after(mj);
+    }
+
+    /* images not deployed yet: serve repo files straight from the branch */
+    qa('img[src^="/assets/"], a.popup[href^="/assets/"]', article).forEach(el => {
+      const attr = el.tagName === 'IMG' ? 'src' : 'href';
+      el.setAttribute(attr, rawBase + el.getAttribute(attr));
+      if (el.tagName === 'IMG') el.setAttribute('data-site-src', SITE + el.getAttribute(attr).slice(rawBase.length));
+    });
+
+    /* runtime glue: link handling, ready signal, theme sync */
+    const glue = doc.createElement('script');
+    glue.textContent = this.glueScript();
+    doc.body.appendChild(glue);
+
+    return '<!doctype html>\n' + doc.documentElement.outerHTML;
+  },
+
+  relatedPosts(doc, page, posts, mk) {
+    const old = doc.querySelector('#related-posts');
+    const others = posts.filter(p => p.url !== page.url);
+    /* site.categories[x] / site.tags[x] are newest first; Liquid push+uniq flattens */
+    let match = [];
+    for (const c of page.categories) match.push(...others.filter(p => p.categories.includes(c)));
+    for (const t of page.tags) match.push(...others.filter(p => p.tags.includes(t)));
+    match = match.filter((p, i) => match.indexOf(p) === i).reverse();
+    const scores = [];
+    match.forEach((p, i) => {
+      let score = 0, isFloat = false;
+      for (const t of p.tags) if (page.tags.includes(t)) score += 1;
+      for (const c of p.categories) if (page.categories.includes(c)) { score += 0.5; isFloat = true; }
+      if (score > 0) scores.push(`${isFloat && Number.isInteger(score) ? score.toFixed(1) : score}:${i}`);
+    });
+    scores.sort();
+    scores.reverse();
+    const picks = scores.slice(0, 3).map(s => match[+s.split(':').pop()]);
+    if (!picks.length) { if (old) old.remove(); return; }
+    const aside = mk('<aside id="related-posts" aria-labelledby="related-label"><h3 class="mb-4" id="related-label">Further Reading</h3><nav class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4"></nav></aside>');
+    if (old) { const h = old.querySelector('#related-label'); if (h) aside.querySelector('#related-label').textContent = h.textContent; }
+    const nav = aside.querySelector('nav');
+    for (const p of picks) {
+      const art = mk('<article class="col"><a class="post-preview card h-100"><div class="card-body"><time data-df="ll"></time><h4 class="pt-0 my-2"></h4><div class="text-muted"><p></p></div></div></a></article>');
+      art.querySelector('a').setAttribute('href', p.url);
+      const t = art.querySelector('time');
+      t.setAttribute('data-ts', String(Math.floor(p.date.getTime() / 1000)));
+      t.textContent = ' ' + Liquid.strftimePost(p.date) + ' ';
+      art.querySelector('h4').textContent = p.title;
+      art.querySelector('p').textContent = p.summary;
+      nav.appendChild(art);
+    }
+    if (old) old.replaceWith(aside);
+    else {
+      const tw = doc.querySelector('#tail-wrapper');
+      const ref = doc.querySelector('#tail-wrapper > nav.post-navigation') || doc.querySelector('#tail-wrapper > footer');
+      if (tw) tw.insertBefore(aside, ref);
+    }
+  },
+
+  postNav(doc, page, posts, mk) {
+    const nav = doc.querySelector('nav.post-navigation');
+    if (!nav) return;
+    const others = posts.filter(p => p.url !== page.url);
+    /* Jekyll orders posts by date, then by path (same-date posts sort by slug) */
+    const cmp = (a, b) => (a.date - b.date) || (a.url < b.url ? -1 : a.url > b.url ? 1 : 0);
+    const me = { date: page.date, url: page.url };
+    const older = others.filter(p => cmp(p, me) < 0).sort(cmp).pop();
+    const newer = others.filter(p => cmp(p, me) > 0).sort(cmp)[0];
+    const labels = [...nav.children].map(c => c.getAttribute('aria-label'));
+    const cell = (p, label) => {
+      const el = p
+        ? mk('<a class="btn btn-outline-primary"><p></p></a>')
+        : mk('<div class="btn btn-outline-primary disabled"><p>-</p></div>');
+      el.setAttribute('aria-label', label);
+      if (p) { el.setAttribute('href', p.url); el.querySelector('p').textContent = p.title; }
+      return el;
+    };
+    while (nav.firstChild) nav.removeChild(nav.firstChild);
+    nav.appendChild(cell(older, labels[0] || 'Older'));
+    nav.appendChild(cell(newer, labels[1] || 'Newer'));
+  },
+
+  /* giscus iframe built directly: client.js would report about:srcdoc as the page origin,
+     which giscus's frame-ancestors policy rejects. Only works where the editor is served
+     from the blog's own origin (giscus allows https://robertmagasi.com). */
+  giscusScript(term, pageUrl) {
+    const cfg = {
+      origin: pageUrl, session: '', reactionsEnabled: '1', emitMetadata: '0', inputPosition: 'top',
+      repo: 'rmagasi/rmagasi.github.io', repoId: 'R_kgDORnNHRw', category: 'Announcements',
+      categoryId: 'DIC_kwDORnNHR84C4Z0c', strict: '0', description: '', backLink: pageUrl, term,
+    };
+    return `(function(){var C=${JSON.stringify(cfg)};
+function th(){var m=document.documentElement.getAttribute('data-mode');var d=matchMedia('(prefers-color-scheme: dark)').matches;return(m==='dark'||(m!=='light'&&d))?'dark_dimmed':'light';}
+var c=document.getElementById('giscus-container');if(!c)return;C.theme=th();
+var w=document.createElement('div');w.className='giscus';w.style.width='100%';
+var f=document.createElement('iframe');f.className='giscus-frame';f.title='Comments';f.setAttribute('scrolling','no');f.setAttribute('allow','clipboard-write');f.setAttribute('loading','lazy');
+f.style.cssText='width:100%;min-height:150px;border:none;color-scheme:light dark;';
+f.src='https://giscus.app/en/widget?'+new URLSearchParams(C).toString();w.appendChild(f);c.appendChild(w);
+addEventListener('message',function(e){if(e.origin!=='https://giscus.app')return;var g=e.data&&e.data.giscus;if(g&&g.resizeHeight)f.style.height=g.resizeHeight+'px';});
+new MutationObserver(function(){if(f.contentWindow)f.contentWindow.postMessage({giscus:{setConfig:{theme:th()}}},'https://giscus.app');}).observe(document.documentElement,{attributes:true,attributeFilter:['data-mode']});
+})();`;
+  },
+
+  glueScript() {
+    return `(function(){
+  var TOKEN='__RM_TOKEN__';
+  window.addEventListener('click',function(e){
+    if(e.defaultPrevented||e.button!==0)return;
+    var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;
+    var raw=a.getAttribute('href')||'';
+    if(raw.charAt(0)==='#'){e.preventDefault();var el=document.getElementById(decodeURIComponent(raw.slice(1)));if(el)el.scrollIntoView();return;}
+    if(a.classList.contains('popup'))return;
+    e.preventDefault();window.open(a.href,'_blank','noopener');
+  });
+  document.addEventListener('submit',function(e){e.preventDefault();},true);
+  document.querySelectorAll('img[data-site-src]').forEach(function(img){
+    img.addEventListener('error',function(){var s=img.getAttribute('data-site-src');if(s&&img.src!==s){img.removeAttribute('data-site-src');img.src=s;}},{once:true});
+  });
+  var mt=document.getElementById('mode-toggle');
+  if(mt)mt.addEventListener('click',function(){setTimeout(function(){
+    var m=document.documentElement.getAttribute('data-mode')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    parent.postMessage({rmSitePreviewMode:m},'*');},0);});
+  function ready(){parent.postMessage({rmSitePreview:TOKEN},'*');}
+  function go(){var f=document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve();
+    f.then(function(){requestAnimationFrame(function(){requestAnimationFrame(ready);});});
+    setTimeout(ready,1500);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();
+})();`;
+  },
+};
+
+/* Small Liquid/Jekyll helpers the page assembly needs */
+const Liquid = {
+  /* Jekyll slugify, default mode */
+  slugify(s) {
+    return String(s).replace(/[^\p{M}\p{L}\p{Nd}]+/gu, '-').replace(/^-+|-+$/g, '').toLowerCase();
+  },
+  /* locale df.post.strftime "%b %e, %Y" (compress_html collapses the double space) */
+  strftimePost(d) {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  },
+  truncate(s, n) {
+    s = String(s);
+    return s.length > n ? s.slice(0, n - 3) + '...' : s;
+  },
+};
+
+/* ═════════════════════════════════════════════════════════════
    MODULE: preview — Chirpy post-processing + hljs/mermaid/mathjax
    ═════════════════════════════════════════════════════════════ */
 const Preview = {
@@ -1798,6 +3311,11 @@ const Preview = {
   },
 
   render(text, previewEl) {
+    if (SitePreview.enabled) {
+      SitePreview.claim(previewEl);
+      SitePreview.schedule();
+      return '';
+    }
     const repo    = GH.repo();
     const branch  = GH.branch();
     const rawBase = `https://raw.githubusercontent.com/${repo}/${branch}`;
@@ -1834,6 +3352,7 @@ const Preview = {
       Preview.runHljs(el);
     });
     try { localStorage.setItem(STORAGE.PREVIEW_DARK, State.previewDark ? '1' : '0'); } catch {}
+    SitePreview.setMode(State.previewDark);
   },
 };
 
@@ -1945,6 +3464,7 @@ const UI = {
   updateFmPreview() { $('fm-preview').textContent = YAML.build({ preserveDateIfUnchanged: true }); },
 
   onFmChange(opts = {}) {
+    SitePreview.schedule();
     UI.updateFmPreview();
     UI.updateFilename();
     if (!opts.fromLoad) setDirty(true);
@@ -2529,6 +4049,7 @@ const LocalFile = {
       YAML.parse(e.target.result);
       State.currentSha        = null;
       State.currentLoadedPath = null;
+      State.openedFileName    = file.name;   // site preview: own live page + URL
       setDirty(true);
       UI.toast('success', `✓ Opened ${file.name}`);
     };
@@ -2696,6 +4217,7 @@ const Drafts = {
 
     // Clear any GH-file state
     State.currentLoadedPath = null;
+    State.openedFileName    = null;
     State.currentSha        = null;
     State.loadedDateStr     = null;
     State.loadedModifiedStr = null;
@@ -2939,6 +4461,11 @@ function setupEasyMDE() {
 
   State.easyMDE = mde;
   mde.codemirror.on('change', UI.onEditorChange);
+  let scrollRaf = 0;
+  mde.codemirror.on('scroll', () => {
+    if (scrollRaf) return;
+    scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; SitePreview.syncFromEditor(true); });
+  });
 
   // Drag-and-drop + paste image handlers
   const cm = mde.codemirror.getWrapperElement();
@@ -2991,6 +4518,7 @@ function wireButtons() {
   // Top bar
   on($('theme-btn'),        'click', () => UI.toggleTheme());
   on($('preview-dark-btn'), 'click', () => Preview.toggleDark());
+  on($('site-preview-btn'), 'click', () => SitePreview.toggle());
   on($('btn-settings'),     'click', () => Modal.openSettings());
   on($('btn-save-local'),   'click', () => LocalFile.save());
   on($('btn-open-local'),   'click', () => $('md-file-input').click());
@@ -3230,6 +4758,7 @@ function wireBeforeUnload() {
 
 function newPost() {
   State.currentLoadedPath  = null;
+  State.openedFileName     = null;
   State.currentSha         = null;
   State.loadedDateStr      = null;
   State.loadedModifiedStr  = null;
@@ -3278,6 +4807,7 @@ function init() {
   $('fm-date').value = today();
   $('fm-time').value = DEFAULTS.TIME;
 
+  SitePreview.init();
   setupEasyMDE();
   wireSidebarResize();
   wireButtons();
