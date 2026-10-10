@@ -2,7 +2,7 @@
 title: "IGEL OS 12 and Citrix: Post-Session Logoff Was the Wrong Fix"
 date: 2026-10-09 09:00:00 +0200
 author: robert
-categories: ["IGEL", "Citrix"]
+categories: ["Citrix", "Troubleshooting"]
 tags: ["igel", "igel-os-12", "citrix-workspace-app", "post-session", "soft-logoff", "thin-client", "storefront"]
 description: "After an IGEL OS 12 migration, Citrix Workspace app stayed signed in after the session ended. Post-session Logoff closed the gap but froze the thin clients. The automatic soft-logoff timer is the cleaner fix."
 image:
