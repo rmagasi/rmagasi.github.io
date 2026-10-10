@@ -1,6 +1,7 @@
 ---
 title: "My Second Brain: Claude, Obsidian and Git"
-date: 2099-12-31 09:00:00 +0200  # on hold, set the real date when publishing
+date: 2026-09-21 09:00:00 +0200
+last_modified_at: 2026-10-10 00:00:00 +0200
 author: robert
 categories: ["Meta", "AI"]
 tags: ["obsidian", "claude", "ai", "knowledge-management", "git", "automation", "second-brain"]
@@ -10,14 +11,11 @@ image:
   alt: "Three layers of a second brain: structure, knowledge and procedure"
 ---
 
-<!-- TODO ROBERT - THIS OPENING IS INVENTED. Claude wrote a plausible anecdote
-     as a placeholder because the post needs a concrete reason to exist. Replace
-     it with something that actually happened to you before publishing. Do not
-     ship this paragraph as written. -->
+The oldest note in my vault is an FSLogix redirections.xml from October 2019. It spent six and a half years in OneNote, next to hundreds of other notes.
 
-A client asked me last year about an FSLogix behaviour I had solved for somebody else in 2022. I knew I had solved it. I could not find it, could not remember the registry value, and spent most of an afternoon rediscovering my own work.
+In April 2026 I moved all of it into plain markdown, for two reasons. I wanted it under git, and I wanted Claude to be able to read through it. That move was the start of what this post describes: a second brain.
 
-That is the problem this setup exists to fix. Not note-taking in general, and not productivity. One specific thing: turning work that already happened into the answer to the next question.
+The goal is not note-taking in general, and not productivity. One specific thing: turning work that already happened into the answer to the next question.
 
 ## Why EUC makes this harder than it sounds
 
@@ -37,9 +35,9 @@ The whole thing is three separate things that people usually mash into one.
 | **Knowledge** | What is true, and when it was true | On demand |
 | **Procedure** | How to read and write the other two | By trigger |
 
-**Structure** is a small index at the root of my projects folder. One file per project, current state only, target under 4 KB. It is deliberately thin because it loads into every conversation I have with Claude, and anything in it is paid for in every session.
+**Structure** is a thin index at the root of my projects folder, about 4 KB. It is deliberately small because it loads into every conversation I have with Claude, and anything in it is paid for in every session. Each project then has its own file with its current state, loaded only when that project is in play. Those have a 4 KB target too, and most of them are over it. The monthly maintenance task flags them, and trimming them is on me.
 
-**Knowledge** is the Obsidian vault. 379 notes across Citrix, Microsoft, IGEL, VMware, Entrust and my homelab. This is the large one, and it is pulled in only when the topic calls for it.
+**Knowledge** is the Obsidian vault, about 390 notes. Around 165 of them are KB notes across Citrix, Microsoft, IGEL, VMware, Entrust and my homelab, about 105 are exam-prep notes, and the rest are career material, blog ideas and the vault's own maintenance records. This is the large one, and it is pulled in only when the topic calls for it.
 
 **Procedure** is a private plugin marketplace. Skills that know how to write a note in my conventions, how to research a question against a tiered source list, and how to draft for this blog. Versioned separately, which means I can change the rules for writing a note without touching a single note.
 
@@ -64,19 +62,29 @@ This is the part I would keep if I threw away everything else.
 
 Every note written automatically lands at `maturity: seed`. Not `draft`, not `unreviewed`, a specific value with a specific meaning: *nothing has checked this except the thing that wrote it*.
 
+This note started there, and I have since promoted it:
+
 ```yaml
 ---
-title: "Slow HDX connection phase from failed Rendezvous"
+title: Slow HDX connection phase from failed Rendezvous and EDT fallback
 created: 2026-09-06 19:28:08
+updated: 2026-09-06 19:28:08
+source: cowork-session
 type: troubleshooting
-maturity: seed
-tags: [citrix, hdx, rendezvous, kb]
+maturity: mature
+product: citrix
+severity: high
+tags:
+  - citrix
+  - citrix-daas
+  - rendezvous
+  - hdx
 ---
 ```
 
 The ladder is `seed`, `developing`, `mature`, `evergreen`. **Only I move a note up it.** No automation promotes anything, and the weekly maintenance task is explicitly forbidden from touching the field.
 
-Without that rule, an AI-assisted knowledge base becomes a pile of plausible-looking text that you cannot distinguish from the parts you verified. With it, `seed` means "a lead worth following" and `mature` means "I have used this in production". Those are different claims and the vault keeps them apart.
+Without that rule, an AI-assisted knowledge base becomes a pile of plausible-looking text that you cannot distinguish from the parts you verified. With it, `seed` means "unverified, a lead worth following", `developing` means "reviewed, with gaps", and `mature` means "complete, for the version it names". Those are different claims and the vault keeps them apart.
 
 `evergreen` is the interesting one. It means conceptual content that does not rot. Very little EUC material qualifies, which is itself worth knowing.
 
@@ -108,7 +116,7 @@ Internal links are standard markdown with `%20` for spaces, never Obsidian wikil
 
 Wikilinks render as literal text on GitHub. Plain links mean I can read the whole vault from any machine with a browser, including a locked-down client laptop where I am never going to install Obsidian. That single constraint has paid for itself more than any plugin.
 
-Three repositories, not one, because they change at completely different rates:
+Three repositories for the system itself, not one, because they change at completely different rates. The blog has a fourth repo of its own, but that is output, not part of the brain.
 
 - The **vault** commits automatically every 30 minutes. I never think about it.
 - The **structure layer** is manual, and it is small.
@@ -126,22 +134,25 @@ Neither is allowed to make an irreversible change unattended, and neither can pr
 
 It is not free and it is not automated.
 
-The promotion queue is a standing debt. Right now four notes have been sitting at `seed` for over a month, and that list only shrinks when I sit down and read them. An assistant that wrote *and* approved its own notes would be less work and worth much less.
+The promotion queue is a standing debt. Right now 13 notes sit at `seed`. None of them is older than two weeks, but that list only shrinks when I sit down and read them. An assistant that wrote *and* approved its own notes would be less work and worth much less.
+
+The gate is also younger than the vault. Trust tracking only became mandatory in August 2026, and around 300 notes migrated from OneNote still carry no maturity at all. The weekly report counts them as an untyped backlog. They are not necessarily wrong, they are simply unrated.
 
 Setup was real effort, spread over months rather than a weekend. And it is shaped around a field where facts expire. If you work somewhere the answer stays true for a decade, most of the machinery here is overhead you do not need.
 
-What I get back is specific. When a client asks about something I solved three years ago, I find it, with the version it applied to and the date I last confirmed it. That afternoon I lost rediscovering my own FSLogix fix has not happened again.
+What I get back is specific. A fix I solved once is findable again, with the version it applied to and the date it was filed. And the loop is short. This week a note about an IGEL OS 12 fix went into the vault and was a published post on this blog the same day.
 
 ## Related
 
 - [Building This Blog With Claude AI](/posts/building-this-blog-with-claude-ai/) - the same working pattern applied to the site you are reading, including the custom post editor
-- [The FSLogix Copy=3 Fix](/posts/fslogix-copy-3-non-persistent-vdi/) - a post that came straight out of the vault, written from the troubleshooting note filed at the time
+- [IGEL OS 12 and Citrix: Post-Session Logoff Was the Wrong Fix](/posts/igel-os-12-citrix-soft-logoff/) - the vault note to published post loop described above, done in one day
+- [HDX Connection Time, the Logon Phase You Should Be Checking](/posts/citrix-hdx-connection-time-rendezvous/) - the troubleshooting session behind it was filed in the vault the same day, the note shown above
 
 ---
 
 <br>
 
-*Describes the setup as it stood in September 2026, 379 notes in.*
+*Describes the setup as it stood in October 2026, about 390 notes in.*
 
 <br>
 
