@@ -10,7 +10,11 @@ image:
   alt: "USB Devices from IGEL OS into Citrix: Optimized First, Generic Last"
 ---
 
-USB questions show up in every IGEL and Citrix project. A dictation microphone, a signature pad, a USB stick, a 3D mouse. The answer is almost never "enable USB redirection for everything". IGEL OS, Citrix Workspace app for Linux and the VDA each offer several ways to get a device into the session, and they use different names for the same thing. IGEL's **Native USB Redirection** is Citrix's **Generic USB redirection**. This post puts the pieces into one decision path.
+In my daily work I see a lot of different EUC environments, managed by customers, partners or service providers. I like that part of the job, because every environment solves the same problems in its own way. One scenario comes up again and again: USB redirection from a thin client into the Citrix session.
+
+When I first had to dig into it, the right configuration was anything but obvious. IGEL and Citrix use different names for the same thing, the settings live in several places, and every device type, from a USB stick to a dictation microphone, needs its own approach. IGEL's **Native USB Redirection** is Citrix's **Generic USB redirection**, to name just one example.
+
+For the last one or two years I did not work much with IGEL thin clients. Now I have IGEL customers again, and IGEL OS 12 is the new standard, so it was time for a refresh. Not much has changed in that sense. It is still not obvious how to configure it correctly. IGEL and Citrix both have plenty of material in their knowledge bases, but it is spread over many articles. Since I had to refresh my knowledge anyway, I tried to put the pieces together in one post. Maybe it saves someone else the same search.
 
 > **Quick answer**
 >
