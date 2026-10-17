@@ -34,7 +34,7 @@ The difference decides where the driver lives and who owns the device.
 
 With Generic, the VDA sees the raw USB device. If the Worker image has no driver for it, the device shows up as **unknown** in Device Manager inside the session. That is the first thing to check when a redirected device "does not work".
 
-> The Citrix policy **Client USB device optimization rules** has nothing to do with the optimized channels. It only tunes generically redirected input devices, for example `Mode=00000002` for 3D mice and `Mode=00000004` for signature pads.
+> The policy **Client USB device optimization rules** does not switch a device to an optimized channel. It only applies to devices that are already redirected over Generic USB and tells the VDA how to handle their data: `Mode=00000002` (interactive) keeps 3D mice and pen tablets responsive under latency, `Mode=00000004` (capture) records every pen point of a signature pad. Without a rule nothing is optimized.
 {: .prompt-warning }
 
 ## The Decision Path
@@ -74,20 +74,19 @@ Client drive mapping keeps the stick on the endpoint and shows it in the session
 3. Enable dynamic client drive mapping under `Devices > Storage Devices > Storage Hotplug`.
 4. Keep mass storage (class 08) out of your Native USB Redirection rules. A matching generic rule redirects the stick as a USB device instead of mapping it.
 
-For a fixed drive letter inside the session:
+## Generic Redirection per Device
 
-```cmd
-net use T: \\tsclient\t
-```
-
-## Generic Redirection for One Device
-
-1. Get the VID and PID on the IGEL endpoint. Unplug the device and run `lsusb` again if the name is not clear.
+1. Get the VID and PID on the IGEL endpoint. Open a shell on the IGEL over the **Secure Terminal**. Enable it on the device under `System > Remote Access > Secure Terminal` (off by default, or for all devices in the UMS under `UMS Administration > Global Configuration > Remote Access`). Then right-click the device in the UMS, choose **Secure Terminal** and accept the device certificate. Log in as `user`, switch to root with `su` and list the devices:
 
    ```bash
+   su
    lsusb
-   lsusb -d 0554:1001 -vv | grep -e bInterfaceNumber -e HID
    ```
+
+   Unplug the device and run `lsusb` again if the name is not clear.
+
+   > `lsusb` shows each device as `ID VID:PID`, for example `Bus 001 Device 005: ID 0554:1001 Nuance PowerMic`. The first number (`0554`) is the Vendor ID, the second (`1001`) the Product ID.
+   {: .prompt-tip }
 
 2. In IGEL OS 12, open `Apps > Citrix > Global Settings > Native USB Redirection`. Turn it on, keep the default rule on **Deny** and add a product rule with the VID and PID.
 3. Use **Connect**, not Allow. Connect also redirects a device that was plugged in before the session started. Allow only catches devices plugged in later, and Citrix Workspace app for Linux stopped auto-redirecting by default with 2207.
@@ -100,6 +99,14 @@ Both sides must allow the device. The IGEL rule decides what the endpoint offers
 ## Composite Devices: Split Them
 
 A dictation microphone is one cable but several USB interfaces: audio in and out, a mouse, and HID interfaces for the buttons. Redirecting the whole device takes the audio away from HDX and the mouse away from the endpoint. Splitting redirects only the interfaces the dictation software needs.
+
+To see the interfaces of a device, run `lsusb` in verbose mode for its VID:PID and keep only the interface numbers and the HID lines:
+
+```bash
+lsusb -d 0554:1001 -vv | grep -e bInterfaceNumber -e HID
+```
+
+Each `bInterfaceNumber` is one interface, the HID lines show which of them are buttons or controls. Those numbers go into `intf=`. The output does not always tell which HID interface carries the buttons, the device vendor does.
 
 Citrix now publishes official rules for this in the Nuance OEM guide of 2607 LTSR (CVAD and VDA 2402 or later, Workspace app for Linux 2601 or later):
 
