@@ -109,6 +109,11 @@ div[class^="language-"] .code-header > span::after { color: #333 !important; }
 .contact-form-status.error { display: block; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 [data-mode="dark"] .contact-form-status.success { background: #1f3a2a; color: #a3d9b1; border-color: #2d5a3d; }
 [data-mode="dark"] .contact-form-status.error { background: #3a1f25; color: #d9a3a9; border-color: #5a2d35; }
+/* Tables - let cells wrap instead of forcing a horizontal scrollbar (Chirpy sets white-space: nowrap) */
+.content .table-wrapper > table th,
+.content .table-wrapper > table td {
+  white-space: normal;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js" defer></script>
