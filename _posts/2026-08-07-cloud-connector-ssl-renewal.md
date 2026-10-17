@@ -1,6 +1,7 @@
 ---
 title: "Renewing your Citrix SSL certificate? Don't forget the Cloud Connectors"
 date: 2026-08-07 09:00:00 +0200
+last_modified_at: 2026-10-17 00:00:00 +0200
 author: robert
 categories: ["Citrix"]
 tags: ["citrix-cloud", "cloud-connector", "certificates", "ssl", "netsh", "storefront", "powershell"]
@@ -14,6 +15,11 @@ Familiar? Certificate renewal, and in most Citrix environments you think on Stor
 
 The Cloud Connectors hold a certificate too.
 
+> **Quick answer**
+>
+> Each Cloud Connector has its own certificate binding on port 443 in HTTP.sys. Read the Application ID with `netsh http show sslcert ipport=0.0.0.0:443`, then swap the thumbprint with `netsh http update sslcert` on every connector. `netsh http add sslcert` fails with Error 183 while a binding exists.
+{: .prompt-tip }
+
 ## Why the Cloud Connector has a certificate at all
 
 When you enable HTTPS on a Cloud Connector, you bind a certificate to port 443 so StoreFront and NetScaler Gateway can reach the XML service over TLS instead of plain HTTP. Citrix documents this as the recommended configuration, not an option ([Cloud Connector Installation, HTTPS Configuration](https://docs.citrix.com/en-us/citrix-cloud/citrix-cloud-resource-locations/citrix-cloud-connector/installation.html#https-configuration)).
@@ -22,6 +28,12 @@ The part people forget: in a Citrix Cloud deployment **the Cloud Connectors are 
 
 ![StoreFront Secure Ticket Authority URLs pointing at the Cloud Connectors over HTTPS](/assets/img/posts/cloud-connector-ssl-renewal-sta.png){: w="800" }
 _The STA URLs are Cloud Connector FQDNs, over HTTPS_
+
+**Environment**
+
+- Citrix Cloud resource location with Cloud Connectors on Windows Server
+- HTTPS enabled on the Cloud Connectors, certificate bound to port 443
+- StoreFront and NetScaler Gateway using the Cloud Connectors as STAs over HTTPS
 
 ## Find what is bound today
 
@@ -87,7 +99,15 @@ Three places, not two:
 | NetScaler Gateway | Certificate bound to the vServer |
 | **Cloud Connector** | **`netsh http` binding on port 443** |
 
+## Related
+
+- [HDX Connection Time, the Logon Phase You Should Be Checking](/posts/citrix-hdx-connection-time-rendezvous/) - the Cloud Connectors in their other role, the last fallback path for HDX traffic when Rendezvous fails
+
 ---
+
+<br>
+
+*Verified against the environment described above in August 2026.*
 
 <br>
 

@@ -1,7 +1,7 @@
 ---
 title: "StoreFront Keyword Trick for Session Affinity"
 date: 2026-03-14 09:00:00 +0100
-last_modified_at: 2026-05-09 09:00:00 +0200
+last_modified_at: 2026-10-17 00:00:00 +0200
 categories: ["Citrix", "Troubleshooting"]
 tags: ["citrix", "storefront", "fslogix", "gpo", "licensing", "session-affinity"]
 author: robert
@@ -13,11 +13,23 @@ image:
 
 I was already on the way home when my manager called. The customer was escalating - executive level, production disrupted, and the options on the table were custom development or a six-figure licensing spend. I put everything else aside the next day and started from scratch. What I found was a solution built entirely from native Citrix features that nobody had thought to combine.
 
+> **Quick answer**
+>
+> If shared accounts must never land on the same Citrix worker, combine four native features: a StoreFront store per endpoint group set through GPO, a keyword on the published resource that only its store shows, a matching tag on each VDA in a single Delivery Group, and per-worker FSLogix `VHDLocations`. No custom code, no extra licences.
+{: .prompt-tip }
+
 ## The Situation
 
 The customer ran an RDSH environment with FSLogix Profile Containers and a fleet of **non-personalised accounts** (Service-Account-A, Service-Account-B, Service-Account-C, and so on) that all needed access to a shared backend application. Whenever two of those accounts landed on the **same Citrix worker server simultaneously**, the backend produced errors or failed outright. It couldn't handle the collision.
 
 The obvious fix would have been converting the accounts to personalised users. That meant buying hundreds of additional backend application licences, a **six-figure spend** the customer wasn't going to approve. Several colleagues and vendors had already told them the only alternatives were expensive custom development or a major architectural change.
+
+**Environment**
+
+- Citrix Server OS (RDSH) VDAs in a single Delivery Group, tagged per worker
+- StoreFront with one store per endpoint group, filtered by keyword
+- Citrix Workspace app on the endpoints, store URL set through GPO
+- FSLogix Profile Containers, `VHDLocations` set per worker through GPO
 
 ## My Task
 
@@ -78,7 +90,15 @@ The solution went into production and the conflicts stopped. The non-personalise
 
 One operational detail worth keeping in mind: **enable the Tags column in Citrix Studio's Machine Catalogs view** before you hand the solution over. Without it, the routing logic is invisible to anyone maintaining the environment, and an ops engineer diagnosing a routing issue is looking for something they can't see. With it, the same diagnosis takes two minutes.
 
+## Related
+
+- [FSLogix Copy=3, the redirections.xml Trick for Non-Persistent VDI](/posts/fslogix-copy-3-non-persistent-vdi/) - FSLogix Profile Containers again, this time a performance problem solved in the profile configuration instead of the infrastructure
+
 ---
+
+<br>
+
+*Verified against the environment described above in March 2026.*
 
 <br>
 

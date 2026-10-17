@@ -1,6 +1,7 @@
 ---
 title: "IGEL OS 12 and Citrix: Post-Session Logoff Was the Wrong Fix"
 date: 2026-10-09 09:00:00 +0200
+last_modified_at: 2026-10-17 00:00:00 +0200
 author: robert
 categories: ["IGEL", "Troubleshooting"]
 tags: ["igel", "igel-os-12", "citrix-workspace-app", "post-session", "soft-logoff", "thin-client", "storefront"]
@@ -11,6 +12,17 @@ image:
 ---
 
 A high-priority ticket landed on my desk shortly after a customer moved its thin client fleet to IGEL OS 12. The report: a security issue on every IGEL OS 12 thin client. When a user logged off or disconnected from the Citrix desktop, Citrix Workspace app on the IGEL stayed signed in. Anyone walking up to the device could click the icon and land straight in the previous user's desktop.
+
+> **Quick answer**
+>
+> If Citrix Workspace app on IGEL OS 12 stays signed in after the session ends, do not use the post-session Logoff command. It logs off the whole IGEL OS session and can hang the device. Use the **Automatic soft-logoff timer** in the Citrix session's Authentication settings instead, set to 30 seconds (StoreFront sessions only).
+{: .prompt-tip }
+
+**Environment**
+
+- Thin clients recently migrated to IGEL OS 12, managed through the UMS
+- Citrix Workspace app for IGEL OS 12, Citrix login authentication
+- Shared devices, one published desktop per device
 
 ## The Obvious Fix
 
@@ -45,7 +57,15 @@ Error starting
 GDBus.Error:org.freedesktop.systemd1.ShuttingDown: Refusing activation, D-Bus is shutting down.
 ```
 
-The device UI was in German, so the text above is translated. That line explained everything. The device was still in the middle of shutting down the user session when the next user tried to start Workspace app.
+The device UI was in German, so the text above is translated. The original message:
+
+```plaintext
+Fehler beim Starten
+»cwa_000.desktop« konnte nicht gestartet werden
+GDBus.Error:org.freedesktop.systemd1.ShuttingDown: Refusing activation, D-Bus is shutting down.
+```
+
+The last line explained everything. The device was still in the middle of shutting down the user session when the next user tried to start Workspace app.
 
 The post-session **Logoff** action does not sign out of Workspace app. It logs the user off the IGEL OS session itself, even when you configure it inside the Citrix app. The same predefined Logoff action also exists system-wide under `System > System Customization > Custom Commands > Post Session`. I had never looked there, otherwise the scope would have been obvious much sooner. A logoff means the whole local session is torn down and rebuilt. That also explains the short network drop and the black screens. A click during that teardown hits a session that refuses to start anything new. When the teardown hung, a hard power-off was the only way out.
 
@@ -82,6 +102,10 @@ With this setting, Workspace app signs out 30 seconds after the user logs on. Th
 
 This closed the security gap and the hung devices disappeared. The lesson for me: pick the setting that matches the actual requirement, not the one that happens to fix the symptom.
 
+## Related
+
+- [My Second Brain: Claude, Obsidian and Git](/posts/second-brain-architecture/) - how this fix went from a field note in my vault to this post on the same day
+
 ## References
 
 - [IGEL KB - Post-session Custom Commands in IGEL OS 12](https://kb.igel.com/en/igel-os-base-system/12.7.4/post-session-custom-commands-in-igel-os-12)
@@ -89,6 +113,10 @@ This closed the security gap and the hung devices disappeared. The lesson for me
 - [IGEL KB - Getting Started with the Citrix Workspace App on IGEL OS](https://kb.igel.com/en/igel-apps/current/getting-started-with-the-citrix-workspace-app-on-i) (Authentication settings, automatic soft-logoff timer)
 
 ---
+
+<br>
+
+*Verified against the environment described above in October 2026.*
 
 <br>
 

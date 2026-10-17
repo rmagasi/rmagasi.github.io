@@ -1,6 +1,7 @@
 ---
 title: "HDX Connection Time, the Logon Phase You Should Be Checking"
 date: 2026-09-06 09:00:00 +0200
+last_modified_at: 2026-10-17 00:00:00 +0200
 author: robert
 categories: ["Citrix", "Troubleshooting"]
 tags: ["citrix-daas", "rendezvous", "adaptive-transport", "edt", "hdx", "gateway-service", "session-logon-duration", "director"]
@@ -14,6 +15,11 @@ Everyone reads the Session Logon Duration total. Almost nobody reads the phase b
 
 Sometimes that shows up as slow logons that people just live with. Sometimes it pushes the total past a launch timeout and you get failures that look random. Either way the number is telling you something specific, and it is worth learning to read.
 
+> **Quick answer**
+>
+> If Director shows a double-digit HDX connection phase in Citrix DaaS, check outbound TCP and UDP 443 from the VDAs to `*.*.nssvc.net`. If you cannot open it, set Rendezvous Protocol to Prohibited and HDX adaptive transport to Off, so sessions stop trying two failing paths before the Cloud Connector fallback.
+{: .prompt-tip }
+
 ## What the Phase Actually Measures
 
 HDX connection is the part of the launch where the client and the VDA agree on a transport and establish the ICA connection. It happens before authentication, before GPOs, before logon scripts, before anything you would normally tune. If it is slow, everything behind it starts late.
@@ -24,6 +30,12 @@ Here is what a bad one looks like.
 _18.36 seconds in HDX connection, on a session that took 1 minute 54 seconds in total. The rest of the breakdown is unremarkable. The whole chain just starts 18 seconds late._
 
 Nothing else in that breakdown is dramatic. That is the point. When one phase is an order of magnitude out and the others are ordinary, you have a specific fault, not a general performance problem.
+
+**Environment**
+
+- Citrix DaaS with the Gateway Service and Cloud Connectors
+- Multi-session VDAs on Windows Server 2022, VDA 2402 LTSR in production, 2507 in integration
+- Citrix Workspace app 2402 (24.2.3000.3016)
 
 ## Why It Gets Long
 
@@ -92,6 +104,11 @@ Do not raise the launch timeout. It is the obvious lever when launches die at a 
 
 Both are worth knowing about, and neither is worth increasing. A launch that needs 110 seconds still needs 110 seconds after you give it 300, and the user still waits. Raising it buys silence, not speed, and it removes the one signal that was telling you something is wrong.
 
+## Related
+
+- [Renewing your Citrix SSL certificate? Don't forget the Cloud Connectors](/posts/cloud-connector-ssl-renewal/) - the Cloud Connectors that carry the last fallback path also hold a certificate of their own, and it expires
+- [FSLogix Copy=3, the redirections.xml Trick for Non-Persistent VDI](/posts/fslogix-copy-3-non-persistent-vdi/) - another launch-time problem, this one inside the session, traced with WPA down to the minifilter stack
+
 ## Sources
 
 - Citrix, [Rendezvous V2](https://docs.citrix.com/en-us/citrix-daas/hdx-transport/rendezvous-protocol/rendezvous-v2.html)
@@ -102,6 +119,10 @@ Both are worth knowing about, and neither is worth increasing. A launch that nee
 - Citrix, [Published applications or desktops do not launch or disappear during launch (CTX200393)](https://support.citrix.com/external/article/CTX200393/published-applications-or-desktops-do-no.html)
 
 ---
+
+<br>
+
+*Verified in the integration environment described above (VDA 2507) in September 2026, since rolled out to production.*
 
 <br>
 

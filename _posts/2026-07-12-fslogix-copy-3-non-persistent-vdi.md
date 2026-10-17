@@ -1,6 +1,7 @@
 ---
 title: "FSLogix Copy=3, the redirections.xml Trick for Non-Persistent VDI"
 date: 2026-07-12 09:00:00 +0200
+last_modified_at: 2026-10-17 00:00:00 +0200
 author: robert
 categories: ["Citrix", "Troubleshooting"]
 tags: ["fslogix", "citrix", "redirections", "sap-b1", "coresuite", "profile-container", "smb", "non-persistent", "vdi-performance", "windows-performance-analyzer"]
@@ -12,11 +13,23 @@ image:
 
 By the time this chapter of the escalation started, I had already fixed the worst of it. SAP Business One launches had come down from a catastrophic 10-30 minutes (a story for another post) to a steady 2 minutes on every login. Users were productive again. The taskforce still wasn't closed. The Windows System process (PID 4) sat at 37% CPU across all 8 cores while coresuite was doing its start-up work, and the session felt sluggish behind it while it "installed and customised" itself into a fresh profile. Two minutes was survivable. It was also wrong. This post is about the three lines of XML that took it to one minute and gave the System process back to the kernel.
 
+> **Quick answer**
+>
+> If an application floods `%LOCALAPPDATA%` with small files on non-persistent VDAs with FSLogix on SMB, exclude those folders in `redirections.xml` with `Copy="3"`. They still roam with the profile, but during the session every read hits the local disk.
+{: .prompt-tip }
+
 ## The Situation
 
 Non-persistent Citrix DaaS VDAs on Windows Server, MCS-based clones, FSLogix Profile Container hosted on an SMB share. SAP Business One with the coresuite add-on installed. Coresuite has a habit users don't see, on first launch per session it drops per-database compiled .NET assemblies into `%LOCALAPPDATA%\Coresystems` and `%LOCALAPPDATA%\assembly\dl3`. On a non-persistent VDA those paths live inside the FSLogix profile container, which means every DLL read is an SMB round-trip. Multiply that by the roughly 13,000 file opens per second the application was generating at launch and the pattern is obvious once you look at the trace.
 
 Every login. Every user. Even when the compiled assemblies were already present in the container from a previous session.
+
+**Environment**
+
+- Citrix DaaS, non-persistent MCS clones on Windows Server, MCSIO write cache on D:
+- FSLogix Profile Container on an SMB share
+- SAP Business One with the newer coresuite add-on release
+- Microsoft Defender for Endpoint and Defender Antivirus, Citrix WEM, Citrix UPM minifilter loaded
 
 ## What I Chased First
 
@@ -81,6 +94,11 @@ The other trap, **the master image must never be onboarded to Defender for Endpo
 
 FSLogix on SMB is well-behaved for well-behaved workloads. It's brutal for applications that memory-map hundreds of small DLLs per launch. `redirections.xml` with `Copy="3"` is the underused tool for exactly those cases, and non-persistent VDI is exactly the environment where it earns its keep.
 
+## Related
+
+- [HDX Connection Time, the Logon Phase You Should Be Checking](/posts/citrix-hdx-connection-time-rendezvous/) - another slow launch that looked like general performance and came down to one specific cause, found by reading the right breakdown
+- [StoreFront Keyword Trick for Session Affinity](/posts/storefront-session-affinity-licensing/) - FSLogix Profile Containers in a different role, isolated per worker through GPO
+
 ## Sources
 
 - Microsoft, [FSLogix redirections.xml concepts and the Copy attribute](https://learn.microsoft.com/en-us/fslogix/concepts-redirections-xml)
@@ -92,6 +110,10 @@ FSLogix on SMB is well-behaved for well-behaved workloads. It's brutal for appli
 - Coresystems / SAP, [coresuite for SAP Business One](https://help.sap.com/docs/SAP_BUSINESS_ONE/68a2e87fb29941b5bf959a184d9c6727/coresuite.html)
 
 ---
+
+<br>
+
+*Verified against the environment described above in July 2026.*
 
 <br>
 

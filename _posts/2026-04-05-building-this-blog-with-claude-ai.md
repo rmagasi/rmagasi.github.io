@@ -1,7 +1,7 @@
 ---
 title: "Building This Blog With Claude AI"
 date: 2026-04-05 09:00:00 +0200
-last_modified_at: 2026-05-09 09:00:00 +0200
+last_modified_at: 2026-10-17 00:00:00 +0200
 author: robert
 categories: ["Meta", "AI"]
 tags: ["claude", "ai", "jekyll", "chirpy", "github-pages", "blog", "automation"]
@@ -181,6 +181,10 @@ The only step that still happens outside the editor is committing assets that we
 The blog took about two weeks of evening sessions to build and refine. There were points where this was genuinely frustrating - Claude would get stuck on something that looked simple, I'd hit the session limit, wait for the reset, try again with a different angle, and sometimes it still didn't work on the second attempt. What got it unstuck was usually me pointing it in a more specific direction, not Claude figuring it out independently.
 
 But here's what I didn't have to do: learn every corner of Jekyll, Chirpy, and CSS from scratch. With some manual steering, the hard parts got solved. Without it, I'd have spent much more time and probably stopped earlier. That's the honest version of what "AI pair programming" looked like on this project.
+
+## Related
+
+- [My Second Brain: Claude, Obsidian and Git](/posts/second-brain-architecture/) - where the Claude workflow from this post went next, a knowledge base in Obsidian and git that now feeds this blog
 
 ---
 

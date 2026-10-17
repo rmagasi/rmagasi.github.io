@@ -1,7 +1,7 @@
 ---
 title: "Citrix Session Shadowing - Post-Jan 2026 Fix"
 date: 2026-03-15 09:00:00 +0100
-last_modified_at: 2026-05-09 09:00:00 +0200
+last_modified_at: 2026-10-17 00:00:00 +0200
 author: robert
 categories: ["Citrix", "Troubleshooting"]
 tags: ["citrix", "director", "shadowing", "msra", "gpo", "firewall", "remote-assistance", "windows-update"]
@@ -13,6 +13,11 @@ image:
 
 Citrix Director's built-in shadowing stopped working for many environments after the January 2026 Microsoft patches. I picked this up from the community before our ops team confirmed it internally, and once it hits production, support engineers lose their primary tool for helping users mid-session. That's an immediate escalation.
 
+> **Quick answer**
+>
+> If Director shadowing stopped working after the January 2026 Microsoft updates, skip Director and run `msra.exe /offerra` from the Director server against the worker hostname. The workers need the Offer Remote Assistance GPO and inbound TCP 135 plus 49152-65535 from the Director servers.
+{: .prompt-tip }
+
 ## What Broke and What I Tried First
 
 The January 2026 Microsoft cumulative updates broke native Citrix Director shadowing on Windows Server-based VDAs. Sessions can no longer be shadowed directly from the Director console.
@@ -20,6 +25,12 @@ The January 2026 Microsoft cumulative updates broke native Citrix Director shado
 The obvious fix would have been an upgrade to CVAD 2507 LTSR, which ships HDX shadowing as a replacement for the broken mechanism. With several projects already running in parallel, an upgrade wasn't an option, not on this timeline.
 
 The patch blocks Director from modifying a file that msra processes. The Director injection is what's prohibited, not msra itself, and the standard `msra.exe /offerra` flow was never touched. So we bypassed Director entirely and called msra directly.
+
+**Environment**
+
+- Windows Server VDAs with the January 2026 Microsoft cumulative updates
+- Citrix Director on a dedicated server, CVAD below 2507 LTSR, so no HDX shadowing
+- Windows Remote Assistance (`msra.exe`) on the Director servers and the workers, settings through GPO
 
 ## The Workaround: MSRA-Based Shadowing via Director Server
 
@@ -97,6 +108,10 @@ The jump via the Director server matters. The connection originates from a trust
 This workaround is fully supportable, requires no third-party tools, and deploys entirely via GPO. Until Microsoft or Citrix patches the January 2026 regression, it's a reliable alternative for session shadowing.
 
 ---
+
+<br>
+
+*Verified against the environment described above in March 2026.*
 
 <br>
 

@@ -21,6 +21,12 @@ For the last one or two years I did not work much with IGEL thin clients. Now I 
 > Use the optimized HDX path for every device that has one: client drive mapping for storage, HDX audio, webcam, smart card, printing, SANE scanning, COM port mapping and vendor virtual channels. Use Native (Generic) USB redirection only for devices without a channel, allow them one by one by VID/PID, and install the driver in the VDA image.
 {: .prompt-tip }
 
+**Applies to**
+
+- IGEL OS 12 with the Citrix Workspace app, configured through the UMS
+- Citrix DaaS or CVAD VDAs, Generic USB controlled through Citrix policies
+- Citrix Workspace app for Linux 2405 or later for VDA rule precedence and the DDC USB policies
+
 ## Optimized vs Generic
 
 The difference decides where the driver lives and who owns the device.
@@ -139,6 +145,10 @@ On IGEL the same rule goes into the product rule of Native USB Redirection: VID,
 - **USB stick visible on the IGEL but not in the session:** a generic rule grabbed it, or Client Drive Mapping is still off in the IGEL OS 12 Citrix app.
 - **Need the endpoint side of the story:** in the UMS Console, `Help > Save device files for support` collects the device logs into a `tc_files_for_support_...` ZIP. Without the UMS, run `/config/bin/create_support_information` as root on the IGEL. It writes `/tmp/tclogs.zip`.
 
+## Related
+
+- [IGEL OS 12 and Citrix: Post-Session Logoff Was the Wrong Fix](/posts/igel-os-12-citrix-soft-logoff/) - another IGEL OS 12 Citrix setting that does more than its name suggests, post-session Logoff logs off the whole device session
+
 ## References
 
 - [Citrix - USB devices policy settings](https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/policies/reference/ica-policy-settings/usb-devices-policy-settings)
@@ -162,6 +172,10 @@ On IGEL the same rule goes into the product rule of Native USB Redirection: VID,
 - [VirtualBrat - Citrix USB composite device splitting with IGEL OS](https://virtualbrat.com/2023/09/29/citrix-usb-composite-device-splitting-with-igel-os-the-why-and-how-digital-dictation-and-more/)
 
 ---
+
+<br>
+
+*Checked against the IGEL and Citrix documentation in October 2026.*
 
 <br>
 
