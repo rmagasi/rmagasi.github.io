@@ -137,7 +137,7 @@ On IGEL the same rule goes into the product rule of Native USB Redirection: VID,
 - **Device not redirected although the IGEL rule allows it:** the VDA policy or its default rules deny it. `CtxUsbDiagnostics.exe` on the VDA shows which rule blocked it, and the VDA event log records allowed and denied redirections.
 - **Redirection stopped after a Workspace app update:** switch the IGEL rule from Allow to Connect.
 - **USB stick visible on the IGEL but not in the session:** a generic rule grabbed it, or Client Drive Mapping is still off in the IGEL OS 12 Citrix app.
-- **Need the endpoint side of the story:** run `/config/bin/create_support_information` as root on the IGEL. It collects the logs into `/tmp/tclogs.zip` for the IGEL support case.
+- **Need the endpoint side of the story:** in the UMS Console, `Help > Save device files for support` collects the device logs into a `tc_files_for_support_...` ZIP. Without the UMS, run `/config/bin/create_support_information` as root on the IGEL. It writes `/tmp/tclogs.zip`.
 
 ## References
 
@@ -157,6 +157,7 @@ On IGEL the same rule goes into the product rule of Native USB Redirection: VID,
 - [IGEL KB - Configuration of the Citrix Workspace App on IGEL OS](https://kb.igel.com/en/igel-apps/current/configuration-of-the-citrix-workspace-app-on-igel-)
 - [IGEL KB - Storage Hotplug in IGEL OS 12](https://kb.igel.com/en/igel-os-base-system/12.9.0/storage-hotplug-in-igel-os-12)
 - [IGEL KB - How to Configure Citrix Native USB Redirection](https://kb.igel.com/en/igel-os/current/how-to-configure-citrix-native-usb-redirection)
+- [IGEL KB - Debugging: How to Collect and Send Device Log Files](https://kb.igel.com/en/how-to-start-with-igel/current/debugging-how-to-collect-and-send-device-log-files)
 - [IGEL Community Docs - HOWTO Nuance Dictation](https://igel-community.github.io/IGEL-Docs-v02/Docs/HOWTO-Nuance-Dictation/) (community, its split rules use the Horizon exclude-list format, not Citrix `intf=`)
 - [VirtualBrat - Citrix USB composite device splitting with IGEL OS](https://virtualbrat.com/2023/09/29/citrix-usb-composite-device-splitting-with-igel-os-the-why-and-how-digital-dictation-and-more/)
 
