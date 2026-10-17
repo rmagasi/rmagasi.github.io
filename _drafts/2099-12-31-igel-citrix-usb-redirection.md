@@ -103,6 +103,8 @@ Both sides must allow the device. The IGEL rule decides what the endpoint offers
 
 A dictation microphone is one cable but several USB interfaces: audio in and out, a mouse, and HID interfaces for the buttons. Redirecting the whole device takes the audio away from HDX and the mouse away from the endpoint. Splitting redirects only the interfaces the dictation software needs.
 
+When I had to get a Philips SpeechMike working in a Citrix session, buttons included, the post [Citrix USB composite device splitting with IGEL OS](https://virtualbrat.com/2023/09/29/citrix-usb-composite-device-splitting-with-igel-os-the-why-and-how-digital-dictation-and-more/) by Fredrik Brattstig on VirtualBrat was a huge help. It walks through finding the right interfaces and building the split rule on IGEL OS step by step.
+
 To see the interfaces of a device, run `lsusb` in verbose mode for its VID:PID and keep only the interface numbers and the HID lines:
 
 ```bash
@@ -134,18 +136,6 @@ On IGEL the same rule goes into the product rule of Native USB Redirection: VID,
 - **Redirection stopped after a Workspace app update:** switch the IGEL rule from Allow to Connect.
 - **Mixed Allow and Deny rules ignored:** Workspace app for Linux 2508.0 had this bug, 2508.10 fixed it (HDX-95546).
 - **USB stick visible on the IGEL but not in the session:** a generic rule grabbed it, or Client Drive Mapping is still off in the IGEL OS 12 Citrix app.
-
-## Summary
-
-| Question | Answer |
-|---|---|
-| Native vs Generic | Same thing, IGEL name vs Citrix name |
-| Default | Optimized channel, Generic only without one |
-| Where is the driver for Generic | In the VDA image |
-| USB sticks | Client drive mapping, not USB redirection |
-| Dictation and headsets with buttons | Vendor channel or composite split |
-| Rule type on IGEL | Connect |
-| Who must allow | Both the IGEL endpoint and the VDA |
 
 ## References
 
