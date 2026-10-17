@@ -76,6 +76,9 @@ Client drive mapping keeps the stick on the endpoint and shows it in the session
 
 ## Generic Redirection per Device
 
+> Keep the default rule of Native USB Redirection on **Deny**, always. Allow devices only one by one, with explicit product rules by VID and PID. A default rule on Allow, or a whole class rule, redirects every USB device that no other rule denies away from the endpoint, headsets and USB sticks included.
+{: .prompt-warning }
+
 1. Get the VID and PID on the IGEL endpoint. Open a shell on the IGEL over the **Secure Terminal**. Enable it on the device under `System > Remote Access > Secure Terminal` (off by default, or for all devices in the UMS under `UMS Administration > Global Configuration > Remote Access`). Then right-click the device in the UMS, choose **Secure Terminal** and accept the device certificate. Log in as `user`, switch to root with `su` and list the devices:
 
    ```bash
