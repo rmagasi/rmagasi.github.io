@@ -94,6 +94,7 @@ Every action is logged to both a timestamped transcript file and the Windows Eve
 [2026-03-15 02:00:05 (UTC)] [Information] [CTX-WORKER-01] Forcing logoff of 2 remaining session(s)
 [2026-03-15 02:00:37 (UTC)] [Information] [CTX-WORKER-01] Initiated reboot
 ```
+{: file="Citrix-Reboot_Sunday_2026-03-15_23-00-00.log" }
 
 ## Testing
 
