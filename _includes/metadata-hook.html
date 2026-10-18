@@ -5,6 +5,39 @@
 <style>
 .language-powershell .rouge-code pre.hljs { background: transparent; }
 
+/* Light mode code colours in VS Code Light+ style (Oct 2026). PowerShell via highlight.js,
+   YAML, XML and HTML via Rouge. All pass 4.5:1 on #f6f8fa. Dark mode is not touched */
+html[data-mode="light"] pre.hljs { color: #24292f; }
+html[data-mode="light"] .hljs-comment { color: #008000; font-style: normal; }
+html[data-mode="light"] .hljs-doctag { color: #008000; font-weight: 700; }
+html[data-mode="light"] .hljs-keyword { color: #af00db; }
+html[data-mode="light"] .hljs-built_in, html[data-mode="light"] .hljs-title { color: #795e26; }
+html[data-mode="light"] .hljs-literal, html[data-mode="light"] .hljs-type { color: #1a6e86; }
+html[data-mode="light"] .hljs-variable { color: #001080; }
+html[data-mode="light"] .hljs-string { color: #a31515; }
+html[data-mode="light"] .hljs-number { color: #0b6e4f; }
+html[data-mode="light"] .language-yaml .highlight .na, html[data-mode="light"] .language-yaml .highlight .nn { color: #800000; }
+html[data-mode="light"] .language-yaml .highlight .s, html[data-mode="light"] .language-yaml .highlight .s1, html[data-mode="light"] .language-yaml .highlight .s2 { color: #0451a5; }
+html[data-mode="light"] .language-xml .highlight .nt, html[data-mode="light"] .language-html .highlight .nt { color: #800000; }
+html[data-mode="light"] .language-xml .highlight .na, html[data-mode="light"] .language-html .highlight .na { color: #e50000; }
+html[data-mode="light"] .language-xml .highlight .s, html[data-mode="light"] .language-xml .highlight .s1, html[data-mode="light"] .language-xml .highlight .s2, html[data-mode="light"] .language-html .highlight .s, html[data-mode="light"] .language-html .highlight .s1, html[data-mode="light"] .language-html .highlight .s2 { color: #0000ff; }
+@media (prefers-color-scheme: light) {
+  html:not([data-mode]) pre.hljs { color: #24292f; }
+  html:not([data-mode]) .hljs-comment { color: #008000; font-style: normal; }
+  html:not([data-mode]) .hljs-doctag { color: #008000; font-weight: 700; }
+  html:not([data-mode]) .hljs-keyword { color: #af00db; }
+  html:not([data-mode]) .hljs-built_in, html:not([data-mode]) .hljs-title { color: #795e26; }
+  html:not([data-mode]) .hljs-literal, html:not([data-mode]) .hljs-type { color: #1a6e86; }
+  html:not([data-mode]) .hljs-variable { color: #001080; }
+  html:not([data-mode]) .hljs-string { color: #a31515; }
+  html:not([data-mode]) .hljs-number { color: #0b6e4f; }
+  html:not([data-mode]) .language-yaml .highlight .na, html:not([data-mode]) .language-yaml .highlight .nn { color: #800000; }
+  html:not([data-mode]) .language-yaml .highlight .s, html:not([data-mode]) .language-yaml .highlight .s1, html:not([data-mode]) .language-yaml .highlight .s2 { color: #0451a5; }
+  html:not([data-mode]) .language-xml .highlight .nt, html:not([data-mode]) .language-html .highlight .nt { color: #800000; }
+  html:not([data-mode]) .language-xml .highlight .na, html:not([data-mode]) .language-html .highlight .na { color: #e50000; }
+  html:not([data-mode]) .language-xml .highlight .s, html:not([data-mode]) .language-xml .highlight .s1, html:not([data-mode]) .language-xml .highlight .s2, html:not([data-mode]) .language-html .highlight .s, html:not([data-mode]) .language-html .highlight .s1, html:not([data-mode]) .language-html .highlight .s2 { color: #0000ff; }
+}
+
 .csv-header { color: #0078d4; font-weight: 700; }
 .csv-comma  { color: #999; }
 .csv-val    { color: #333; }
