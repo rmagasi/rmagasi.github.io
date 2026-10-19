@@ -60,6 +60,60 @@ html[data-mode="light"] .language-markdown div.highlight .sx { color: #00789e; }
   html:not([data-mode]) .language-markdown div.highlight .sx { color: #00789e; }
 }
 
+/* Dark mode code colours matched to the light block above (Oct 2026): same colour family
+   per token, brightened for the dark code background #151515, all pass 4.5:1. Replaces
+   Atom One Dark and Chirpy's dark Rouge colours for code, log and CSV keep their own */
+html[data-mode="dark"] pre.hljs { color: #d0d0d0; }
+html[data-mode="dark"] .hljs-comment, html[data-mode="dark"] .hljs-number, html[data-mode="dark"] .hljs-variable, html[data-mode="dark"] .hljs-class { color: #5fb35f; font-style: normal; }
+html[data-mode="dark"] .hljs-keyword, html[data-mode="dark"] .hljs-name, html[data-mode="dark"] .hljs-tag, html[data-mode="dark"] .hljs-selector-tag { color: #569cd6; }
+html[data-mode="dark"] .hljs-built_in { color: #4fc1ff; }
+html[data-mode="dark"] .hljs-string, html[data-mode="dark"] .hljs-literal, html[data-mode="dark"] .hljs-type, html[data-mode="dark"] .hljs-section, html[data-mode="dark"] .hljs-attribute { color: #ce9178; }
+html[data-mode="dark"] .hljs-meta, html[data-mode="dark"] .hljs-subst { color: #4ec9b0; }
+html[data-mode="dark"] .hljs-title, html[data-mode="dark"] .hljs-doctag { color: #9b9b9b; font-weight: 400; }
+html[data-mode="dark"] .hljs-attr { color: #f47067; }
+html[data-mode="dark"] .hljs-function, html[data-mode="dark"] .hljs-params, html[data-mode="dark"] .hljs-operator { color: inherit; }
+html[data-mode="dark"] div.highlight .c, html[data-mode="dark"] div.highlight .ch, html[data-mode="dark"] div.highlight .cd, html[data-mode="dark"] div.highlight .cm, html[data-mode="dark"] div.highlight .cp, html[data-mode="dark"] div.highlight .cpf, html[data-mode="dark"] div.highlight .c1, html[data-mode="dark"] div.highlight .cs { color: #5fb35f; font-style: normal; }
+html[data-mode="dark"] div.highlight .k, html[data-mode="dark"] div.highlight .kd, html[data-mode="dark"] div.highlight .kn, html[data-mode="dark"] div.highlight .kp, html[data-mode="dark"] div.highlight .kr, html[data-mode="dark"] div.highlight .kv { color: #569cd6; }
+html[data-mode="dark"] div.highlight .kc, html[data-mode="dark"] div.highlight .kt { color: #ce9178; }
+html[data-mode="dark"] div.highlight .s, html[data-mode="dark"] div.highlight .sa, html[data-mode="dark"] div.highlight .sb, html[data-mode="dark"] div.highlight .sc, html[data-mode="dark"] div.highlight .dl, html[data-mode="dark"] div.highlight .sd, html[data-mode="dark"] div.highlight .s2, html[data-mode="dark"] div.highlight .se, html[data-mode="dark"] div.highlight .sh, html[data-mode="dark"] div.highlight .sx, html[data-mode="dark"] div.highlight .s1, html[data-mode="dark"] div.highlight .ss, html[data-mode="dark"] div.highlight .sr { color: #ce9178; }
+html[data-mode="dark"] div.highlight .m, html[data-mode="dark"] div.highlight .mb, html[data-mode="dark"] div.highlight .mf, html[data-mode="dark"] div.highlight .mh, html[data-mode="dark"] div.highlight .mi, html[data-mode="dark"] div.highlight .il, html[data-mode="dark"] div.highlight .mo, html[data-mode="dark"] div.highlight .mx { color: #5fb35f; }
+html[data-mode="dark"] div.highlight .nb { color: #4fc1ff; }
+html[data-mode="dark"] div.highlight .nf, html[data-mode="dark"] div.highlight .fm, html[data-mode="dark"] div.highlight .nd { color: #9b9b9b; }
+html[data-mode="dark"] div.highlight .nv, html[data-mode="dark"] div.highlight .vc, html[data-mode="dark"] div.highlight .vg, html[data-mode="dark"] div.highlight .vi, html[data-mode="dark"] div.highlight .vm { color: #5fb35f; }
+html[data-mode="dark"] div.highlight .nn, html[data-mode="dark"] div.highlight .no, html[data-mode="dark"] div.highlight .nc, html[data-mode="dark"] div.highlight .ne, html[data-mode="dark"] div.highlight .nl, html[data-mode="dark"] div.highlight .py, html[data-mode="dark"] div.highlight .bp, html[data-mode="dark"] div.highlight .nt, html[data-mode="dark"] div.highlight .pi, html[data-mode="dark"] div.highlight .p, html[data-mode="dark"] div.highlight .o, html[data-mode="dark"] div.highlight .ow { color: #d0d0d0; }
+html[data-mode="dark"] div.highlight .na { color: #f47067; }
+html[data-mode="dark"] div.highlight .gh, html[data-mode="dark"] div.highlight .gu { color: #ce9178; font-weight: 400; background-color: transparent; }
+html[data-mode="dark"] .language-xml div.highlight .nt, html[data-mode="dark"] .language-html div.highlight .nt { color: #569cd6; }
+html[data-mode="dark"] .language-yaml div.highlight .nn { color: #4ec9b0; }
+html[data-mode="dark"] .language-markdown div.highlight .nv { color: #ce9178; }
+html[data-mode="dark"] .language-markdown div.highlight .sx { color: #3bb9e0; }
+@media (prefers-color-scheme: dark) {
+  html:not([data-mode]) pre.hljs { color: #d0d0d0; }
+  html:not([data-mode]) .hljs-comment, html:not([data-mode]) .hljs-number, html:not([data-mode]) .hljs-variable, html:not([data-mode]) .hljs-class { color: #5fb35f; font-style: normal; }
+  html:not([data-mode]) .hljs-keyword, html:not([data-mode]) .hljs-name, html:not([data-mode]) .hljs-tag, html:not([data-mode]) .hljs-selector-tag { color: #569cd6; }
+  html:not([data-mode]) .hljs-built_in { color: #4fc1ff; }
+  html:not([data-mode]) .hljs-string, html:not([data-mode]) .hljs-literal, html:not([data-mode]) .hljs-type, html:not([data-mode]) .hljs-section, html:not([data-mode]) .hljs-attribute { color: #ce9178; }
+  html:not([data-mode]) .hljs-meta, html:not([data-mode]) .hljs-subst { color: #4ec9b0; }
+  html:not([data-mode]) .hljs-title, html:not([data-mode]) .hljs-doctag { color: #9b9b9b; font-weight: 400; }
+  html:not([data-mode]) .hljs-attr { color: #f47067; }
+  html:not([data-mode]) .hljs-function, html:not([data-mode]) .hljs-params, html:not([data-mode]) .hljs-operator { color: inherit; }
+  html:not([data-mode]) div.highlight .c, html:not([data-mode]) div.highlight .ch, html:not([data-mode]) div.highlight .cd, html:not([data-mode]) div.highlight .cm, html:not([data-mode]) div.highlight .cp, html:not([data-mode]) div.highlight .cpf, html:not([data-mode]) div.highlight .c1, html:not([data-mode]) div.highlight .cs { color: #5fb35f; font-style: normal; }
+  html:not([data-mode]) div.highlight .k, html:not([data-mode]) div.highlight .kd, html:not([data-mode]) div.highlight .kn, html:not([data-mode]) div.highlight .kp, html:not([data-mode]) div.highlight .kr, html:not([data-mode]) div.highlight .kv { color: #569cd6; }
+  html:not([data-mode]) div.highlight .kc, html:not([data-mode]) div.highlight .kt { color: #ce9178; }
+  html:not([data-mode]) div.highlight .s, html:not([data-mode]) div.highlight .sa, html:not([data-mode]) div.highlight .sb, html:not([data-mode]) div.highlight .sc, html:not([data-mode]) div.highlight .dl, html:not([data-mode]) div.highlight .sd, html:not([data-mode]) div.highlight .s2, html:not([data-mode]) div.highlight .se, html:not([data-mode]) div.highlight .sh, html:not([data-mode]) div.highlight .sx, html:not([data-mode]) div.highlight .s1, html:not([data-mode]) div.highlight .ss, html:not([data-mode]) div.highlight .sr { color: #ce9178; }
+  html:not([data-mode]) div.highlight .m, html:not([data-mode]) div.highlight .mb, html:not([data-mode]) div.highlight .mf, html:not([data-mode]) div.highlight .mh, html:not([data-mode]) div.highlight .mi, html:not([data-mode]) div.highlight .il, html:not([data-mode]) div.highlight .mo, html:not([data-mode]) div.highlight .mx { color: #5fb35f; }
+  html:not([data-mode]) div.highlight .nb { color: #4fc1ff; }
+  html:not([data-mode]) div.highlight .nf, html:not([data-mode]) div.highlight .fm, html:not([data-mode]) div.highlight .nd { color: #9b9b9b; }
+  html:not([data-mode]) div.highlight .nv, html:not([data-mode]) div.highlight .vc, html:not([data-mode]) div.highlight .vg, html:not([data-mode]) div.highlight .vi, html:not([data-mode]) div.highlight .vm { color: #5fb35f; }
+  html:not([data-mode]) div.highlight .nn, html:not([data-mode]) div.highlight .no, html:not([data-mode]) div.highlight .nc, html:not([data-mode]) div.highlight .ne, html:not([data-mode]) div.highlight .nl, html:not([data-mode]) div.highlight .py, html:not([data-mode]) div.highlight .bp, html:not([data-mode]) div.highlight .nt, html:not([data-mode]) div.highlight .pi, html:not([data-mode]) div.highlight .p, html:not([data-mode]) div.highlight .o, html:not([data-mode]) div.highlight .ow { color: #d0d0d0; }
+  html:not([data-mode]) div.highlight .na { color: #f47067; }
+  html:not([data-mode]) div.highlight .gh, html:not([data-mode]) div.highlight .gu { color: #ce9178; font-weight: 400; background-color: transparent; }
+  html:not([data-mode]) .language-xml div.highlight .nt, html:not([data-mode]) .language-html div.highlight .nt { color: #569cd6; }
+  html:not([data-mode]) .language-yaml div.highlight .nn { color: #4ec9b0; }
+  html:not([data-mode]) .language-markdown div.highlight .nv { color: #ce9178; }
+  html:not([data-mode]) .language-markdown div.highlight .sx { color: #3bb9e0; }
+}
+
 /* CSV rainbow columns for plaintext blocks with file="*.csv" (Oct 2026). Light+ colours,
    Dark+ in dark mode, colours repeat after 8 columns, all pass 4.5:1 */
 .csv-h { font-weight: 700; }
