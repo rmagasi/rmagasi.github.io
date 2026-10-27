@@ -1,7 +1,7 @@
 ---
 title: "IGEL OS 12 and Citrix: Post-Session Logoff Was the Wrong Fix"
 date: 2026-10-09 09:00:00 +0200
-last_modified_at: 2026-10-17 00:00:00 +0200
+last_modified_at: 2026-10-27 00:00:00 +0200
 author: robert
 categories: ["IGEL", "Troubleshooting"]
 tags: ["igel", "igel-os-12", "citrix-workspace-app", "post-session", "soft-logoff", "thin-client", "storefront"]
@@ -104,6 +104,7 @@ This closed the security gap and the hung devices disappeared. The lesson for me
 
 ## Related
 
+- [USB Devices from IGEL OS into Citrix: Optimized First, Generic Last](/posts/igel-citrix-usb-redirection/) - the other IGEL OS 12 Citrix setting that needs more than its name suggests, Native USB Redirection and what to use instead of it
 - [My Second Brain: Claude, Obsidian and Git](/posts/second-brain-architecture/) - how this fix went from a field note in my vault to this post on the same day
 
 ## References

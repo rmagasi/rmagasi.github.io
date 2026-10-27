@@ -1,6 +1,6 @@
 ---
 title: "USB Devices from IGEL OS into Citrix: Optimized First, Generic Last"
-date: 2099-12-31 09:00:00 +0200
+date: 2026-10-27 09:00:00 +0200
 author: robert
 categories: ["IGEL", "Best Practices"]
 tags: ["igel", "citrix", "igel-os-12", "citrix-workspace-app", "usb-redirection", "generic-usb", "client-drive-mapping", "hdx"]
@@ -40,7 +40,7 @@ The difference decides where the driver lives and who owns the device.
 
 With Generic, the VDA sees the raw USB device. If the Worker image has no driver for it, the device shows up as **unknown** in Device Manager inside the session. That is the first thing to check when a redirected device "does not work".
 
-Off by default does not mean deny by default. Once Generic USB is enabled, the built-in Citrix rules on the VDA and in Workspace app for Linux deny only a few classes, such as hubs, smart cards and wireless controllers, and end with a rule that allows everything else. The deny by default comes from the IGEL default rule, which is why it must stay on Deny.
+Off by default does not mean deny by default. Once Generic USB is enabled, the built-in Citrix rules on the VDA and in Workspace app for Linux deny only a few classes, such as hubs, keyboards and mice (HID boot devices), smart cards, CDC and wireless controllers, and end with a rule that allows everything else. The deny by default comes from the IGEL default rule, which is why it must stay on Deny.
 
 > The policy **Client USB device optimization rules** does not switch a device to an optimized channel. It only applies to HID input devices (class 03) that are already redirected over Generic USB and tells the VDA how to handle their data: `Mode=00000002` (interactive) keeps 3D mice and pen tablets responsive under latency, `Mode=00000004` (capture) records every pen point of a signature pad. Without a rule nothing is optimized.
 {: .prompt-warning }
@@ -63,7 +63,7 @@ Four questions, in this order:
 | USB stick, disk | Client drive mapping | Generic, only for safe removal in the session or hardware-encrypted sticks |
 | Headset, microphone | HDX audio | Generic only as a last resort, the device is taken away from the endpoint |
 | Webcam | HDX webcam compression or UC optimization | Generic as a whole device, LAN only |
-| Smart card reader | Smart card virtual channel | None, Generic is not supported for smart card readers |
+| Smart card reader | Smart card virtual channel | None, smart cards (class 0b) are denied by default on the VDA and in Workspace app for Linux, keep them on the smart card channel |
 | Printer | Client printer mapping with the Universal Print Driver | Generic |
 | Scanner | SANE redirection (Workspace app for Linux 2508 and CVAD 2503 or later), TWAIN redirection is Windows-client only | Generic, poor scan quality |
 | Signature pad | Vendor virtual channel (signotec, StepOver) | Generic with capture mode |
@@ -82,6 +82,12 @@ Client drive mapping keeps the stick on the endpoint and shows it in the session
 3. Enable dynamic client drive mapping under `Devices > Storage Devices > Storage Hotplug`.
 4. Keep mass storage (class 08) out of your Native USB Redirection rules. A matching generic rule redirects the stick as a USB device instead of mapping it.
 
+![IGEL UMS Profile Configurator, Apps > Citrix > Global Settings > Client Drive Mapping with Drive mapping enabled](/assets/img/posts/igel-citrix-usb-redirection-ums-client-drive-mapping.png){: w="800" }
+_Client Drive Mapping in the IGEL OS 12 Citrix app. The toggle is off by default, static drive mappings are not needed for USB sticks._
+
+![IGEL UMS Profile Configurator, Devices > Storage Devices > Storage Hotplug with dynamic client drive mapping enabled](/assets/img/posts/igel-citrix-usb-redirection-ums-storage-hotplug.png){: w="800" }
+_Storage Hotplug with dynamic client drive mapping and Read/Write as default permission. Without this, the stick mounts on the IGEL but never reaches the session._
+
 ## Generic Redirection per Device
 
 > Keep the default rule of Native USB Redirection on **Deny**, always. Allow devices only one by one, with explicit product rules by VID and PID. A default rule on Allow, or a whole class rule, redirects every USB device that no other rule denies away from the endpoint, headsets and USB sticks included.
@@ -96,12 +102,16 @@ Client drive mapping keeps the stick on the endpoint and shows it in the session
 
    Unplug the device and run `lsusb` again if the name is not clear.
 
-   > `lsusb` shows each device as `ID VID:PID`, followed by the vendor and product name. A Nuance PowerMic III, for example, shows up as `ID 0554:1001` (illustrative, the bus and device numbers and the name vary per system). The first number (`0554`) is the Vendor ID, the second (`1001`) the Product ID.
+   > `lsusb` shows each device as `ID VID:PID`, followed by the vendor and product name. A Nuance PowerMic 4, for example, shows up as `ID 0554:0064`. The first number (`0554`) is the Vendor ID, the second (`0064`) the Product ID.
    {: .prompt-tip }
 
 2. In IGEL OS 12, open `Apps > Citrix > Global Settings > Native USB Redirection`. Turn it on, keep the default rule on **Deny** and add a product rule with the VID and PID.
-3. Use **Connect**, not Allow. Connect redirects the device automatically when the session starts, so it also catches a device that was plugged in before. Allow only redirects automatically after the session has started. Since Citrix Workspace app for Linux 2207, auto-redirection must be enabled manually, and IGEL recommends Connect when redirection stops after that update.
-4. On the VDA, set **Client USB device redirection** to Allowed for the users who need it and add a matching line to **Client USB device redirection rules (Version 2)**. Once Version 2 is set, the older **Client USB device redirection rules** setting is ignored. Set **Allow existing USB devices to be automatically connected** and **Allow newly arrived USB devices to be automatically connected** to automatic. Citrix Workspace app for Linux reads these DDC policies from 2405 on.
+
+   ![IGEL UMS Profile Configurator, Apps > Citrix > Global Settings > Native USB Redirection enabled with the default rule on Deny and empty class and product rule tables](/assets/img/posts/igel-citrix-usb-redirection-ums-native-usb.png){: w="800" }
+   _Native USB Redirection in the IGEL OS 12 Citrix app, the starting point: enabled, default rule Deny, no rules yet. Each device gets its own product rule, the Extra Config column is where a split rule goes._
+
+3. Use **Connect**, not Allow. Connect redirects the device automatically when the session starts, so it also catches a device that was plugged in before. Allow only redirects automatically after the session has started. Since Citrix Workspace app for Linux 2207, auto-redirection must be enabled manually, and IGEL suggests switching the rule to Connect when redirection stops after that update.
+4. On the VDA, set **Client USB device redirection** to Allowed for the users who need it and add a matching line to **Client USB device redirection rules (Version 2)**. Once Version 2 is set, the older **Client USB device redirection rules** setting is ignored. Set **Allow existing USB devices to be automatically connected** and **Allow newly arrived USB devices to be automatically connected** to automatic. Citrix Workspace app for Linux reads these DDC policies from 2405 on. The policy reference page still lists the two automatically connected settings as Windows-only, the Workspace app for Linux USB documentation has the current list.
 5. Install the device driver and vendor software in the Worker image.
 6. Check Device Manager in the session.
 
@@ -121,7 +131,7 @@ lsusb -d 0554:0064 -vv | grep -e bInterfaceNumber -e HID
 
 Each `bInterfaceNumber` is one interface, the HID lines show which of them are buttons or controls. Those numbers go into `intf=`. The output does not always tell which HID interface carries the buttons, the device vendor does.
 
-Citrix now publishes official rules for this in the Nuance OEM guide of 2607 LTSR (CVAD and VDA 2402 or later, Windows 11 or Windows Server 2019 or later as session host, Workspace app for Linux 2601 or later). On Windows Server, microphone access is off by default and must be enabled. The rules cover the PowerMic 4 and the Philips SpeechMike, other models need their own interface numbers:
+Citrix now publishes official rules for this in the Nuance OEM guide of 2607 LTSR (CVAD and VDA 2402 or later, Windows 11 or Windows Server 2019 or later as session host, Workspace app for Linux 2601 or later). On Windows Server, microphone access is off by default and must be enabled. Citrix supports both devices in single-hop sessions only, a double-hop setup is not recommended for dictation. The rules cover the PowerMic 4 and the Philips SpeechMike, other models need their own interface numbers:
 
 ```plaintext
 Connect: VID=0554 PID=0064 split=1 intf=04,05,06,07 #PowerMic4 HID
