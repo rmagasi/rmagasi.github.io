@@ -11,7 +11,7 @@ image:
   alt: "FSLogix Copy=3, the redirections.xml Trick for Non-Persistent VDI"
 ---
 
-By the time this chapter of the escalation started, I had already fixed the worst of it. SAP Business One launches had come down from a catastrophic 10-30 minutes (a story for another post) to a steady 2 minutes on every login. Users were productive again. The taskforce still wasn't closed. The Windows System process (PID 4) sat at 37% CPU across all 8 cores while coresuite was doing its start-up work, and the session felt sluggish behind it while it "installed and customised" itself into a fresh profile. Two minutes was survivable. It was also wrong. This post is about the three lines of XML that took it to one minute and gave the System process back to the kernel.
+By the time this chapter of the escalation started, I had already fixed the worst of it. SAP Business One launches had come down from a catastrophic 10-30 minutes to a steady 2 minutes on every login. Users were productive again. The taskforce still wasn't closed. The Windows System process (PID 4) sat at 37% CPU across all 8 cores while coresuite was doing its start-up work, and the session felt sluggish behind it while it "installed and customised" itself into a fresh profile. Two minutes was survivable. It was also wrong. This post is about the three lines of XML that took it to one minute and gave the System process back to the kernel.
 
 > **Quick answer**
 >
@@ -33,7 +33,7 @@ Every login. Every user. Even when the compiled assemblies were already present 
 
 ## What I Chased First
 
-Defender was the obvious next suspect after the earlier MDE cleanup. I added process, path, and extension exclusions for coresuite, the SAP B1 binaries, the .NET compilers (`csc.exe`, `vbc.exe`, `mscorsvw.exe`, `ngen.exe`, `RegAsm.exe`), the CLR temp folders, and WEM. Verified with `Get-MpPreference`. `MsMpEng.exe` dropped to 0% CPU during launch, which is exactly what a correctly excluded workload looks like. The symptom didn't move. (Weeks later I discovered most of those exclusions had never matched anything thanks to trailing newline characters in the saved entries. The conclusion here still holds, but that war story gets its own post.)
+Defender was the obvious next suspect after the earlier MDE cleanup. I added process, path, and extension exclusions for coresuite, the SAP B1 binaries, the .NET compilers (`csc.exe`, `vbc.exe`, `mscorsvw.exe`, `ngen.exe`, `RegAsm.exe`), the CLR temp folders, and WEM. Verified with `Get-MpPreference`. `MsMpEng.exe` dropped to 0% CPU during launch, which is exactly what a correctly excluded workload looks like. The symptom didn't move. (Weeks later I discovered most of those exclusions had never matched anything thanks to trailing newline characters in the saved entries. The conclusion here still holds.)
 
 Ruled out DPCs and ISRs next, the kernel-side interrupt work that is the usual suspect when the System process burns CPU without an obvious owner. A WPR/WPA trace over a full launch cycle showed total DPC + ISR time was 2.5 CPU-seconds across 217 seconds of trace, or 0.14% of the available CPU. The kernel wasn't spending time in interrupt handlers.
 
