@@ -132,6 +132,10 @@ The script below wraps those three lines. Without parameters it only reports KEK
 
 [⬇ Download Test-SecureBootNvramUpdate.ps1](/assets/scripts/Test-SecureBootNvramUpdate.ps1){: .btn .btn-primary }
 
+For the rest of production there's a bulk version. It reads the targets from the delivery group, runs the same trigger over WinRM on every target that still lacks the certificate, and ends with a table of who's done and who still needs the `.nvram` rename. Run it without `-Apply` first to see the scope, then with it, then once more to confirm. I haven't run it across production yet, The Result will say how it went.
+
+[⬇ Download Invoke-SecureBootCertRollout.ps1](/assets/scripts/Invoke-SecureBootCertRollout.ps1){: .btn .btn-primary }
+
 ### 3. Upgrade PVS
 
 Citrix Provisioning 2402 LTSR CU4 ships a bootstrap signed under the new certificates, and CTX696455 lists the upgrade as a required step. It won't fix this boot failure on its own. The firmware refuses the new boot manager as long as the VM's db lacks the certificate, whatever version of PVS streams it. Update the BDM partitions after the upgrade. A bootloader signed under Microsoft UEFI CA 2023 also needs that certificate in every target's db, one more reason not to stop at the first stage of option B.
