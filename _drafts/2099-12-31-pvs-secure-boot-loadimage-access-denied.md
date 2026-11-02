@@ -116,7 +116,7 @@ Citrix covers this in CTX696455. The obvious shortcut is to switch Secure Boot o
 
 With BDM boot the boot order is just the disk, so losing it costs nothing. Check for vTPM first, its state lives in the NVRAM and goes with it. On ESXi 8.0 U3j and later, `uefi.secureBoot.db.resetOnce = TRUE` in the VM's advanced settings resets db alone at the next power-on, which is easier to script than the rename but still needs the power-off (CTX696455).
 
-**Option B, let Windows write the certificates.** No downtime. While the targets still run the old vDisk version, trigger the Secure Boot servicing on each one:
+**Option B, let Windows write the certificates.** Proven on one target, no downtime. While the targets still run the old vDisk version, trigger the Secure Boot servicing on each one:
 
 ```powershell
 New-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot -Name AvailableUpdates -PropertyType DWord -Value 0x5944 -Force
@@ -126,7 +126,7 @@ Start-ScheduledTask -TaskPath '\Microsoft\Windows\PI\' -TaskName 'Secure-Boot-Up
 
 The certificates land in the VM's NVRAM, which survives standard mode. The registry change lands in the write cache and is gone at the next reboot. Never run this on a maintenance or private-mode device, where it would stick in the vDisk.
 
-On this Server 2019 build, event 1036 confirmed the db update within seconds and the last line returned `True`. That's only the first stage. The KEK and the other 2023 certificates wait for a reboot (event 1800), and standard mode throws that pending state away. Windows UEFI CA 2023 alone is enough to boot the updated version, though, and a target already running that version added a missing certificate by itself at boot, so I expect the rest to follow. I haven't watched that happen yet.
+On this Server 2019 build, event 1036 confirmed the db update within seconds and the last line returned `True`. That's only the first stage. The KEK and the other 2023 certificates wait for a reboot (event 1800), and standard mode throws that pending state away. It doesn't matter. Windows UEFI CA 2023 alone is enough to boot the updated version, and that version's own servicing finishes the job. Three days later the target rebooted into it, booted, and within one second added Option ROM CA 2023 (1044), Microsoft UEFI CA 2023 (1045) and the KEK (1043). No power-off, no rename.
 
 The script below wraps those three lines. Without parameters it only reports KEK, db, `AvailableUpdates` and `UEFICA2023Status`. With `-Apply` it triggers the update, waits, lists the Secure Boot events and ends with PASS, PARTIAL or FAIL. Run it again without `-Apply` after the reboot to confirm the certificate survived.
 
@@ -151,8 +151,9 @@ Run this on every target before it moves to a vDisk version with the new boot ma
 
 Production was back on the previous vDisk version the same night, and users never noticed. Two targets with a regenerated NVRAM boot the updated version. The hosts already run ESXi 8.0 U3k, later than the 8.0 U3j Citrix asks for, so nothing has to change on the VMware side.
 
-<!-- TODO Robert: update after the option B reboot and boot test on the test target, and add the rollout outcome -->
-Option B has written the certificate on the first test target. The reboot and a boot of the updated version are the last step before it goes to all targets.
+Option B worked end to end on the first test target, which took the in-guest route from the old version to the full 2023 set without a single power-off. That makes it the plan for the rest of production: the script on every target, then the updated version back on the reboot schedule.
+
+<!-- TODO Robert: add the outcome of the production rollout -->
 
 ## What I'd Tell a Colleague
 
@@ -179,7 +180,7 @@ One target failing with `LoadImage error: Access Denied` after an image update i
 
 <br>
 
-*Verified against the environment described above in October 2026. Option A on two targets, option B up to the db update, see The Result.*
+*Verified against the environment described above in October and November 2026. Option A on two targets, option B end to end on one target.*
 
 <br>
 
