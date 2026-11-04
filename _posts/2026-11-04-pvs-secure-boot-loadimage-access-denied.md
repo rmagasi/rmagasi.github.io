@@ -1,6 +1,6 @@
 ---
 title: "PVS Targets Fail with LoadImage Error: Access Denied After a Windows Update"
-date: 2099-12-31 09:00:00 +0200
+date: 2026-11-04 06:00:00 +0100
 author: robert
 categories: ["Citrix", "Troubleshooting"]
 tags: ["citrix-provisioning", "pvs", "secure-boot", "uefi", "vmware", "nvram", "windows-update"]
@@ -16,7 +16,7 @@ The odd VM wasn't odd. It was just the first one old enough. The October 2026 Wi
 
 > **Quick answer**
 >
-> If PVS targets on VMware stop with `LoadImage error: Access Denied` after a Windows update on the vDisk, the VMs' NVRAM is missing the Windows UEFI CA 2023 certificate. Roll back to the previous vDisk version, then get the 2023 certificates into every target, either by regenerating its NVRAM (power off, rename the `.nvram` file) or through Windows servicing while the old version still runs.
+> If PVS targets on VMware stop with `LoadImage error: Access Denied` after a Windows update on the vDisk, the VMs' NVRAM is missing the Windows UEFI CA 2023 certificate. Roll back to the previous vDisk version, then get the 2023 certificates into every target, through Windows servicing while the old version still runs (no downtime, that's what fixed our farm), or by regenerating its NVRAM (power off, rename the `.nvram` file) for a stubborn single VM.
 {: .prompt-tip }
 
 ## The Situation
@@ -132,7 +132,7 @@ The script below wraps those three lines. Without parameters it only reports KEK
 
 [⬇ Download Test-SecureBootNvramUpdate.ps1](/assets/scripts/Test-SecureBootNvramUpdate.ps1){: .btn .btn-primary }
 
-For the rest of production there's a bulk version. It reads the targets from the delivery group, runs the same trigger over WinRM on every target that still lacks the certificate, and ends with a table of who's done and who still needs the `.nvram` rename. Run it without `-Apply` first to see the scope, then with it, then once more to confirm. I haven't run it across production yet, The Result will say how it went.
+For the rest of production there's a bulk version. It reads the targets from the delivery group, runs the same trigger over WinRM on every target that still lacks the certificate, and ends with a table of who's done and who still needs the `.nvram` rename. Run it without `-Apply` first to see the scope, then with it, then once more to confirm. That's how the rest of production got its certificates.
 
 [⬇ Download Invoke-SecureBootCertRollout.ps1](/assets/scripts/Invoke-SecureBootCertRollout.ps1){: .btn .btn-primary }
 
@@ -155,9 +155,7 @@ Run this on every target before it moves to a vDisk version with the new boot ma
 
 Production was back on the previous vDisk version the same night, and users never noticed. Two targets with a regenerated NVRAM boot the updated version. The hosts already run ESXi 8.0 U3k, later than the 8.0 U3j Citrix asks for, so nothing has to change on the VMware side.
 
-Option B worked end to end on the first test target, which took the in-guest route from the old version to the full 2023 set without a single power-off. That makes it the plan for the rest of production: the script on every target, then the updated version back on the reboot schedule.
-
-<!-- TODO Robert: add the outcome of the production rollout -->
+Option B worked end to end on the first test target, which took the in-guest route from the old version to the full 2023 set without a single power-off. So the rest of production went the same way: the bulk script on every target, which wrote the certificate everywhere and left nothing for the `.nvram` rename, then the updated version back on the reboot schedule. The next cycle rebooted the whole farm into it without a single failure.
 
 ## What I'd Tell a Colleague
 
@@ -184,7 +182,7 @@ One target failing with `LoadImage error: Access Denied` after an image update i
 
 <br>
 
-*Verified against the environment described above in October and November 2026. Option A on two targets, option B end to end on one target.*
+*Verified against the environment described above in October and November 2026. Option A on two targets, option B on every remaining production target.*
 
 <br>
 
