@@ -157,10 +157,6 @@ Production was back on the previous vDisk version the same night, and users neve
 
 Option B worked end to end on the first test target, which took the in-guest route from the old version to the full 2023 set without a single power-off. So the rest of production went the same way: the bulk script on every target, which wrote the certificate everywhere and left nothing for the `.nvram` rename, then the updated version back on the reboot schedule. The next cycle rebooted the whole farm into it without a single failure.
 
-## What I'd Tell a Colleague
-
-One target failing with `LoadImage error: Access Denied` after an image update is a warning about every target, not a fault in one. I fixed the VM in front of me, moved on, and four days later the reboot schedule found 23 more. Stop the rollout and check them all.
-
 ## Related
 
 - [Automating Citrix Server Reboots](/posts/citrix-scheduled-reboot-script/) - the nightly reboot cycle is where this surfaced, and the Broker's "Abandoned" state is what kept half the servers online
