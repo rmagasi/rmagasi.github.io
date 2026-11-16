@@ -74,7 +74,11 @@ For a slow logon the steps are known. Code can run them and write everything for
 ![Two operating modes side by side: live tools, where the model queries the systems, and case bundle first, where code queries and the model only reads one file](/assets/img/posts/ai-citrix-agent-live-tools-vs-case-bundle.png){: w="800" }
 _Live tools versus case bundle. The collectors are the same, the difference is who calls them and what the model can reach._
 
-The objection is obvious and it is a good one. Following a lead is what an agent is good at: the FSLogix event points at the file server, so look at the file server. A fixed bundle cannot do that. A second collection round that I approve can, but it is slower, and I do not know whether a playbook per symptom collects enough for the cases that matter. That is a lab question. My plan is to build the collectors so that both modes work, and to start with the bundle.
+The objection is obvious and it is a good one. Following a lead is what an agent is good at: the FSLogix event points at the file server, so look at the file server. A fixed bundle cannot do that.
+
+My first answer was a playbook per symptom: one collection script for slow logons, one for launch failures, one for every other kind of ticket. Then I read my own plan from start to finish and could not picture myself writing them. Every new symptom would mean new code, and the tickets nobody predicted are the ones where I want the help.
+
+So the collector pulls one standard snapshot for every case: session, logon phases, failures, machine state, metrics, events and Citrix logs for user, machine and window. The symptom adds two or three queries. If that is not enough, the model names the next query from a fixed list, I approve it, and the result goes into the bundle. That is slower than an agent drilling down on its own, and how often the snapshot alone is enough is a lab question. Both modes stay possible, because the collector and the MCP servers call the same query functions.
 
 ## A different model read it differently
 
@@ -88,11 +92,17 @@ It also took apart a fix from the first review. The ticket gate records which ti
 
 Then the vendor facts. Several statements written into the design that same day were wrong or out of date. ControlUp now hosts a read-only MCP server of its own. XenServer keeps a minimum and a maximum per hour next to the average. For hosted AI clients the vendors document private routes to an MCP server, so a public endpoint is not the only way in. I checked each correction against the vendor docs, and each one held.
 
+## The agent needs my notes, not only my data
+
+The same read-through showed a second hole, and no review had named it. The plan says where the data comes from and how the answer has to be worded. It never says where the agent learns Citrix troubleshooting. A model knows what FSLogix is. It does not know what a normal logon looks like on this platform, which evidence separates a locked container from a slow share, or what I would check next.
+
+That knowledge sits in my notes and in my head. It has to be written down as skills: one per problem area, each with a cause tree, the evidence for and against every cause, and the next steps for the engineer. Skills in the open Agent Skills format now load in Claude, in ChatGPT and in Copilot Studio, so this part is not tied to one client either. A wrong skill gives the same wrong advice on every ticket. Each one needs an owner, a reviewer and test cases behind it.
+
 ## Where this leaves the design
 
 The three reviews produced 41 findings, nine of them blockers. None says the idea is wrong. They say I had described controls as if writing them down made them exist.
 
-Three things I would tell anyone starting the same design. Build as little as possible. Citrix overtook my custom server in 16 days, and since 22 October Aidrien parses Always On Tracing logs for DaaS customers. What no vendor will ship is the join across Citrix Monitor, ControlUp, Windows events and the hypervisor for on-prem sites, so that is the only part worth owning. And do not design the controls around one AI client. Most of my client-side fixes are Claude Code settings. I want to start with Claude, but the setup has to work with Microsoft 365 Copilot and ChatGPT as well, and Copilot Studio and ChatGPT on the web reach an MCP server only from their vendor's cloud. So the controls move to the two places every client has to pass: the proxy and the bundle. And have a different model read the result. The first two reviews and I had agreed on an evidence scheme that the third took apart in one paragraph, and the newest errors in the design were the ones made while fixing the older ones.
+Four things I would tell anyone starting the same design. Build as little as possible. Citrix overtook my custom server in 16 days, and since 22 October Aidrien parses Always On Tracing logs for DaaS customers. What no vendor will ship is the join across Citrix Monitor, ControlUp, Windows events and the hypervisor for on-prem sites, so that join, and the troubleshooting knowledge on top of it, are the only parts worth owning. And do not design the controls around one AI client. Most of my client-side fixes are Claude Code settings. I want to start with Claude, but the setup has to work with Microsoft 365 Copilot and ChatGPT as well, and Copilot Studio and ChatGPT on the web reach an MCP server only from their vendor's cloud. So the controls move to the two places every client has to pass: the proxy and the bundle. And have a different model read the result. The first two reviews and I had agreed on an evidence scheme that the third took apart in one paragraph, and the newest errors in the design were the ones made while fixing the older ones. And read the whole plan yourself, as the person who has to build it. Three reviews checked my controls. None asked whether one engineer can maintain a playbook per symptom.
 
 The next step is a lab with synthetic users, where the open questions get answers instead of paragraphs.
 
@@ -115,6 +125,8 @@ The next step is a lab with synthetic users, where the open questions get answer
 - [Secure MCP Tunnel, OpenAI developer docs](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels)
 - [Use Virtual Network support for agent calls to private endpoints, Copilot Studio, Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-network-isolation-vnet)
 - [Monitor and manage your deployment, XenServer 8 docs](https://docs.xenserver.com/en-us/xenserver/8/monitor-performance)
+- [Skills in ChatGPT, OpenAI Help Center](https://help.openai.com/en/articles/20001066-skills-in-chatgpt)
+- [Skills overview, Copilot Studio, Microsoft Learn](https://learn.microsoft.com/microsoft-copilot-studio/agents-experience/skills-overview)
 
 ---
 
