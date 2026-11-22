@@ -67,9 +67,13 @@ jobs:
             --ignore-files "/.+\.(png|jpg|jpeg|gif|webp|svg|ico)/"
 
       - name: Package artifact
+        id: package
         shell: bash
         run: |
           set -euo pipefail
+          # Artifact names must not contain a slash, branch names often do
+          # (dependabot/bundler/..., feature/...). Replace every slash with a dash.
+          echo "safe_ref=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
           # Zip the site to make download-and-open friction-free.
           cd _site
           zip -qr "../_site-${GITHUB_SHA::7}.zip" .
@@ -78,7 +82,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v7
         with:
-          name: preview-${{ github.ref_name }}-${{ github.sha }}
+          name: preview-${{ steps.package.outputs.safe_ref }}-${{ github.sha }}
           path: "_site-*.zip"
           retention-days: 14
 
