@@ -12,11 +12,11 @@ Real-world Citrix, AVD, and EUC knowledge from 15 years in IT.
 | Theme | [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) v7.4.1 (gem-based) |
 | Comments | [Giscus](https://giscus.app) (GitHub Discussions-backed) |
 | Analytics | [GoatCounter](https://www.goatcounter.com/) (cookieless) |
-| Editor | Custom single-file HTML editor (separate repo) |
+| Editor | Custom single-file HTML editor (`editor/index.html`, live at `/editor/`) |
 
 ## Publishing workflow
 
-1. **Draft** a post via the custom Cowork editor - produces a `.md` file under `_drafts/` or `_posts/` using the front matter template.
+1. **Draft** a post via the custom post editor - produces a `.md` file under `_drafts/` or `_posts/` using the front matter template.
 2. **Generate the OG image** with `scripts/generate_og.py` (from the `euc-insights-blog` skill) and save to `assets/img/posts/og-<slug>.png`.
 3. **Publish** via the editor's Publish button. The editor pushes `.md` files directly to the repo via the GitHub Contents API.
 4. **Commit image assets manually** - the editor only handles markdown. Run:

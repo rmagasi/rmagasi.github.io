@@ -39,9 +39,10 @@ jobs:
 
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          submodules: true
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -75,7 +76,7 @@ jobs:
 
       - name: Upload preview artifact
         id: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: preview-${{ github.ref_name }}-${{ github.sha }}
           path: "_site-*.zip"

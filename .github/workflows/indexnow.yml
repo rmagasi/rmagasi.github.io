@@ -38,14 +38,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Need at least HEAD and HEAD~1 so the script can diff them.
           fetch-depth: 2
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 

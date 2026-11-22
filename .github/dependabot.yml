@@ -1,0 +1,26 @@
+# Keeps the workflow actions and the Ruby gems from going stale.
+# Pull requests only, nothing merges on its own. Every Dependabot branch is
+# built by the "Preview draft branch" workflow before it is merged.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      gems:
+        patterns: ["*"]
+    ignore:
+      # Chirpy upgrades are done by hand. _includes/head.html, _layouts/home.html,
+      # _layouts/post.html and _data/locales/en.yml are full copies of the theme
+      # files and have to be re-synced with every theme release.
+      - dependency-name: "jekyll-theme-chirpy"

@@ -132,7 +132,7 @@ comments:
 # Self-hosted static assets, optional › https://github.com/cotes2020/chirpy-static-assets
 assets:
   self_host:
-    enabled: # boolean, keep empty means false
+    enabled: true # fonts and libraries come from assets/lib (git submodule), no Google Fonts or jsDelivr requests
     # specify the Jekyll environment, empty means both
     # only works if `assets.self_host.enabled` is 'true'
     env: # [development | production]
@@ -192,6 +192,10 @@ defaults:
     values:
       layout: page
       permalink: /:title/
+  - scope:
+      path: "editor" # the post editor is noindex, keep it out of sitemap.xml
+    values:
+      sitemap: false
 
 sass:
   style: compressed
@@ -212,6 +216,7 @@ exclude:
   - tools
   - README.md
   - LICENSE
+  - chirpy.skill
   - purgecss.js
   - "*.config.js"
   - "package*.json"
