@@ -1,0 +1,61 @@
+name: "External link check"
+
+# Weekly check of every link in the built site, outbound links included.
+#
+# The deploy workflow runs htmlproofer with --disable-external, so a third-party
+# page that moved or died never blocks a deploy. Link rot shows up here instead.
+# A failed run only sends the usual GitHub notification. Nothing is changed or
+# deployed, fix the link in the post and the next run is green again.
+#
+# Scheduled runs on GitHub often start hours after the cron time, that is normal.
+
+on:
+  schedule:
+    - cron: "23 4 * * 1" # Mondays
+
+  # Run it by hand from the Actions tab, for example after fixing a link.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "link-check"
+  cancel-in-progress: true
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
+          bundler-cache: true
+
+      - name: Build site
+        run: bundle exec jekyll b -d "_site"
+        env:
+          JEKYLL_ENV: "production"
+
+      # Not checked, on purpose:
+      # - the share buttons (they open a compose dialog, not a page)
+      # - LinkedIn and hattrick.org (both answer automated requests with an error)
+      # - the editor page (private tool, noindex)
+      # - 429 "too many requests" answers, they say nothing about the link
+      - name: Check links
+        run: |
+          bundle exec htmlproofer _site \
+            --checks Links \
+            --ignore-files "/editor\//" \
+            --ignore-urls "/^https:\/\/(twitter\.com\/intent|www\.facebook\.com\/sharer|t\.me\/share|www\.reddit\.com\/submit|www\.linkedin\.com|www\.hattrick\.org)/,/^http:\/\/(127\.0\.0\.1|0\.0\.0\.0|localhost)/" \
+            --ignore-status-codes "429,999" \
+            --typhoeus '{"followlocation":true,"connecttimeout":15,"timeout":40}' \
+            --hydra '{"max_concurrency":8}'

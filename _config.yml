@@ -217,6 +217,11 @@ exclude:
   - README.md
   - LICENSE
   - chirpy.skill
+  # Unused theme libraries, about 20 MB of the assets/lib submodule. A post that sets
+  # `math: true` needs MathJax back in the build, `mermaid: true` needs Mermaid.
+  # htmlproofer fails the deploy if one is used while it is still excluded here.
+  - assets/lib/mathjax
+  - assets/lib/mermaid
   - purgecss.js
   - "*.config.js"
   - "package*.json"

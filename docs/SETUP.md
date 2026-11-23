@@ -3,7 +3,7 @@
 **Site:** [robertmagasi.com](https://robertmagasi.com) — *EUC Insights by Robert*
 **Repo:** [`rmagasi/rmagasi.github.io`](https://github.com/rmagasi/rmagasi.github.io)
 **Author:** Robert Magasi
-**Last updated:** 2026-04-17
+**Last updated:** 2026-11-22
 
 Internal reference doc for how the blog is built, customised, deployed, and edited. Safe to commit — no secrets, tokens, or private URLs. The `docs/` folder is in `_config.yml`'s `exclude:` list, so this file is never published to the site.
 
@@ -31,7 +31,7 @@ Internal reference doc for how the blog is built, customised, deployed, and edit
 13. [The custom post editor](#13-the-custom-post-editor)
 14. [GitHub App for editor auth](#14-github-app-for-editor-auth)
 15. [Cloudflare Worker (CORS relay)](#15-cloudflare-worker-cors-relay)
-16. [`robots.txt` override](#16-robotstxt-override)
+16. [`robots.txt`](#16-robotstxt)
 17. [Known quirks & troubleshooting](#17-known-quirks--troubleshooting)
 18. [File inventory](#18-file-inventory)
 
@@ -57,7 +57,8 @@ The editor replaces a PAT-based auth flow with a GitHub App + Device Code OAuth.
 | Comments | [Giscus](https://giscus.app) | Repo `Announcements` category |
 | Analytics | [GoatCounter](https://www.goatcounter.com/) | Cookieless, no banner required |
 | Contact form | [Formspree](https://formspree.io) | Free tier, 50 submissions/month |
-| CI/CD | GitHub Actions | 3 workflows: deploy, schedule-publish, preview-draft |
+| CI/CD | GitHub Actions | 4 workflows: deploy, preview-draft, link-check, indexnow. Dependabot keeps actions and gems current |
+| Static assets | Self-hosted | Fonts, icons and libraries from `assets/lib` (submodule) and `assets/highlightjs/`, no CDN on public pages |
 | Editor | Single-file HTML at `/editor/` | Auth via GitHub App device flow |
 | Editor relay | Cloudflare Worker | CORS shim for GitHub OAuth endpoints |
 
@@ -102,15 +103,18 @@ The editor replaces a PAT-based auth flow with a GitHub App + Device Code OAuth.
 │   ├── img/                      # avatar, OG images, post screenshots, favicons
 │   ├── scripts/                  # downloadable scripts referenced in posts
 │   ├── css/                      # any extra CSS
-│   └── lib/                      # vendored libs
+│   ├── highlightjs/              # highlight.js 11.9.0, used for PowerShell blocks
+│   └── lib/                      # chirpy-static-assets submodule, self-hosted fonts and libraries
 ├── docs/                         # internal docs (this file) — excluded from build
 ├── editor/                       # deployed copy of the custom editor (§13)
-├── robots.txt                    # override to disallow /editor/ (§16)
 ├── index.html                    # Chirpy's home — untouched
-└── .github/workflows/
-    ├── pages-deploy.yml          # build + htmlproofer + deploy (§12.1)
-    ├── schedule-publish.yml      # daily 06:00 UTC draft promoter (§12.2)
-    └── preview-draft.yml         # on-push non-main build (§12.3)
+└── .github/
+    ├── dependabot.yml            # monthly update PRs for actions and gems (§12.5)
+    └── workflows/
+        ├── pages-deploy.yml      # build + htmlproofer + deploy (§12.1)
+        ├── link-check.yml        # weekly link check incl. external links (§12.2)
+        ├── preview-draft.yml     # on-push non-main build (§12.3)
+        └── indexnow.yml          # tells Bing and co. about changed posts (§12.4)
 ```
 
 ---
@@ -179,7 +183,7 @@ media_subpath: /assets/img/posts/   # optional per-post image root
 
 ### Drafts vs. published
 
-- Files in `_drafts/` never render publicly. The `schedule-publish` workflow promotes them to `_posts/` on the day their front-matter `date:` falls due (see §12.2).
+- Files in `_drafts/` never render publicly. Nothing promotes them automatically, a post goes live when the editor publishes it with destination Posts. The former `schedule-publish` workflow was removed on 2026-11-22. Drafts keep the `2099-12-31` hold date by convention.
 - Files in `_posts/` must be named `YYYY-MM-DD-slug.md`. The date in the filename must match the front-matter `date:` or Jekyll complains.
 - The `permalink` default is `/posts/:title/` — the slug comes from the front-matter title, not the filename. Changing a title after publication breaks inbound links — avoid.
 
@@ -188,6 +192,7 @@ media_subpath: /assets/img/posts/   # optional per-post image root
 - Post OG images go in `assets/img/posts/og-<slug>.png`, sized 1200×630 at 2× retina (2400×1260 source, exported at 50%).
 - Inline screenshots and diagrams also live under `assets/img/posts/`. Use `media_subpath` in front matter to keep markdown paths clean.
 - The editor handles image uploads for OG images; everything else is committed manually.
+- PNGs are stored as 256-colour palette files where that is visually lossless, about half the size. `scripts/compress_png.py` in the `euc-insights-blog` skill does it, `render_hero.py` and `generate_og.py` call it on their own.
 
 ### Categories vs. tags
 
@@ -208,7 +213,7 @@ Chirpy reserves exactly one include file for user-injected head content: `metada
 What this file contains (in order):
 
 1. **Dynamic document title for non-home pages** — small JS that tweaks `<title>` so category/tag landing pages read "Tag: X · EUC Insights" instead of the Chirpy default.
-2. **highlight.js imports (gated)** — light and dark CSS imported from CDN, toggled by the JS theme watcher below. Keeps the default rouge/Chirpy highlighting for most languages but allows PowerShell highlighting to kick in (see #4).
+2. **highlight.js imports** - light and dark CSS from `assets/highlightjs/` (self-hosted since Nov 2026), toggled by the JS theme watcher below. The two highlight.js scripts are only emitted on pages that contain a PowerShell block (`content contains 'language-powershell'`), the editor's site preview adds them itself when its template page has none.
 3. **PowerShell syntax highlighting CSS** — custom token colours for both light and dark. Overrides rouge's default palette for `ps1` / `powershell` code blocks.
 4. **PowerShell syntax highlighter (JS)** — runs after load, finds `language-powershell` blocks produced by rouge (including the `<table>` / `.lineno` wrapper pattern rouge uses with line numbers on), and rewrites token classes so the CSS in #3 applies. Rouge's built-in PowerShell lexer is weak; this layer compensates.
 5. **CSV cell highlighting** — colour-codes CSV header rows, cell values, and comma separators for both light and dark mode. Targets `language-csv` blocks.
@@ -362,46 +367,51 @@ Legal pages all have `icon: fas fa-...` set so Chirpy doesn't throw, but `order:
 
 ## 12. GitHub Actions workflows
 
-All three workflows live under `.github/workflows/`.
+All workflows live under `.github/workflows/`. Nothing publishes on a schedule, the only scheduled run is the link check.
 
-### 12.1 `pages-deploy.yml` — build + htmlproofer + deploy
+### 12.1 `pages-deploy.yml` - build + htmlproofer + deploy
 
 Trigger: push to `main`, or manual `workflow_dispatch`.
 
 Steps:
-1. Checkout with `fetch-depth: 0` (required for `posts-lastmod-hook.rb` to read git history).
+1. Checkout with `fetch-depth: 0` (required for `posts-lastmod-hook.rb` to read git history) and `submodules: true` (`assets/lib` holds the self-hosted fonts and libraries, `assets.self_host.enabled` is `true` in `_config.yml`).
 2. Setup Pages + Ruby 3.3 (cached via `bundler-cache: true`).
 3. `bundle exec jekyll b -d _site<base_path>` with `JEKYLL_ENV: production`.
-4. **htmlproofer** — validates internal links and absent `alt` attributes. Flags: `--disable-external` (skip hitting the internet), `--ignore-missing-alt` (Chirpy's own UI chrome has a few known gaps), `--ignore-files "/.+\.(png|jpg|jpeg|gif|webp|svg|ico)/"` (skip binary files).
+4. **htmlproofer** - validates internal links, scripts and images. Flags: `--disable-external` (skip hitting the internet), `--ignore-missing-alt` (Chirpy's own UI chrome has a few known gaps), `--ignore-files "/.+\.(png|jpg|jpeg|gif|webp|svg|ico)/"`.
 5. Upload `_site` as a Pages artifact.
 6. Deploy to GitHub Pages in the `github-pages` environment.
 
-Concurrency group is `pages` with `cancel-in-progress: true` — if you push twice fast, only the last build deploys.
+Concurrency group is `pages` with `cancel-in-progress: true` - if you push twice fast, only the last build deploys.
 
-### 12.2 `schedule-publish.yml` — draft promoter
+A push made by a workflow with the built-in `GITHUB_TOKEN` does **not** start this workflow. That is why the old scheduled publisher never deployed what it promoted.
 
-Trigger: daily at `06:00 UTC` (= 07:00 CET / 08:00 CEST), or manual.
+### 12.2 `link-check.yml` - weekly link check
 
-Behaviour:
-1. Checks `_drafts/*.md` for files whose front-matter `date:` is today or earlier.
-2. Moves each matching file from `_drafts/` to `_posts/`, renaming it to the Chirpy `YYYY-MM-DD-slug.md` convention (using the date from the front matter, not the filename).
-3. Commits with a message listing all promoted files.
-4. Pushes to `main`.
-5. `pages-deploy.yml` picks up the push and builds.
+Trigger: Mondays (cron `23 4 * * 1`, GitHub often starts scheduled runs hours late), or manual.
 
-Safe to run multiple times per day (idempotent — nothing to promote = no commit). Handles quoted and unquoted YAML date values. Skips files with missing or unparseable dates with a GitHub notice.
+Builds the site like the deploy workflow and runs htmlproofer on all links, external ones included. It changes nothing and deploys nothing, a failed run only sends the usual GitHub notification. Fix the link in the post, then re-run it from the Actions tab.
 
-To schedule a post: set its `date:` to a future day, save in `_drafts/`, commit, push. The workflow handles the rest.
+Not checked on purpose: the share buttons, LinkedIn and hattrick.org (both answer automated requests with an error), the editor page, and `429` answers.
 
-### 12.3 `preview-draft.yml` — non-main branch preview
+This workflow replaced `schedule-publish.yml` as the only scheduled one. The scheduled publisher (daily promotion of due drafts) was removed on 2026-11-22: it had fired once in seven months, unintended, and its push never triggered a deploy.
 
-Trigger: push to any branch other than `main`/`master`/`gh-pages`.
+### 12.3 `preview-draft.yml` - non-main branch preview
 
-Purpose: the editor has a local Chirpy-ish preview, but it's approximate. When you want to confirm *exactly* how a post will render, push to a branch. This workflow runs the same Chirpy build as production (with `JEKYLL_ENV: production`) and uploads the resulting `_site/` as a workflow artifact you can download, unzip, and open locally.
+Trigger: push to any branch other than `main`/`master`/`gh-pages`. Dependabot branches count, so every update PR gets a build.
 
-Why not a live URL? GitHub Pages serves one site per repo. Per-branch URLs would need a second host (Netlify, Cloudflare Pages). The artifact-download approach catches ~90% of render drift at zero extra cost.
+Runs the same Chirpy build as production (with `JEKYLL_ENV: production`) and uploads the resulting `_site/` as a zipped workflow artifact you can download and open locally. The artifact name carries the branch name with slashes replaced by dashes, artifact names must not contain a slash.
 
-The workflow also posts a summary listing the changed markdown files vs. `main`, so the PR reviewer (you) knows what's new.
+Why not a live URL? GitHub Pages serves one site per repo. Per-branch URLs would need a second host (Netlify, Cloudflare Pages).
+
+### 12.4 `indexnow.yml` - search engine ping
+
+Trigger: after a successful "Build and Deploy" run, or manual (with a "submit all posts" option).
+
+Runs `tools/indexnow-submit.py`, which diffs the last two commits and submits the URLs of changed posts to IndexNow (Bing, Yandex, DuckDuckGo). The key file is `d3d07fc2675393a4c9805edc4eaccf2c.txt` in the repo root.
+
+### 12.5 Dependabot
+
+`.github/dependabot.yml` opens one grouped pull request per month for the workflow actions and one for the Ruby gems. Nothing merges on its own. `jekyll-theme-chirpy` is ignored there on purpose: theme upgrades are manual, because `_includes/head.html`, `_layouts/home.html`, `_layouts/post.html` and `_data/locales/en.yml` are full copies of theme files that have to be re-synced with every theme release.
 
 ---
 
@@ -443,9 +453,11 @@ The editor currently supports **both** authentication paths:
 
 This dual-mode exists so migration is non-breaking. The plan to remove PAT support entirely is in [`Cowork/github-app-migration-plan.md`](../../Cowork/github-app-migration-plan.md) (outside this repo).
 
-### `/editor/` is excluded from crawlers
+### `/editor/` is kept out of search
 
-See §16 on `robots.txt`.
+The page carries `<meta name="robots" content="noindex, nofollow">` and is excluded from `sitemap.xml` through a `sitemap: false` default for `editor/` in `_config.yml`. It is deliberately not disallowed in `robots.txt`, see §16.
+
+Its CDN libraries (EasyMDE, marked, js-yaml, diff, highlight.js, Font Awesome 4.7) are pinned to exact versions and carry integrity hashes, because the page works with a token that can write to the repo.
 
 ### Editor ↔ source sync
 
@@ -530,30 +542,23 @@ No state, no env vars, no bindings. Deploy-once, forget.
 
 ---
 
-## 16. `robots.txt` override
+## 16. `robots.txt`
 
-Location: [`robots.txt`](../robots.txt) in repo root.
-
-Chirpy ships its own `robots.txt` inside the gem. Placing a file of the same name in the site source overrides it. Full contents:
+There is no local `robots.txt`. The live file is the one Chirpy ships (`assets/robots.txt` in the gem, with `permalink: /robots.txt`):
 
 ```
----
-layout: null
----
 User-agent: *
 
 Disallow: /norobots/
-Disallow: /editor/
 
-Sitemap: {{ "/sitemap.xml" | absolute_url }}
+Sitemap: https://robertmagasi.com/sitemap.xml
 ```
 
-- `layout: null` + the front-matter fence causes Jekyll to process the file (so the `{{ ... }}` Liquid tag resolves) but not wrap it in an HTML layout.
-- `/editor/` is `Disallow`ed because there's no reason for Googlebot to index a 3,000-line editor UI — it produces no useful content for users landing from search, and slows down the crawl budget.
-- `/norobots/` is a convention kept for ad-hoc "don't index this" pages.
-- The sitemap line uses `absolute_url` so it resolves to `https://robertmagasi.com/sitemap.xml` (the sitemap is generated by `jekyll-sitemap`, bundled in the Chirpy gem).
+A `robots.txt` in the repo root existed from May to November 2026 and never took effect: it collided with the theme's file, the theme's won, and the build only printed a "Conflict: The following destination is shared by multiple files" warning. To change the rules, override `assets/robots.txt` at exactly that path.
 
-Note: `Disallow` is advisory. A motivated crawler can still fetch `/editor/`. Real security for the editor comes from the GitHub App being installed "Only on this account" (§14) — even if a stranger loads the page and clicks Sign In, they cannot obtain a token with repo access.
+`/editor/` is not disallowed, and should not be. A crawler that may not fetch the page never sees its `noindex` tag, and a disallowed URL can still be listed in results without a snippet. Real protection for the editor comes from the GitHub App being installed "Only on this account" (§14).
+
+`sitemap.xml` is generated by `jekyll-sitemap`. Two things are kept out of it: `editor/` (config default) and the tag archive pages, which are `noindex` (`_plugins/sitemap-exclude-tag-archives.rb`).
 
 ---
 
@@ -585,7 +590,11 @@ Requires `fetch-depth: 0` in the GitHub Actions checkout. Already set in `pages-
 
 ### "htmlproofer flags LinkedIn / external URLs"
 
-We use `--disable-external` to skip all external link checks. External link rot is frequent and would block deploys on unrelated failures. Internal links are still validated.
+The deploy uses `--disable-external`, so external link rot never blocks a deploy. External links are checked once a week by `link-check.yml` (§12.2), which skips LinkedIn and the share buttons.
+
+### "Local htmlproofer says success after 0.05 seconds"
+
+It needs a UTF-8 locale. Without `LANG=C.UTF-8` it fails to parse every page, checks nothing and still reports success. A real run takes more than a second.
 
 ### "Giscus shows in the wrong theme"
 
@@ -606,7 +615,6 @@ Quick reference of every non-default file, what it does, and whether it's safe t
 | `_config.yml` | Site config | No |
 | `Gemfile` / `Gemfile.lock` | Ruby deps | No |
 | `CNAME` | Custom domain | No (breaks robertmagasi.com) |
-| `robots.txt` | Crawler override (§16) | If removed, falls back to Chirpy default |
 | `_data/authors.yml` | Author definitions | No (post layout reads it) |
 | `_data/contact.yml` | Sidebar icons | Yes, but sidebar loses contact icons |
 | `_data/share.yml` | Share buttons | Yes, but post tails lose share row |
@@ -616,6 +624,9 @@ Quick reference of every non-default file, what it does, and whether it's safe t
 | `_includes/comments/giscus.html` | Giscus with theme-sync (§7) | If removed, falls back to Chirpy's stock Giscus (no theme sync) |
 | `_layouts/post.html` | Post layout override (§6.3) | Yes, falls back to Chirpy default |
 | `_plugins/posts-lastmod-hook.rb` | Git-based last_modified_at (§6.5) | Yes, posts lose "Updated" timestamp |
+| `_plugins/sitemap-exclude-tag-archives.rb` | Keeps noindex tag pages out of the sitemap (§16) | Yes, but the sitemap lists noindex pages again |
+| `_includes/head.html`, `_layouts/home.html`, `_data/locales/en.yml` | Full copies of theme files with SEO changes, each file's header comment lists them | No, and re-sync on every Chirpy upgrade |
+| `assets/lib` (submodule), `assets/highlightjs/` | Self-hosted fonts and libraries | No, pages would lose fonts, icons and scripts |
 | `_sass/addon/custom.scss` | Intentional placeholder (§6.4) | Yes, but read the comment first |
 | `_tabs/*.md` | Sidebar + legal pages (§11) | Only `about.md`, `blogroll.md`, `contact.md`, and legal pages are custom; `archives.md`, `categories.md`, `tags.md` are Chirpy defaults you can delete to use theme-provided versions |
 | `assets/img/avatar.jpg` | Sidebar avatar | No |
@@ -623,7 +634,9 @@ Quick reference of every non-default file, what it does, and whether it's safe t
 | `assets/img/posts/og-<slug>.png` | Per-post OG images | Per-post |
 | `editor/index.html` | Deployed editor copy (§13) | Yes, but you lose `/editor/` |
 | `.github/workflows/pages-deploy.yml` | Build + deploy (§12.1) | No |
-| `.github/workflows/schedule-publish.yml` | Draft promoter (§12.2) | Yes, but you lose scheduled publishing |
+| `.github/workflows/link-check.yml` | Weekly link check (§12.2) | Yes, but dead external links go unnoticed |
+| `.github/workflows/indexnow.yml` | IndexNow ping (§12.4) | Yes |
+| `.github/dependabot.yml` | Monthly update PRs (§12.5) | Yes, but actions and gems go stale |
 | `.github/workflows/preview-draft.yml` | Branch preview (§12.3) | Yes, but branch pushes no longer build |
 | `docs/SETUP.md` | This file | Yes (docs/ is excluded from build anyway) |
 

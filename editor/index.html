@@ -8,17 +8,20 @@
 <title>RM · Post Editor</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' ry='20' fill='%23ffffff' stroke='%230056b2' stroke-width='6'/%3E%3Crect x='3' y='3' width='94' height='11' rx='3' fill='%230056b2'/%3E%3Ctext x='50' y='72' font-family='Arial,sans-serif' font-weight='bold' font-size='46' text-anchor='middle'%3E%3Ctspan fill='%23141414'%3ER%3C/tspan%3E%3Ctspan fill='%230056b2'%3EM%3C/tspan%3E%3C/text%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/diff@5/dist/diff.min.js"></script>
+<!-- CDN libraries are pinned to an exact version and carry an integrity hash (SRI).
+     A changed file on the CDN is refused by the browser. To upgrade one, change the
+     version and replace the hash (sha384 of the new file, base64). -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.21.0/dist/easymde.min.css" integrity="sha384-ZoLYv3S+AsZX+zhbN1D1+WPpc8f+DmLfxfgw+qn0Nq8wJPOYQQXEW5ZrRhcGozlG" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/easymde@2.21.0/dist/easymde.min.js" integrity="sha384-mTM6vzy+/UiHrMBClNGViM9qEv0/26iCGqpJKhSzdnjrxbKjO3vkT62ujXQ8B5iv" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js" integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.3.2/dist/js-yaml.min.js" integrity="sha384-uwLg6oO8ZhFG2SuQfgmkMtosjtrFYlkPspa/cXS+b3D8GLRTHMDl/mTwqImdlKQO" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/diff@5.2.2/dist/diff.min.js" integrity="sha384-6j7Q9TJB4vm12GtmUgqRCIMEWPWht9ntvatRve5IgkjH2G8wyrgKCSF0maDt+eBa" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-<link id="hljs-preview-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
-<link id="hljs-preview-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link id="hljs-preview-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css" integrity="sha384-w6Ujm1VWa9HYFqGc89oAPn/DWDi2gUamjNrq9DRvEYm2X3ClItg9Y9xs1ViVo5b5" crossorigin="anonymous">
+<link id="hljs-preview-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" integrity="sha384-oaMLBGEzBOJx3UHwac0cVndtX5fxGQIfnAeFZ35RTgqPcYlbprH9o9PUV/F8Le07" crossorigin="anonymous" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha384-F/bZzf7p3Joyp5psL90p/p89AZJsndkSoGwRpXcZhleCWhd8SnRuoYo4d0yirjJp" crossorigin="anonymous"></script>
 
 <style>
   /* ─── THEME TOKENS ─── */
@@ -3074,8 +3077,39 @@ const SitePreview = {
       if (!src.includes(pkg.split('@')[0] + '@')) combine.setAttribute('src', src + ',' + pkg);
       return true;
     };
-    if (enableToc) addCombine(this.TOCBOT);
-    if (page.mermaid) addCombine(this.MERMAID);
+    /* Since Nov 2026 the site serves its libraries itself and has no combined CDN script.
+       Then a missing library goes in as its own deferred script, in front of the theme's
+       page script (deferred scripts run in document order). */
+    const pageJs = q('script[defer][src*="/assets/js/dist/"]');
+    const addScript = (marker, src) => {
+      if (q(`script[src*="${marker}"]`)) return;
+      const el = doc.createElement('script');
+      el.setAttribute('defer', '');
+      el.setAttribute('src', src);
+      if (pageJs) pageJs.parentNode.insertBefore(el, pageJs); else doc.body.appendChild(el);
+    };
+    const addCss = (marker, href) => {
+      if (q(`link[href*="${marker}"]`)) return;
+      const el = doc.createElement('link');
+      el.setAttribute('rel', 'stylesheet');
+      el.setAttribute('href', href);
+      doc.head.appendChild(el);
+    };
+    if (enableToc && !addCombine(this.TOCBOT)) {
+      addCss('/tocbot/', '/assets/lib/tocbot/tocbot.min.css');
+      addScript('/tocbot/', '/assets/lib/tocbot/tocbot.min.js');
+    }
+    if (page.mermaid && !addCombine(this.MERMAID)) addScript('/mermaid', 'https://cdn.jsdelivr.net/' + this.MERMAID);
+    /* highlight.js: the live site loads it only on pages with a PowerShell block, so the
+       template may come without it. Its folder is read from the theme stylesheet link. */
+    if (/language-powershell/.test(rendered.html)) {
+      const hl = q('link#hljs-light');
+      const m = hl && (hl.getAttribute('href') || '').match(/^(.*)\/styles\//);
+      if (m) {
+        addScript('/highlight.min.js', m[1] + '/highlight.min.js');
+        addScript('/languages/powershell.min.js', m[1] + '/languages/powershell.min.js');
+      }
+    }
     if (page.math && !q('#MathJax-script')) {
       const cfg = doc.createElement('script'); cfg.src = '/assets/js/data/mathjax.js';
       const mj = doc.createElement('script'); mj.id = 'MathJax-script'; mj.async = true; mj.src = this.MATHJAX;
@@ -3288,7 +3322,9 @@ const Preview = {
     if (Preview._mermaidLoaded) return;
     Preview._mermaidLoaded = true;
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js';
+    s.integrity = 'sha384-o+g/BxPwhi0C3RK7oQBxQuNimeafQ3GE/ST4iT2BxVI4Wzt60SH4pq9iXVYujjaS';
+    s.crossOrigin = 'anonymous';
     s.onload = run;
     s.onerror = () => warn('mermaid script failed to load');
     document.head.appendChild(s);
@@ -3304,7 +3340,9 @@ const Preview = {
     Preview._mathJaxLoaded = true;
     window.MathJax = { tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] } };
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js';
+    s.integrity = 'sha384-Wuix6BuhrWbjDBs24bXrjf4ZQ5aFeFWBuKkFekO2t8xFU0iNaLQfp2K6/1Nxveei';
+    s.crossOrigin = 'anonymous';
     s.onload = () => { if (typeof window.MathJax !== 'undefined') window.MathJax.typesetPromise([root]).catch(e => warn('MathJax typeset failed:', e)); };
     s.onerror = () => warn('MathJax script failed to load');
     document.head.appendChild(s);

@@ -279,8 +279,15 @@ div[class^="language-"] .code-header > span::after { color: #333 !important; }
   width: 100%;
 }
 </style>
+{% comment %}
+  highlight.js (125 KB) only recolours PowerShell blocks, so it is loaded only on pages
+  that contain one. The script below checks for hljs before using it. The editor's site
+  preview adds the two files itself when its template page comes without them.
+{% endcomment %}
+{% if content contains 'language-powershell' %}
 <script src="{{ '/assets/highlightjs/11.9.0/highlight.min.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/highlightjs/11.9.0/languages/powershell.min.js' | relative_url }}" defer></script>
+{% endif %}
 <script>
 (function () {
   function isDark() {
