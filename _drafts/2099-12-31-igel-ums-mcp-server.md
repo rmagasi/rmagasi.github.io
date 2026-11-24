@@ -52,7 +52,7 @@ On top of the server comes a skill: IGEL knowledge written down for the assistan
 
 ## Where It Stands
 
-It runs in my lab against UMS 12.15 with IGEL OS 12 devices, in my own time and on my own hardware. The core works: devices, directories, profiles and their order, firmware, live online checks. Before a public release I want it cleaner, better tested and easy to install.
+It runs in my lab against UMS 12.15 with IGEL OS 12 devices, in my own time and on my own hardware. IGEL kindly provided a UMS Enterprise trial license for my homelab, which unlocks the IMI. Thank you, IGEL, it made real testing possible. The core works: devices, directories, profiles and their order, firmware, live online checks. Before a public release I want it cleaner, better tested and easy to install.
 
 This is a community project. It is not affiliated with or endorsed by IGEL.
 
