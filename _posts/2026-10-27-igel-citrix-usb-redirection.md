@@ -1,5 +1,6 @@
 ---
 title: "USB Devices from IGEL OS into Citrix: Optimized First, Generic Last"
+last_modified_at: 2026-11-25 00:00:00 +0100
 date: 2026-10-27 09:00:00 +0200
 author: robert
 categories: ["IGEL", "Best Practices"]
@@ -158,6 +159,7 @@ On IGEL the same rule goes into the product rule of Native USB Redirection: VID,
 ## Related
 
 - [IGEL OS 12 and Citrix: Post-Session Logoff Was the Wrong Fix](/posts/igel-os-12-citrix-soft-logoff/) - another IGEL OS 12 Citrix setting that does more than its name suggests, post-session Logoff logs off the whole device session
+- [MCP Server for IGEL? Coming Soon](/posts/igel-ums-mcp-server/) - another IGEL topic, this time about asking the UMS through an AI assistant.
 
 ## References
 
