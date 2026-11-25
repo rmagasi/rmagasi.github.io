@@ -183,7 +183,7 @@ media_subpath: /assets/img/posts/   # optional per-post image root
 
 ### Drafts vs. published
 
-- Files in `_drafts/` never render publicly. Nothing promotes them automatically, a post goes live when the editor publishes it with destination Posts. The former `schedule-publish` workflow was removed on 2026-11-22. Drafts keep the `2099-12-31` hold date by convention.
+- Files in `_drafts/` never render publicly. Nothing promotes them automatically, a post goes live when the editor publishes it with destination Posts. The former `schedule-publish` workflow was removed on 2026-11-22. Drafts carry their planned publish date in the file name and the front matter, the `2099-12-31` hold date was dropped on 2026-11-25. The editor's Promote button copies a draft as it is, so a draft dated today or earlier goes live at once.
 - Files in `_posts/` must be named `YYYY-MM-DD-slug.md`. The date in the filename must match the front-matter `date:` or Jekyll complains.
 - The `permalink` default is `/posts/:title/` — the slug comes from the front-matter title, not the filename. Changing a title after publication breaks inbound links — avoid.
 

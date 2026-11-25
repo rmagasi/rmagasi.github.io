@@ -1,10 +1,10 @@
 ---
 title: "MCP Server for IGEL? Coming Soon"
-date: 2099-12-31 09:00:00 +0200
+date: 2026-11-25 06:00:00 +0100
 author: robert
 categories: ["IGEL", "AI"]
 tags: ["igel", "igel-ums", "mcp", "ai", "claude", "imi", "open-source"]
-description: "Citrix and ControlUp ship MCP servers for AI assistants, IGEL has a great community PowerShell module but no MCP server. Why I started building one for the UMS, and how it will work."
+description: "Citrix and ControlUp ship MCP servers for AI assistants. Inspired by them and by the community module PSIGEL, I started building one for the IGEL UMS. The idea, and how it will work."
 image:
   path: /assets/img/posts/og-igel-ums-mcp-server.png
   alt: "MCP Server for IGEL? Coming Soon"
@@ -12,18 +12,18 @@ image:
 
 If you script against an IGEL UMS, you probably know PSIGEL. Falk Heiland's community module wraps the IGEL Management Interface (IMI), the REST API of the UMS, into PowerShell functions. It turns "log in, build a cookie, call the API, parse the JSON" into one line per question. This month it reached version 1.0.0, now on PowerShell 7 and with certificate validation on by default. Having a tool like that, built and maintained by the community, is a real gift.
 
-At the same time, more and more vendors in our space ship MCP servers. That got me thinking.
+At the same time, more and more vendors in our space ship MCP servers. That gave me an idea.
 
-## What Other Vendors Already Do
+## EUC Is Moving Towards AI
 
-MCP, the Model Context Protocol, is an open standard for connecting AI assistants to tools and data. A vendor publishes an MCP server, and an assistant like Claude, Copilot or Cursor can then ask that product questions in plain language.
+Across End-User Computing, the direction is clear. Vendors are bringing AI assistants right into their products, and one building block keeps showing up: MCP, the Model Context Protocol. It is an open standard for connecting AI assistants to tools and data. A vendor publishes an MCP server, and an assistant like Claude, Copilot or Cursor can then ask that product questions in plain language.
 
-Two examples from the EUC world:
+Two examples from our space:
 
 - **Citrix** offers the Citrix DaaS MCP Server, hosted in Citrix Cloud with 28 tools, all of them read-only queries and diagnostics. A local variant connects to an on-premises Delivery Controller.
 - **ControlUp** offers one MCP server for all its products. It runs locally and authenticates with the customer's own credentials.
 
-For IGEL I found the PowerShell module, but no MCP server for the UMS. So I decided to try building one.
+Seeing these, I wondered what this could look like for IGEL. The IMI is a solid, well-documented API, and PSIGEL shows how much the community can build on top of it. An MCP server felt like the natural next step, so I started building one.
 
 ## What It Will Be
 
